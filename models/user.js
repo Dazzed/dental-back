@@ -3,7 +3,7 @@ import { SEX_TYPES, PREFERRED_CONTACT_METHODS } from '../config/constants';
 
 
 export default function (sequelize, DataTypes) {
-  const User = sequelize.define('users', {
+  const User = sequelize.define('User', {
     salt: {
       type: DataTypes.STRING,
       allowNull: false
@@ -85,6 +85,7 @@ export default function (sequelize, DataTypes) {
       defaultValue: false,
     }
   }, {
+    tableName: 'users',
     classMethods: {
       associate() {
         // create associations

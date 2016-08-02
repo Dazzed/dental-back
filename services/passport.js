@@ -7,10 +7,10 @@ import {
 import db from '../models';
 import config from '../config/server';
 
-passport.use(db.users.createStrategy());
+passport.use(db.User.createStrategy());
 
-passport.serializeUser(db.users.serializeUser());
-passport.deserializeUser(db.users.deserializeUser());
+passport.serializeUser(db.User.serializeUser());
+passport.deserializeUser(db.User.deserializeUser());
 
 // Setup options for JWT strategy
 const jwtOptions = {
