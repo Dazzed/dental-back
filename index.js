@@ -20,6 +20,8 @@ const http = require('http');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const router = require('./router');
+const expressSession = require('express-session');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -28,6 +30,8 @@ require('./models');
 
 // App Setup
 app.use(morgan(isDeveloment ? 'dev' : 'combined'));
+app.use(cookieParser());
+app.use(expressSession({ secret: 'somesecrettokenhere' }));
 app.use(bodyParser.json({ type: '*/*' }));
 router(app);
 
