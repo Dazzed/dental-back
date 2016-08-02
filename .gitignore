@@ -1,0 +1,17 @@
+node_modules
+
+.tern-port
+.lvimrc
+.env
+Session.vim
+codeit.sh
+vim
+playbooks
+playbooks/playbook.retry
+.vagrant
+Vagrantfile
+
+.npm-debug.log
+webpack-assets.json
+
+static/dist/
