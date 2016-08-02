@@ -85,7 +85,7 @@ export default function (sequelize, DataTypes) {
   passportLocalSequelize.attachToUser(User, {
     userExistsError: 'User already exists with username "%s"',
     usernameField: 'email',
-    activationRequired: true,
+    // activationRequired: true,
     usernameLowerCase: true
   });
 
