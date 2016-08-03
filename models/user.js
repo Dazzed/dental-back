@@ -1,44 +1,104 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const bcrypt = require('bcrypt-nodejs');
+import passportLocalSequelize from 'passport-local-sequelize';
+import { SEX_TYPES, PREFERRED_CONTACT_METHODS } from '../config/constants';
 
-// Define our model
-const userSchema = new Schema({
-  email: { type: String, unique: true, lowercase: true },
-  password: String
-})
 
-// on Save hook, encrypt password
-// Before saving a model, run this function
-userSchema.pre('save', function(next) {
-  // Gets access to the user model
-  const user = this;
-
-  // generate a salt, then run callback
-  bcrypt.genSalt(10, function(err, salt) {
-    if (err) { return next(err); }
-
-    // hash(encrypt) our password using the salt
-    bcrypt.hash(user.password, salt, null, function(err, hash) {
-      if (err) { return next(err); }
-
-      // overwrite plain text password with encrypted password
-      user.password = hash;
-      next();
-    });
+export default function (sequelize, DataTypes) {
+  const User = sequelize.define('User', {
+    salt: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    activationKey: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    resetPasswordKey: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    verified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: { notEmpty: true }
+    },
+    middleName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: { notEmpty: true }
+    },
+    birthDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+      validate: { isEmail: true, notEmpty: true }
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    hash: {
+      type: new DataTypes.STRING(1024),
+      allowNull: false
+    },
+    avatar: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    state: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    zipCode: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    sex: {
+      type: new DataTypes.ENUM(Object.keys(SEX_TYPES)),
+      allowNull: false
+    },
+    contactMethod: {
+      type: new DataTypes.ENUM(Object.keys(PREFERRED_CONTACT_METHODS)),
+      allowNull: false
+    },
+    accountHolder: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    }
+  }, {
+    tableName: 'users',
+    classMethods: {
+      associate() {
+        // create associations
+      }
+    }
   });
-});
 
-userSchema.methods.comparePassword = function(candidatePassword, callback) {
-  bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
-    if (err) { return callback(err); }
-
-    callback(null, isMatch);  
+  passportLocalSequelize.attachToUser(User, {
+    userExistsError: 'User already exists with email "%s"',
+    usernameField: 'email',
+    activationRequired: true,
+    usernameLowerCase: true
   });
+
+  return User;
 }
-
-// Create the model class
-const ModelClass = mongoose.model('user', userSchema);
-
-// Export the model
-module.exports = ModelClass;
