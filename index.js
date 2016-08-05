@@ -4,7 +4,7 @@ require('babel-register');
 const fs = require('fs');
 const path = require('path');
 
-const rootDir = path.normalize(path.join(__dirname, '/..'));
+const rootDir = path.normalize(path.join(__dirname, '.'));
 
 // Test if dot env exists.
 if (fs.existsSync(path.join(rootDir, '.env'))) {
@@ -20,8 +20,6 @@ const http = require('http');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const router = require('./router');
-const expressSession = require('express-session');
-const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -30,8 +28,6 @@ require('./models');
 
 // App Setup
 app.use(morgan(isDeveloment ? 'dev' : 'combined'));
-app.use(cookieParser());
-app.use(expressSession({ secret: 'somesecrettokenhere' }));
 app.use(bodyParser.json({ type: '*/*' }));
 router(app);
 
