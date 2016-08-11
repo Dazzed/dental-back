@@ -21,6 +21,8 @@ const http = require('http');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const router = require('./router');
+const expressValidator = require('express-validator');
+const validators = require('./utils/express-validators');
 
 const app = express();
 
@@ -28,12 +30,27 @@ const app = express();
 require('./models');
 
 // App Setup
-app.use(morgan(isDeveloment ? 'dev' : 'combined'));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan(isDeveloment ? 'dev' : 'combined'));
+}
+
 app.use(bodyParser.json({ type: '*/*' }));
+
+app.use(expressValidator({
+  customValidators: {
+    isDBUnique: validators.isDBUnique,
+    checkFamilyMembers: validators.checkFamilyMembers,
+  },
+}));
+
 router(app);
 
-// Server Setup
-const port = process.env.PORT || 3090;
-const server = http.createServer(app);
-server.listen(port);
-console.log('Server listening on: ', port);
+if (require.main === module) {
+  // Server Setup
+  const port = process.env.PORT || 3090;
+  const server = http.createServer(app);
+  server.listen(port);
+  console.log('Server listening on: ', port);
+} else {
+  module.exports = app;
+}

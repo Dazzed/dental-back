@@ -8,4 +8,20 @@ export const PREFERRED_CONTACT_METHODS = {
   office: 'I will contact the office',
 };
 
-export default {};
+export const USER_TYPES = {
+  admin: 'Admin',
+  client: 'Client',
+  dentist: 'Dentist',
+};
+
+export const MEMBER_RELATIONSHIP_TYPES = {
+  partner: 'Partner',
+  son: 'Son',
+  daughter: 'Daughter',
+};
+
+export default {
+  SEX_TYPES,
+  PREFERRED_CONTACT_METHODS,
+  USER_TYPES,
+};

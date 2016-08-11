@@ -44,10 +44,6 @@ export default function (sequelize, DataTypes) {
       allowNull: false,
       validate: { isEmail: true, notEmpty: true }
     },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     hash: {
       type: new DataTypes.STRING(1024),
       allowNull: false
@@ -55,10 +51,6 @@ export default function (sequelize, DataTypes) {
     avatar: {
       type: DataTypes.JSON,
       allowNull: true
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: false,
     },
     city: {
       type: DataTypes.STRING,
@@ -87,8 +79,27 @@ export default function (sequelize, DataTypes) {
   }, {
     tableName: 'users',
     classMethods: {
-      associate() {
-        // create associations
+      associate(models) {
+        // Phone numbers relationship
+        User.hasMany(models.Phone, {
+          foreignKey: 'userId',
+          as: 'PhoneNumbers',
+          allowNull: true
+        });
+
+        // Addresses relationship
+        User.hasMany(models.Address, {
+          foreignKey: 'userId',
+          as: 'Addresses',
+          allowNull: true
+        });
+
+        // FamilyMember relationship
+        User.hasMany(models.FamilyMember, {
+          foreignKey: 'userId',
+          as: 'FamilyMember',
+          allowNull: true
+        });
       }
     }
   });
