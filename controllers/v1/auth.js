@@ -1,8 +1,9 @@
-import { Router } from 'express';
 import HTTPStatus from 'http-status';
 import _ from 'lodash';
 import crypto from 'crypto';
 import isPlainObject from 'is-plain-object';
+import passport from 'passport';
+import { Router } from 'express';
 
 import db from '../../models';
 
@@ -128,13 +129,28 @@ function dentistUserSignup(req, res, next) {
 }
 
 
+function login(req, res, next) {
+  passport.authenticate('local', { session: false }, (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+
+    if (!user) {
+      res.status(HTTPStatus.BAD_REQUEST);
+      return res.json({ message: info.message });
+    }
+
+    res.status(HTTPStatus.CREATED);
+    return res.json(_.pick(user.toJSON(), ['id', 'email', 'type']));
+  })(req, res, next);
+}
+
+
 // Bind with routes
 // TODO: do local passport auth and send the users, do not use session here
 router
   .route('/login')
-  .post((req, res) => {
-    res.json({ id: 'test' });
-  });
+  .post(login);
 
 
 router

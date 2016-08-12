@@ -6,10 +6,10 @@ import {
 
 import db from '../models';
 
-// passport.use(db.User.createStrategy());
-//
-// passport.serializeUser(db.User.serializeUser());
-// passport.deserializeUser(db.User.deserializeUser());
+passport.use(db.User.createStrategy());
+
+passport.serializeUser(db.User.serializeUser());
+passport.deserializeUser(db.User.deserializeUser());
 
 
 // Setup options for JWT strategy
