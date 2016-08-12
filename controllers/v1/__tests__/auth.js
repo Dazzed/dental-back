@@ -33,7 +33,6 @@ describe('Normal user signup', () => {
       });
   });
 
-
   it('Successful signup without family member', (done) => {
     factory.build('user', (generateError, generatedUser) => {
       const user = generatedUser.toJSON();
@@ -53,13 +52,13 @@ describe('Normal user signup', () => {
         .send(user)
         .expect('Content-Type', /json/)
         .expect(HTTPStatus.CREATED)
-        .end((err, res) => {
+        .end((err) => {
           if (err) {
             return done(err);
           }
 
           return Promise.all([
-            db.User.count(),
+            db.User.count({ where: { type: 'client' } }),
             db.Address.count(),
             db.Phone.count(),
           ]).then(([users, addresses, phones]) => {
@@ -70,15 +69,13 @@ describe('Normal user signup', () => {
             users.should.equal(1);
             addresses.should.equal(1);
             phones.should.equal(1);
-
-            db.User.sequelize.query('DELETE from users').then(() => done());
+            db.User.destroy({ where: { type: 'client' } }).then(() => done());
           }).catch((errors) => {
-            db.User.sequelize.query('DELETE from users').then(() => done(errors));
+            db.User.destroy({ where: { type: 'client' } }).then(() => done(errors));
           });
         });
     });
   });
-
 
   it('Return family members is not valid', (done) => {
     factory.build('user', (generateError, generatedUser) => {
@@ -124,12 +121,12 @@ describe('Normal user signup', () => {
         .send(user)
         .expect('Content-Type', /json/)
         .expect(HTTPStatus.CREATED)
-        .end((err, res) => {
+        .end((err) => {
           if (err) {
             return done(err);
           }
           return Promise.all([
-            db.User.count(),
+            db.User.count({ where: { type: 'client' } }),
             db.Address.count(),
             db.Phone.count(),
             db.FamilyMember.count(),
@@ -144,9 +141,9 @@ describe('Normal user signup', () => {
             phones.should.equal(1);
             members.should.equal(2);
 
-            db.User.sequelize.query('DELETE from users').then(() => done());
+            db.User.destroy({ where: { type: 'client' } }).then(() => done());
           }).catch((errors) => {
-            db.User.sequelize.query('DELETE from users').then(() => done(errors));
+            db.User.destroy({ where: { type: 'client' } }).then(() => done(errors));
           });
         });
     });
@@ -155,9 +152,68 @@ describe('Normal user signup', () => {
 
 
 describe('Dentist user signup', () => {
-  it('Return required fields and valid formats');
+  it('Return required fields and valid formats', (done) => {
+    agent
+      .post(`${API_BASE}/accounts/dentist-signup`)
+      .expect('Content-Type', /json/)
+      .expect(HTTPStatus.BAD_REQUEST)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
 
-  it('Successful signup');
+        // Should be an array of 15 elements
+        Object.keys(res.body).should.have.length(10);
+        return done();
+      });
+  });
+
+  it('Successful signup', (done) => {
+    factory.create('dentistSpecialty', (generateError, specialty) => {
+      const user = factory.buildSync('user').toJSON();
+      user.phone = '732-757-2923';
+      user.address = 'This is the address';
+      user.tos = true;
+      user.confirmPassword = user.password = 'thisPassword43';
+      user.confirmEmail = user.email;
+      user.specialtyId = specialty.get('id');
+
+      agent
+        .post(`${API_BASE}/accounts/dentist-signup`)
+        .send(user)
+        .expect('Content-Type', /json/)
+        .expect(HTTPStatus.CREATED)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+
+          return Promise.all([
+            db.User.count({ where: { type: 'dentist' } }),
+            db.Address.count(),
+            db.Phone.count(),
+          ]).then(([users, addresses, phones]) => {
+            users.should.be.a('Number');
+            addresses.should.be.a('Number');
+            phones.should.be.a('Number');
+
+            users.should.equal(1);
+            addresses.should.equal(1);
+            phones.should.equal(1);
+
+            Promise.all([
+              db.User.destroy({ where: { type: 'dentist' } }),
+              db.DentistSpecialty.destroy({ where: { id: specialty.get('id') } })
+            ]).then(() => done());
+          }).catch((errors) => {
+            Promise.all([
+              db.User.destroy({ where: { type: 'dentist' } }),
+              db.DentistSpecialty.destroy({ where: { id: specialty.get('id') } })
+            ]).then(() => done(errors));
+          });
+        });
+    });
+  });
 });
 
 

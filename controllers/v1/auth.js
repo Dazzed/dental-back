@@ -86,6 +86,47 @@ function normalUserSignup(req, res, next) {
     });
 }
 
+function dentistUserSignup(req, res, next) {
+  req.checkBody(DENTIST_USER_REGISTRATION);
+  req.checkBody('confirmPassword', 'Password do not match').equals(req.body.password);
+  req.checkBody('confirmEmail', 'Email do not match').equals(req.body.email);
+
+  req
+    .asyncValidationErrors(true)
+    .then(() => {
+      const user = _.omit(req.body, ['phone', 'address']);
+      user.type = 'dentist';
+
+      return new Promise((resolve, reject) => {
+        db.User.register(user, user.password, (err, createdUser) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(createdUser);
+          }
+        });
+      });
+    })
+    .then((user) => {
+      const query = [];
+      query.push(user.createPhoneNumber({ number: req.body.phone }));
+      query.push(user.createAddress({ value: req.body.address }));
+      return Promise.all(query);
+    })
+    .then(() => {
+      res
+        .status(HTTPStatus.CREATED)
+        .json({});
+    })
+    .catch((errors) => {
+      if (isPlainObject(errors)) {
+        return res.status(HTTPStatus.BAD_REQUEST).json(errors);
+      }
+
+      return next(errors);
+    });
+}
+
 
 // Bind with routes
 // TODO: do local passport auth and send the users, do not use session here
@@ -110,9 +151,6 @@ router
 
 router
   .route('/dentist-signup')
-  .post((req, res) => {
-    req.checkBody(DENTIST_USER_REGISTRATION);
-    res.json();
-  });
+  .post(dentistUserSignup);
 
 export default router;

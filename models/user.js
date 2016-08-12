@@ -1,5 +1,9 @@
 import passportLocalSequelize from 'passport-local-sequelize';
-import { SEX_TYPES, PREFERRED_CONTACT_METHODS } from '../config/constants';
+import {
+  SEX_TYPES,
+  PREFERRED_CONTACT_METHODS,
+  USER_TYPES,
+} from '../config/constants';
 
 
 export default function (sequelize, DataTypes) {
@@ -75,6 +79,11 @@ export default function (sequelize, DataTypes) {
     accountHolder: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    type: {
+      type: new DataTypes.ENUM(Object.keys(USER_TYPES)),
+      allowNull: false,
+      defaultValue: 'client',
     }
   }, {
     tableName: 'users',

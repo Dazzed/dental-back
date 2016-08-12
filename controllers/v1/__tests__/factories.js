@@ -15,21 +15,20 @@ adapter();
 
 
 factory.define('user', db.User, {
-  email: factory.sequence(function(n) {
-    return 'user' + n + '@demo.com';
-  }),
-
+  email: factory.sequence((n) => `user${n}@demo.com`),
   firstName: 'First name',
   lastName: 'Last name',
   birthDate: () => new Date(),
   city: 'City',
   state: 'State',
   zipCode: 'Zip code',
-  sex: function () {
+
+  sex() {
     const options = Object.keys(SEX_TYPES);
     return options[Math.floor(Math.random() * options.length)];
   },
-  contactMethod: function () {
+
+  contactMethod() {
     const options = Object.keys(PREFERRED_CONTACT_METHODS);
     return options[Math.floor(Math.random() * options.length)];
   }
@@ -37,16 +36,19 @@ factory.define('user', db.User, {
 
 
 factory.define('familyMember', db.FamilyMember, {
-  email: factory.sequence(function(n) {
-    return 'familyMember' + n + '@demo.com';
-  }),
-
+  email: factory.sequence((n) => `familyMember${n}@demo.com`),
   firstName: 'First name',
   lastName: 'Last name',
   phone: 'phone',
   birthDate: () => new Date(),
-  familyRelationship: function () {
+
+  familyRelationship() {
     const options = Object.keys(MEMBER_RELATIONSHIP_TYPES);
     return options[Math.floor(Math.random() * options.length)];
   },
+});
+
+
+factory.define('dentistSpecialty', db.DentistSpecialty, {
+  name: factory.sequence((n) => `Specialty ${n}`),
 });

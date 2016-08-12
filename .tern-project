@@ -19,7 +19,6 @@
     "doc_comment": {
       "fullDocs": true,
       "strong": true
-    },
-    "webpack": {}
+    }
   }
 }

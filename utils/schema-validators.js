@@ -102,6 +102,49 @@ export const FAMILY_MEMBER = {
 
 
 export const DENTIST_USER_REGISTRATION = {
-
+  email: {
+    notEmpty: true,
+    isEmail: true,
+    isDBUnique: {
+      options: ['User', 'email'],
+      errorMessage: 'This email is in use.'
+    }
+  },
+  specialtyId: {
+    notEmpty: true,
+    existsInDB: {
+      options: ['DentistSpecialty', 'id'],
+      errorMessage: 'Specialty does not exists',
+    }
+  },
+  password: {
+    notEmpty: true,
+    matches: {
+      options: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\$\/\*!]{6,}$/]
+    },
+    errorMessage: 'Password should have at least 6 characters, upper case, lower case and numbers.'
+  },
+  confirmPassword: {
+    notEmpty: true,
+  },
+  confirmEmail: {
+    isEmail: true,
+    notEmpty: true,
+  },
+  firstName: {
+    notEmpty: true,
+  },
+  lastName: {
+    notEmpty: true,
+  },
+  phone: {
+    notEmpty: true,
+  },
+  zipCode: {
+    notEmpty: true,
+  },
+  tos: {
+    notEmpty: true,
+  },
 };
 

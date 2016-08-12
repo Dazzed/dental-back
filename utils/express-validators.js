@@ -27,6 +27,28 @@ export function isDBUnique(value, model, field) {
 }
 
 
+export function existsInDB(value, model, field) {
+  return new Promise((resolve, reject) => {
+    db[model].count({
+      where: {
+        [field]: value,
+      }
+    }).then((count) => {
+      if (count > 0) {
+        resolve(count);
+      } else {
+        reject(count);
+      }
+    }).catch((error) => {
+      if (error) {
+        console.log(error);
+        reject(error);
+      }
+    });
+  });
+}
+
+
 export function checkFamilyMembers(members) {
   const checkFamilyMember = (member) => {
     let result = true;
