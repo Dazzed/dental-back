@@ -18,14 +18,15 @@ const agent = request(app);
 let jwtToken;
 
 
-before((done) => {
-  const user = factory.buildSync('user').toJSON();
-  user.phone = '732-757-2923';
-  user.address = 'This is the address';
-  user.tos = true;
-  user.confirmPassword = user.password = 'thisPassword43';
-  user.confirmEmail = user.email;
+const user = factory.buildSync('user').toJSON();
+user.phone = '732-757-2923';
+user.address = 'This is the address';
+user.tos = true;
+user.confirmPassword = user.password = 'thisPassword43';
+user.confirmEmail = user.email;
 
+
+before((done) => {
   agent
     .post(`${API_BASE}/accounts/signup`)
     .send(user)
@@ -67,6 +68,20 @@ describe('Get me user', () => {
         });
   });
 
+  it('User Not Found', (done) => {
+    agent
+      .get(`${API_BASE}/users/0`)
+        .set('Authorization', `JWT ${jwtToken}`)
+        .expect(HTTPStatus.NOT_FOUND)
+        .end((err) => {
+          if (err) {
+            return done(err);
+          }
+
+          return done();
+        });
+  });
+
   it('Returns user', (done) => {
     agent
       .get(`${API_BASE}/users/me`)
@@ -77,8 +92,52 @@ describe('Get me user', () => {
             return done(err);
           }
 
-          Object.keys(res.body).length.should.equal(20);
+          Object.keys(res.body.data).length.should.equal(16);
           return done();
+        });
+  });
+
+  it('Update user', (done) => {
+    const updatedUser = Object.assign({}, user, {
+      firstName: 'new first name',
+      phone: '732-757-2924',
+      address: 'This is the new address',
+    });
+
+    agent
+      .put(`${API_BASE}/users/me`)
+        .set('Authorization', `JWT ${jwtToken}`)
+        .send(updatedUser)
+        .expect(HTTPStatus.OK)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+
+          Object.keys(res.body.data).length.should.equal(16);
+          res.body.data.phoneNumbers[0].number.should.equal(updatedUser.phone);
+          res.body.data.addresses[0].value.should.equal(updatedUser.address);
+          res.body.data.firstName.should.equal(updatedUser.firstName);
+          return done();
+        });
+  });
+
+  it('Delete user', (done) => {
+    agent
+      .delete(`${API_BASE}/users/me`)
+        .set('Authorization', `JWT ${jwtToken}`)
+        .expect(HTTPStatus.OK)
+        .end((err) => {
+          if (err) {
+            return done(err);
+          }
+
+          return db.User.findOne({ where: { isDeleted: true, email: user.email } })
+            .then((fetchedUser) => {
+              fetchedUser.get('isDeleted').should.be.a('boolean');
+              fetchedUser.get('isDeleted').should.equal(true);
+              return done();
+            });
         });
   });
 });

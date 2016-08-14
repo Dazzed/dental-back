@@ -10,10 +10,15 @@ import v1 from './controllers/v1';
 
 
 module.exports = (app) => {
+  app.use((req, res, next) => {
+    req.locals = {};  // eslint-disable-line no-param-reassign
+    next();
+  });
+
   app.use('/api/v1', v1);
 
   /* eslint-disable no-unused-vars */
-  if (app.get('env') === 'development') {
+  if (app.get('env') === 'development' || app.get('env') === 'test') {
     app.use((err, req, res, next) => {
       res.status(err.statusCode || 500);
       res.json({

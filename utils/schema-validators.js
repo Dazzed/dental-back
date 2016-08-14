@@ -5,7 +5,7 @@ import {
 } from '../config/constants';
 
 
-export const NORMAL_USER_REGISTRATION = {
+export const NORMAL_USER_EDIT = {
   email: {
     notEmpty: true,
     isEmail: true,
@@ -13,20 +13,6 @@ export const NORMAL_USER_REGISTRATION = {
       options: ['User', 'email'],
       errorMessage: 'This email is in use.'
     }
-  },
-  password: {
-    notEmpty: true,
-    matches: {
-      options: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\$\/\*!]{6,}$/]
-    },
-    errorMessage: 'Password should have at least 6 characters, upper case, lower case and numbers.'
-  },
-  confirmPassword: {
-    notEmpty: true,
-  },
-  confirmEmail: {
-    isEmail: true,
-    notEmpty: true,
   },
   firstName: {
     notEmpty: true,
@@ -63,6 +49,24 @@ export const NORMAL_USER_REGISTRATION = {
       options: [Object.keys(PREFERRED_CONTACT_METHODS)],
     },
   },
+};
+
+
+export const NORMAL_USER_REGISTRATION = Object.assign({
+  password: {
+    notEmpty: true,
+    matches: {
+      options: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\$\/\*!]{6,}$/]
+    },
+    errorMessage: 'Password should have at least 6 characters, upper case, lower case and numbers.'
+  },
+  confirmPassword: {
+    notEmpty: true,
+  },
+  confirmEmail: {
+    isEmail: true,
+    notEmpty: true,
+  },
   tos: {
     notEmpty: true,
   },
@@ -71,7 +75,7 @@ export const NORMAL_USER_REGISTRATION = {
       errorMessage: 'Invalid values for some family member',
     }
   }
-};
+}, NORMAL_USER_EDIT);
 
 
 export const FAMILY_MEMBER = {

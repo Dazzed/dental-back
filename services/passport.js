@@ -23,7 +23,7 @@ const jwtOptions = {
 const jwtLogin = new JwtStrategy(jwtOptions, (payload, done) => {
   // See if the user ID in hte payload exists. If so, call done with that user
   // otherwise call without a user object
-  const query = db.User.getUser(payload.id);
+  const query = db.User.getActiveUser(payload.id);
 
   query.then((user) => {
     done(null, user);

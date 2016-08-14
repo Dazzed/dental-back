@@ -5,6 +5,10 @@ import {
   USER_TYPES,
 } from '../config/constants';
 
+export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'avatar', 'salt',
+  'activationKey', 'resetPasswordKey', 'verified', 'createdAt', 'updatedAt',
+  'phone', 'address', 'isDeleted'];
+
 
 export default function (sequelize, DataTypes) {
   const User = sequelize.define('User', {
@@ -80,6 +84,10 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     type: {
       type: new DataTypes.ENUM(Object.keys(USER_TYPES)),
       allowNull: false,
@@ -111,9 +119,12 @@ export default function (sequelize, DataTypes) {
         });
       },
 
-      getUser(id) {
+      getActiveUser(id) {
         return User.findById(id, {
-          attributes: { exclude: ['salt', 'hash', 'createdAt', 'updatedAt'] },
+          attributes: {
+            exclude: EXCLUDE_FIELDS_LIST,
+          },
+          where: { isDeleted: false },
           include: [
             { model: User.sequelize.models.Address, as: 'addresses' },
             { model: User.sequelize.models.Phone, as: 'phoneNumbers' },
