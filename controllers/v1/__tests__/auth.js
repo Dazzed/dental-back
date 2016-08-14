@@ -28,7 +28,7 @@ describe('Normal user signup', () => {
         }
 
         // Should be an array of 15 elements
-        Object.keys(res.body).should.have.length(15);
+        Object.keys(res.body.errors).should.have.length(15);
         return done();
       });
   });
@@ -59,21 +59,29 @@ describe('Normal user signup', () => {
             return done(err);
           }
 
-          return Promise.all([
-            db.User.count({ where: { type: 'client' } }),
-            db.Address.count(),
-            db.Phone.count(),
-          ]).then(([users, addresses, phones]) => {
-            users.should.be.a('Number');
-            addresses.should.be.a('Number');
-            phones.should.be.a('Number');
+          return db.User.findOne({
+            where: { type: 'client', email: user.email },
+            include: [
+              { model: db.Address, as: 'addresses' },
+              { model: db.Phone, as: 'phoneNumbers' }
+            ]
+          })
+          .then((fetchedUser) => {
+            const phones = fetchedUser.get('phoneNumbers');
+            const addresses = fetchedUser.get('addresses');
 
-            users.should.equal(1);
-            addresses.should.equal(1);
-            phones.should.equal(1);
-            db.User.destroy({ where: { type: 'client' } }).then(() => done());
+            fetchedUser.get('id').should.be.a('Number');
+            addresses.should.be.a('array');
+            phones.should.be.a('array');
+
+            addresses.length.should.equal(1);
+            phones.length.should.equal(1);
+
+            db.User.destroy({ where: { type: 'client', email: user.email } })
+              .then(() => done());
           }).catch((errors) => {
-            db.User.destroy({ where: { type: 'client' } }).then(() => done(errors));
+            db.User.destroy({ where: { type: 'client', email: user.email } })
+              .then(() => done(errors));
           });
         });
     });
@@ -99,7 +107,7 @@ describe('Normal user signup', () => {
             return done(err);
           }
 
-          res.body.familyMembers.should.be.a('object');
+          res.body.errors.familyMembers.should.be.a('object');
           return done();
         });
     });
@@ -127,25 +135,35 @@ describe('Normal user signup', () => {
           if (err) {
             return done(err);
           }
-          return Promise.all([
-            db.User.count({ where: { type: 'client' } }),
-            db.Address.count(),
-            db.Phone.count(),
-            db.FamilyMember.count(),
-          ]).then(([users, addresses, phones, members]) => {
-            users.should.be.a('Number');
-            addresses.should.be.a('Number');
-            phones.should.be.a('Number');
-            members.should.be.a('Number');
 
-            users.should.equal(1);
-            addresses.should.equal(1);
-            phones.should.equal(1);
-            members.should.equal(2);
 
-            db.User.destroy({ where: { type: 'client' } }).then(() => done());
+          return db.User.findOne({
+            where: { type: 'client', email: user.email },
+            include: [
+              { model: db.Address, as: 'addresses' },
+              { model: db.Phone, as: 'phoneNumbers' },
+              { model: db.FamilyMember, as: 'familyMembers' },
+            ]
+          })
+          .then((fetchedUser) => {
+            const phones = fetchedUser.get('phoneNumbers');
+            const addresses = fetchedUser.get('addresses');
+            const members = fetchedUser.get('familyMembers');
+
+            fetchedUser.get('id').should.be.a('Number');
+            addresses.should.be.a('array');
+            phones.should.be.a('array');
+            members.should.be.a('array');
+
+            addresses.length.should.equal(1);
+            phones.length.should.equal(1);
+            members.length.should.equal(2);
+
+            db.User.destroy({ where: { type: 'client', email: user.email } })
+              .then(() => done());
           }).catch((errors) => {
-            db.User.destroy({ where: { type: 'client' } }).then(() => done(errors));
+            db.User.destroy({ where: { type: 'client', email: user.email } })
+              .then(() => done(errors));
           });
         });
     });
@@ -165,7 +183,7 @@ describe('Dentist user signup', () => {
         }
 
         // Should be an array of 15 elements
-        Object.keys(res.body).should.have.length(10);
+        Object.keys(res.body.errors).should.have.length(10);
         return done();
       });
   });
@@ -190,26 +208,31 @@ describe('Dentist user signup', () => {
             return done(err);
           }
 
-          return Promise.all([
-            db.User.count({ where: { type: 'dentist' } }),
-            db.Address.count(),
-            db.Phone.count(),
-          ]).then(([users, addresses, phones]) => {
-            users.should.be.a('Number');
-            addresses.should.be.a('Number');
-            phones.should.be.a('Number');
+          return db.User.findOne({
+            where: { type: 'dentist', email: user.email },
+            include: [
+              { model: db.Address, as: 'addresses' },
+              { model: db.Phone, as: 'phoneNumbers' },
+            ]
+          })
+          .then((fetchedUser) => {
+            const phones = fetchedUser.get('phoneNumbers');
+            const addresses = fetchedUser.get('addresses');
 
-            users.should.equal(1);
-            addresses.should.equal(1);
-            phones.should.equal(1);
+            fetchedUser.get('id').should.be.a('Number');
+            addresses.should.be.a('array');
+            phones.should.be.a('array');
+
+            addresses.length.should.equal(1);
+            phones.length.should.equal(1);
 
             Promise.all([
-              db.User.destroy({ where: { type: 'dentist' } }),
+              db.User.destroy({ where: { type: 'dentist', email: user.email } }),
               db.DentistSpecialty.destroy({ where: { id: specialty.get('id') } })
             ]).then(() => done());
           }).catch((errors) => {
             Promise.all([
-              db.User.destroy({ where: { type: 'dentist' } }),
+              db.User.destroy({ where: { type: 'dentist', email: user.email } }),
               db.DentistSpecialty.destroy({ where: { id: specialty.get('id') } })
             ]).then(() => done(errors));
           });
@@ -242,7 +265,8 @@ describe('Login test feature', () => {
   });
 
   after((done) => {
-    db.User.destroy({ where: { type: 'client' } }).then(() => done());
+    db.User.destroy({ where: { type: 'client', email: user.email } })
+      .then(() => done());
   });
 
   it('Missing credentials', (done) => {
@@ -256,7 +280,7 @@ describe('Login test feature', () => {
             return done(err);
           }
 
-          res.body.message.should.equal('Missing credentials');
+          res.body.meta.message.should.equal('Missing credentials');
           return done();
         });
   });

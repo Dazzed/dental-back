@@ -92,22 +92,32 @@ export default function (sequelize, DataTypes) {
         // Phone numbers relationship
         User.hasMany(models.Phone, {
           foreignKey: 'userId',
-          as: 'PhoneNumbers',
+          as: 'phoneNumbers',
           allowNull: true
         });
 
         // Addresses relationship
         User.hasMany(models.Address, {
           foreignKey: 'userId',
-          as: 'Addresses',
+          as: 'addresses',
           allowNull: true
         });
 
         // FamilyMember relationship
         User.hasMany(models.FamilyMember, {
           foreignKey: 'userId',
-          as: 'FamilyMember',
+          as: 'familyMembers',
           allowNull: true
+        });
+      },
+
+      getUser(id) {
+        return User.findById(id, {
+          attributes: { exclude: ['salt', 'hash', 'createdAt', 'updatedAt'] },
+          include: [
+            { model: User.sequelize.models.Address, as: 'addresses' },
+            { model: User.sequelize.models.Phone, as: 'phoneNumbers' },
+          ],
         });
       }
     }

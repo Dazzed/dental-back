@@ -6,6 +6,7 @@ import passport from 'passport';
 import { Router } from 'express';
 
 import db from '../../models';
+import { BadRequestError } from '../errors';
 
 
 import {
@@ -80,7 +81,7 @@ function normalUserSignup(req, res, next) {
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {
-        return res.status(HTTPStatus.BAD_REQUEST).json(errors);
+        return next(new BadRequestError(errors));
       }
 
       return next(errors);
@@ -121,7 +122,7 @@ function dentistUserSignup(req, res, next) {
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {
-        return res.status(HTTPStatus.BAD_REQUEST).json(errors);
+        return next(new BadRequestError(errors));
       }
 
       return next(errors);
@@ -136,8 +137,7 @@ function login(req, res, next) {
     }
 
     if (!user) {
-      res.status(HTTPStatus.BAD_REQUEST);
-      return res.json({ message: info.message });
+      return next(new BadRequestError(null, info.message));
     }
 
     res.status(HTTPStatus.CREATED);
@@ -147,7 +147,6 @@ function login(req, res, next) {
 
 
 // Bind with routes
-// TODO: do local passport auth and send the users, do not use session here
 router
   .route('/login')
   .post(login);

@@ -43,6 +43,7 @@
     "eslint-plugin-import": "^1.12.0",
     "factory-girl": "github:aexmachina/factory-girl",
     "factory-girl-sequelize": "^1.0.0",
+    "jsonwebtoken": "^7.1.9",
     "mocha": "^3.0.1",
     "nodemon": "^1.10.0",
     "supertest": "^2.0.0"
