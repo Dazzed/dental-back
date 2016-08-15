@@ -1,18 +1,24 @@
 {
   "libs": [
     "chai",
-    "browser",
     "ecma5",
-    "ecma6",
-    "underscore"
+    "ecma6"
   ],
   "loadEagerly": [
     "src/**/*.js",
     "api/**/*.js"
   ],
-  "exclude": ["node_modules/**"],
   "plugins": {
     "node": {},
-    "react": {}
+    "es_modules": {},
+    "modules": {},
+    "node_resolve": {},
+    "complete_strings": {
+      "maxLength": 15
+    },
+    "doc_comment": {
+      "fullDocs": true,
+      "strong": true
+    }
   }
 }

@@ -1,5 +1,13 @@
 import passportLocalSequelize from 'passport-local-sequelize';
-import { SEX_TYPES, PREFERRED_CONTACT_METHODS } from '../config/constants';
+import {
+  SEX_TYPES,
+  PREFERRED_CONTACT_METHODS,
+  USER_TYPES,
+} from '../config/constants';
+
+export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'avatar', 'salt',
+  'activationKey', 'resetPasswordKey', 'verified', 'createdAt', 'updatedAt',
+  'phone', 'address', 'isDeleted'];
 
 
 export default function (sequelize, DataTypes) {
@@ -44,10 +52,6 @@ export default function (sequelize, DataTypes) {
       allowNull: false,
       validate: { isEmail: true, notEmpty: true }
     },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     hash: {
       type: new DataTypes.STRING(1024),
       allowNull: false
@@ -55,10 +59,6 @@ export default function (sequelize, DataTypes) {
     avatar: {
       type: DataTypes.JSON,
       allowNull: true
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: false,
     },
     city: {
       type: DataTypes.STRING,
@@ -83,12 +83,53 @@ export default function (sequelize, DataTypes) {
     accountHolder: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    type: {
+      type: new DataTypes.ENUM(Object.keys(USER_TYPES)),
+      allowNull: false,
+      defaultValue: 'client',
     }
   }, {
     tableName: 'users',
     classMethods: {
-      associate() {
-        // create associations
+      associate(models) {
+        // Phone numbers relationship
+        User.hasMany(models.Phone, {
+          foreignKey: 'userId',
+          as: 'phoneNumbers',
+          allowNull: true
+        });
+
+        // Addresses relationship
+        User.hasMany(models.Address, {
+          foreignKey: 'userId',
+          as: 'addresses',
+          allowNull: true
+        });
+
+        // FamilyMember relationship
+        User.hasMany(models.FamilyMember, {
+          foreignKey: 'userId',
+          as: 'familyMembers',
+          allowNull: true
+        });
+      },
+
+      getActiveUser(id) {
+        return User.findById(id, {
+          attributes: {
+            exclude: EXCLUDE_FIELDS_LIST,
+          },
+          where: { isDeleted: false },
+          include: [
+            { model: User.sequelize.models.Address, as: 'addresses' },
+            { model: User.sequelize.models.Phone, as: 'phoneNumbers' },
+          ],
+        });
       }
     }
   });
