@@ -1,6 +1,7 @@
 {
   "libs": [
     "chai",
+    "mocha",
     "ecma5",
     "ecma6"
   ],

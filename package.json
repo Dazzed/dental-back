@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test mocha --compilers js:babel-register **/__tests__/*.js",
+    "test": "JWT_SECRET=test NODE_ENV=test mocha --compilers js:babel-register **/__tests__/*.js",
     "dev": "nodemon index.js"
   },
   "author": "",

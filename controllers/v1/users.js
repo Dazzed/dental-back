@@ -10,6 +10,7 @@ import { EXCLUDE_FIELDS_LIST } from '../../models/user';
 import {
   NORMAL_USER_EDIT,
   DENTIST_USER_EDIT,
+  FAMILY_MEMBER,
 } from '../../utils/schema-validators';
 
 import {
@@ -40,7 +41,21 @@ function getUserFromParam(req, res, next, userId) {
 }
 
 
-function checkPermission(req, res, next) {
+function getFamilyMemberFromParam(req, res, next, memberId) {
+  return db.FamilyMember.findById(memberId).then((member) => {
+    if (!member) {
+      return next(new NotFoundError());
+    }
+
+    req.locals.familyMember = member;  // eslint-disable-line no-param-reassign
+    return next();
+  }).catch((error) => {
+    next(error);
+  });
+}
+
+
+function checkUserPermission(req, res, next) {
   const user = req.params.userId === 'me' ? req.user : req.locals.user;
   const hasPermission =
     user.get('id') === req.user.get('id') || req.user.get('type') === 'admin';
@@ -50,6 +65,22 @@ function checkPermission(req, res, next) {
   }
 
   req.locals.user = user;  // eslint-disable-line no-param-reassign
+
+  return next();
+}
+
+
+function checkFamilyMemberPermission(req, res, next) {
+  const user = req.params.userId === 'me' ? req.user : req.locals.user;
+  let hasPermission =
+    user.get('id') === req.user.get('id') &&
+    user.get('id') === req.locals.familyMember.get('userId');
+
+  hasPermission |= req.user.get('type') === 'admin';
+
+  if (!hasPermission) {
+    return next(new ForbiddenError());
+  }
 
   return next();
 }
@@ -117,25 +148,108 @@ function updateUser(req, res, next) {
 }
 
 
+function getFamilyMembers(req, res) {
+  req.locals.user.getFamilyMembers({ raw: true }).then((members) => {
+    res.json({ data: members });
+  });
+}
+
+
+function getFamilyMember(req, res) {
+  res.json({ data: req.locals.familyMember.toJSON() });
+}
+
+
+// TODO: add avatar feature
+function addFamilyMember(req, res, next) {
+  req.checkBody(FAMILY_MEMBER);
+
+  const errors = req.validationErrors(true);
+
+  if (errors) {
+    return next(new BadRequestError(errors));
+  }
+
+  const data = _.pick(req.body,
+    ['email', 'firstName', 'lastName', 'phone', 'birthDate', 'familyRelationship']);
+
+  return req.locals.user.createFamilyMember(data).then((member) => {
+    res.json({ data: member.toJSON() });
+  });
+}
+
+
+function updateFamilyMember(req, res, next) {
+  req.checkBody(FAMILY_MEMBER);
+
+  const errors = req.validationErrors(true);
+
+  if (errors) {
+    return next(new BadRequestError(errors));
+  }
+
+  const data = _.pick(req.body,
+    ['email', 'firstName', 'lastName', 'phone', 'birthDate', 'familyRelationship']);
+
+  return req.locals.familyMember.update(data).then((member) => {
+    res.json({ data: member.toJSON() });
+  });
+}
+
+
+function deleteFamilyMember(req, res) {
+  req.locals.familyMember.destroy().then(() => res.json());
+}
+
+
 // Bind to routes
 
 router.param('userId', getUserFromParam);
+router.param('familyMemberId', getFamilyMemberFromParam);
 
 
 router
   .route('/:userId')
   .get(
     passport.authenticate('jwt', { session: false }),
-    checkPermission,
+    checkUserPermission,
     getUser)
   .delete(
     passport.authenticate('jwt', { session: false }),
-    checkPermission,
+    checkUserPermission,
     deleteUser)
   .put(
     passport.authenticate('jwt', { session: false }),
-    checkPermission,
+    checkUserPermission,
     updateUser);
+
+
+router
+  .route('/:userId/family-members')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    checkUserPermission,
+    getFamilyMembers)
+  .post(
+    passport.authenticate('jwt', { session: false }),
+    checkUserPermission,
+    addFamilyMember);
+
+
+router
+  .route('/:userId/family-members/:familyMemberId')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    checkFamilyMemberPermission,
+    getFamilyMember)
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    checkFamilyMemberPermission,
+    updateFamilyMember)
+  .delete(
+    passport.authenticate('jwt', { session: false }),
+    checkFamilyMemberPermission,
+    deleteFamilyMember);
 
 
 export default router;

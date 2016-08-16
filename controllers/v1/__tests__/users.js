@@ -25,6 +25,11 @@ user.tos = true;
 user.confirmPassword = user.password = 'thisPassword43';
 user.confirmEmail = user.email;
 
+user.familyMembers = [
+  factory.buildSync('familyMember', { firstName: 'Member1', phone: 'Phone1' }),
+  factory.buildSync('familyMember', { firstName: 'Member2', phone: 'Phone2' }),
+];
+
 
 before((done) => {
   agent
@@ -137,6 +142,138 @@ describe('Get me user', () => {
               fetchedUser.get('isDeleted').should.be.a('boolean');
               fetchedUser.get('isDeleted').should.equal(true);
               return done();
+            });
+        });
+  });
+});
+
+
+describe('Family Members', () => {
+  let firstMember;
+  let toBeDeleted;
+
+  it('Get family members', (done) => {
+    agent
+      .get(`${API_BASE}/users/me/family-members`)
+        .set('Authorization', `JWT ${jwtToken}`)
+        .expect(HTTPStatus.OK)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          res.body.data.length.should.equal(2);
+          Object.keys(res.body.data[0]).length.should.equal(11);
+          Object.keys(res.body.data[1]).length.should.equal(11);
+          firstMember = res.body.data[0];
+          return done();
+        });
+  });
+
+  it('Add familyMembers fails', (done) => {
+    agent
+      .post(`${API_BASE}/users/me/family-members`)
+        .set('Authorization', `JWT ${jwtToken}`)
+        .send({})
+        .expect(HTTPStatus.BAD_REQUEST)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+
+          Object.keys(res.body.errors).length.should.equal(6);
+          return done();
+        });
+  });
+
+  it('Add familyMembers success', (done) => {
+    const newMember = factory.buildSync('familyMember', {
+      firstName: 'Created member',
+      phone: 'new phone number'
+    });
+
+    agent
+      .post(`${API_BASE}/users/me/family-members`)
+        .set('Authorization', `JWT ${jwtToken}`)
+        .send(newMember)
+        .expect(HTTPStatus.OK)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+
+          Object.keys(res.body.data).length.should.equal(11);
+          res.body.data.firstName.should.equal(newMember.firstName);
+          res.body.data.phone.should.equal(newMember.phone);
+          toBeDeleted = res.body.data;
+
+          return db.FamilyMember
+            .count({ where: { userId: res.body.data.userId } })
+            .then((members) => {
+              members.should.equal(3);
+              done();
+            });
+        });
+  });
+
+  it('Get familyMember', (done) => {
+    agent
+      .get(`${API_BASE}/users/me/family-members/${firstMember.id}`)
+        .set('Authorization', `JWT ${jwtToken}`)
+        .expect(HTTPStatus.OK)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+
+          Object.keys(res.body.data).length.should.equal(11);
+          res.body.data.firstName.should.equal(firstMember.firstName);
+          res.body.data.phone.should.equal(firstMember.phone);
+          return done();
+        });
+  });
+
+  it('Edit familyMember', (done) => {
+    firstMember.firstName = 'Changed name';
+    firstMember.phone = 'new phone';
+
+    agent
+      .put(`${API_BASE}/users/me/family-members/${firstMember.id}`)
+        .set('Authorization', `JWT ${jwtToken}`)
+        .send(firstMember)
+        .expect(HTTPStatus.OK)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+
+          Object.keys(res.body.data).length.should.equal(11);
+          res.body.data.firstName.should.equal(firstMember.firstName);
+          res.body.data.phone.should.equal(firstMember.phone);
+
+          return db.FamilyMember
+            .count({ where: { userId: res.body.data.userId } })
+            .then((members) => {
+              members.should.equal(3);
+              done();
+            });
+        });
+  });
+
+  it('Remove familyMember', (done) => {
+    agent
+      .delete(`${API_BASE}/users/me/family-members/${toBeDeleted.id}`)
+        .set('Authorization', `JWT ${jwtToken}`)
+        .expect(HTTPStatus.OK)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+
+          return db.FamilyMember
+            .count({ where: { userId: toBeDeleted.userId } })
+            .then((members) => {
+              members.should.equal(2);
+              done();
             });
         });
   });
