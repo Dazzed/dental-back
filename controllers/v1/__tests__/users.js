@@ -3,7 +3,6 @@ import request from 'supertest';
 import HTTPStatus from 'http-status';
 import factory from 'factory-girl';
 import { should } from 'chai';
-import jwt from 'jsonwebtoken';
 /* eslint-enable  import/no-extraneous-dependencies */
 
 import app from '../../../index.js';
@@ -19,16 +18,9 @@ let jwtToken;
 
 
 const user = factory.buildSync('user').toJSON();
-user.phone = '732-757-2923';
-user.address = 'This is the address';
 user.tos = true;
 user.confirmPassword = user.password = 'thisPassword43';
 user.confirmEmail = user.email;
-
-user.familyMembers = [
-  factory.buildSync('familyMember', { firstName: 'Member1', phone: 'Phone1' }),
-  factory.buildSync('familyMember', { firstName: 'Member2', phone: 'Phone2' }),
-];
 
 
 before((done) => {
@@ -48,7 +40,7 @@ before((done) => {
             return done(_err);
           }
 
-          jwtToken = jwt.sign({ id: res.body.id }, process.env.JWT_SECRET);
+          jwtToken = res.body.token;
           return done();
         });
     });
@@ -149,8 +141,7 @@ describe('Get me user', () => {
 
 
 describe('Family Members', () => {
-  let firstMember;
-  let toBeDeleted;
+  let createdMember;
 
   it('Get family members', (done) => {
     agent
@@ -161,10 +152,7 @@ describe('Family Members', () => {
           if (err) {
             return done(err);
           }
-          res.body.data.length.should.equal(2);
-          Object.keys(res.body.data[0]).length.should.equal(11);
-          Object.keys(res.body.data[1]).length.should.equal(11);
-          firstMember = res.body.data[0];
+          res.body.data.length.should.equal(0);
           return done();
         });
   });
@@ -204,12 +192,12 @@ describe('Family Members', () => {
           Object.keys(res.body.data).length.should.equal(11);
           res.body.data.firstName.should.equal(newMember.firstName);
           res.body.data.phone.should.equal(newMember.phone);
-          toBeDeleted = res.body.data;
+          createdMember = res.body.data;
 
           return db.FamilyMember
             .count({ where: { userId: res.body.data.userId } })
             .then((members) => {
-              members.should.equal(3);
+              members.should.equal(1);
               done();
             });
         });
@@ -217,7 +205,7 @@ describe('Family Members', () => {
 
   it('Get familyMember', (done) => {
     agent
-      .get(`${API_BASE}/users/me/family-members/${firstMember.id}`)
+      .get(`${API_BASE}/users/me/family-members/${createdMember.id}`)
         .set('Authorization', `JWT ${jwtToken}`)
         .expect(HTTPStatus.OK)
         .end((err, res) => {
@@ -226,20 +214,20 @@ describe('Family Members', () => {
           }
 
           Object.keys(res.body.data).length.should.equal(11);
-          res.body.data.firstName.should.equal(firstMember.firstName);
-          res.body.data.phone.should.equal(firstMember.phone);
+          res.body.data.firstName.should.equal(createdMember.firstName);
+          res.body.data.phone.should.equal(createdMember.phone);
           return done();
         });
   });
 
   it('Edit familyMember', (done) => {
-    firstMember.firstName = 'Changed name';
-    firstMember.phone = 'new phone';
+    createdMember.firstName = 'Changed name';
+    createdMember.phone = 'new phone';
 
     agent
-      .put(`${API_BASE}/users/me/family-members/${firstMember.id}`)
+      .put(`${API_BASE}/users/me/family-members/${createdMember.id}`)
         .set('Authorization', `JWT ${jwtToken}`)
-        .send(firstMember)
+        .send(createdMember)
         .expect(HTTPStatus.OK)
         .end((err, res) => {
           if (err) {
@@ -247,13 +235,13 @@ describe('Family Members', () => {
           }
 
           Object.keys(res.body.data).length.should.equal(11);
-          res.body.data.firstName.should.equal(firstMember.firstName);
-          res.body.data.phone.should.equal(firstMember.phone);
+          res.body.data.firstName.should.equal(createdMember.firstName);
+          res.body.data.phone.should.equal(createdMember.phone);
 
           return db.FamilyMember
             .count({ where: { userId: res.body.data.userId } })
             .then((members) => {
-              members.should.equal(3);
+              members.should.equal(1);
               done();
             });
         });
@@ -261,18 +249,18 @@ describe('Family Members', () => {
 
   it('Remove familyMember', (done) => {
     agent
-      .delete(`${API_BASE}/users/me/family-members/${toBeDeleted.id}`)
+      .delete(`${API_BASE}/users/me/family-members/${createdMember.id}`)
         .set('Authorization', `JWT ${jwtToken}`)
         .expect(HTTPStatus.OK)
-        .end((err, res) => {
+        .end((err) => {
           if (err) {
             return done(err);
           }
 
           return db.FamilyMember
-            .count({ where: { userId: toBeDeleted.userId } })
+            .count({ where: { userId: createdMember.userId } })
             .then((members) => {
-              members.should.equal(2);
+              members.should.equal(0);
               done();
             });
         });

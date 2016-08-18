@@ -1,6 +1,6 @@
 import HTTPStatus from 'http-status';
 import _ from 'lodash';
-import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import isPlainObject from 'is-plain-object';
 import passport from 'passport';
 import { Router } from 'express';
@@ -19,22 +19,22 @@ const router = new Router();
 
 // Utils functions
 
-function createAvatar(model, field) {
-  if (field) {
-    const data = `${field.filename}${new Date().toISOString()}`;
-    const filename = crypto.createHash('md5').update(data).digest('hex');
-
-    // TODO: send to S3
-
-    model.avatar = {  // eslint-disable-line  no-param-reassign
-      filename,
-      filetype: field.filetype,
-    };
-
-    model.save();
-  }
-}
-
+// function createAvatar(model, field) {
+//   if (field) {
+//     const data = `${field.filename}${new Date().toISOString()}`;
+//     const filename = crypto.createHash('md5').update(data).digest('hex');
+//
+//     // TODO: send to S3
+//
+//     model.avatar = {  // eslint-disable-line  no-param-reassign
+//       filename,
+//       filetype: field.filetype,
+//     };
+//
+//     model.save();
+//   }
+// }
+//
 // Middlewares
 
 function normalUserSignup(req, res, next) {
@@ -45,35 +45,22 @@ function normalUserSignup(req, res, next) {
   req
     .asyncValidationErrors(true)
     .then(() => {
-      const user = _.omit(req.body,
-        ['avatar', 'phone', 'address', 'familyMembers']);
+      const user = req.body;
 
       return new Promise((resolve, reject) => {
         db.User.register(user, user.password, (err, createdUser) => {
           if (err) {
             reject(err);
           } else {
-            createAvatar(createdUser, req.body.avatar);
             resolve(createdUser);
           }
         });
       });
     })
-    .then((user) => {
-      const query = [];
-      query.push(user.createPhoneNumber({ number: req.body.phone }));
-      query.push(user.createAddress({ value: req.body.address }));
-
-      if (req.body.familyMembers) {
-        req.body.familyMembers.forEach((member) => {
-          query.push(user.createFamilyMember(member).then((createdMember) =>
-              createAvatar(createdMember, member.avatar))
-          );
-        });
-      }
-
-      return Promise.all(query);
-    })
+    .then((user) => Promise.all([
+      user.createPhoneNumber({ number: '' }),
+      user.createAddress({ value: '' }),
+    ]))
     .then(() => {
       res
         .status(HTTPStatus.CREATED)
@@ -96,7 +83,7 @@ function dentistUserSignup(req, res, next) {
   req
     .asyncValidationErrors(true)
     .then(() => {
-      const user = _.omit(req.body, ['phone', 'address']);
+      const user = _.omit(req.body, ['phone']);
       user.type = 'dentist';
 
       return new Promise((resolve, reject) => {
@@ -109,12 +96,10 @@ function dentistUserSignup(req, res, next) {
         });
       });
     })
-    .then((user) => {
-      const query = [];
-      query.push(user.createPhoneNumber({ number: req.body.phone }));
-      query.push(user.createAddress({ value: req.body.address }));
-      return Promise.all(query);
-    })
+    .then((user) => Promise.all([
+      user.createPhoneNumber({ number: req.body.phone }),
+      user.createAddress({ value: '' }),
+    ]))
     .then(() => {
       res
         .status(HTTPStatus.CREATED)
@@ -141,7 +126,9 @@ function login(req, res, next) {
     }
 
     res.status(HTTPStatus.CREATED);
-    return res.json(_.pick(user.toJSON(), ['id', 'email', 'type']));
+    const response = _.pick(user.toJSON(), ['type']);
+    response.token = jwt.sign({ id: user.get('id') }, process.env.JWT_SECRET);
+    return res.json(response);
   })(req, res, next);
 }
 
