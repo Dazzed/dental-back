@@ -6,13 +6,22 @@ import passport from 'passport';
 import { Router } from 'express';
 
 import db from '../../models';
-import { BadRequestError } from '../errors';
 
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from '../errors';
 
 import {
   NORMAL_USER_REGISTRATION,
   DENTIST_USER_REGISTRATION,
 } from '../../utils/schema-validators';
+
+import {
+  EMAIL_SUBJECTS,
+} from '../../config/constants';
+
 
 const router = new Router();
 
@@ -48,11 +57,26 @@ function normalUserSignup(req, res, next) {
       const user = req.body;
 
       return new Promise((resolve, reject) => {
-        db.User.register(user, user.password, (err, createdUser) => {
-          if (err) {
-            reject(err);
+        db.User.register(user, user.password, (registerError, createdUser) => {
+          if (registerError) {
+            reject(registerError);
           } else {
             resolve(createdUser);
+
+            res.mailer.send('auth/client/signup', {
+              to: user.email,
+              subject: EMAIL_SUBJECTS.client.signup,
+              site: process.env.SITE,
+              user: createdUser,
+            }, (err, info) => {
+              if (err) {
+                console.log(err);
+              }
+
+              if (process.env.NODE_ENV === 'development') {
+                console.log(info);
+              }
+            });
           }
         });
       });
@@ -87,11 +111,25 @@ function dentistUserSignup(req, res, next) {
       user.type = 'dentist';
 
       return new Promise((resolve, reject) => {
-        db.User.register(user, user.password, (err, createdUser) => {
-          if (err) {
-            reject(err);
+        db.User.register(user, user.password, (registerError, createdUser) => {
+          if (registerError) {
+            reject(registerError);
           } else {
             resolve(createdUser);
+            res.mailer.send('auth/dentist/signup', {
+              to: user.email,
+              subject: EMAIL_SUBJECTS.client.signup,
+              site: process.env.SITE,
+              user: createdUser,
+            }, (err, info) => {
+              if (err) {
+                console.log(err);
+              }
+
+              if (process.env.NODE_ENV === 'development') {
+                console.log(info);
+              }
+            });
           }
         });
       });
@@ -115,6 +153,24 @@ function dentistUserSignup(req, res, next) {
 }
 
 
+function activate(req, res, next) {
+  db.User.find({ where: { activationKey: req.params.key } })
+    .then((user) => {
+      if (user) {
+        // activate it
+        return user
+          .update({ verified: true, activationKey: null })
+          .then(() => res.end());
+      }
+
+      return next(new NotFoundError());
+    })
+    .catch((errors) => {
+      next(errors);
+    });
+}
+
+
 function login(req, res, next) {
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err) {
@@ -123,6 +179,14 @@ function login(req, res, next) {
 
     if (!user) {
       return next(new BadRequestError(null, info.message));
+    }
+
+    if (user.isDeleted) {
+      return next(new NotFoundError());
+    }
+
+    if (!user.verified) {
+      return next(new ForbiddenError('Account was not activated.'));
     }
 
     res.status(HTTPStatus.CREATED);
@@ -155,4 +219,10 @@ router
   .route('/dentist-signup')
   .post(dentistUserSignup);
 
+router
+  .route('/activate/:key')
+  .get(activate);
+
+
 export default router;
+

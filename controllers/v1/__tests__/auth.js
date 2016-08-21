@@ -150,7 +150,7 @@ describe('Dentist user signup', () => {
 });
 
 
-describe('Login test feature', () => {
+describe('Test activations', () => {
   let user;
 
   before((done) => {
@@ -169,6 +169,80 @@ describe('Login test feature', () => {
             return done(err);
           }
           return done();
+        });
+  });
+
+  after((done) => {
+    db.User.destroy({ where: { type: 'client', email: user.email } })
+      .then(() => done());
+  });
+
+  it('Activation not found', (done) => {
+    agent
+      .get(`${API_BASE}/accounts/activate/notfound`)
+        .expect(HTTPStatus.NOT_FOUND)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+
+          return done();
+        });
+  });
+
+  it('Activate account', (done) => {
+    db.User.find({ where: { type: 'client', email: user.email } })
+      .then((fetched) => {
+        agent
+          .get(`${API_BASE}/accounts/activate/${fetched.get('activationKey')}`)
+          .expect(HTTPStatus.OK)
+          .end((err) => {
+            if (err) {
+              return done(err);
+            }
+
+            return db.User.find({ where: { type: 'client', email: user.email } })
+              .then((tested) => {
+                tested.get('verified').should.be.a('boolean');
+                tested.get('verified').should.equal(true);
+                done();
+              });
+          });
+      });
+  });
+});
+
+
+describe('Login test feature', () => {
+  let user;
+
+  before((done) => {
+    user = factory.buildSync('user').toJSON();
+    user.phone = '732-757-2923';
+    user.address = 'This is the address';
+    user.tos = true;
+    user.confirmPassword = user.password = 'thisPassword43';
+    user.confirmEmail = user.email;
+
+    agent
+      .post(`${API_BASE}/accounts/signup`)
+        .send(user)
+        .end((err) => {
+          if (err) {
+            return done(err);
+          }
+
+          return db.User.find({ where: { type: 'client', email: user.email } })
+            .then((fetched) => {
+              agent
+                .get(`${API_BASE}/accounts/activate/${fetched.get('activationKey')}`)
+                .end((activationError) => {
+                  if (activationError) {
+                    return done(activationError);
+                  }
+                  return done();
+                });
+            });
         });
   });
 

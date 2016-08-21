@@ -32,16 +32,26 @@ before((done) => {
         return done(err);
       }
 
-      return agent
-      .post(`${API_BASE}/accounts/login`)
-        .send({ email: user.email, password: user.password })
-        .end((_err, res) => {
-          if (_err) {
-            return done(_err);
-          }
+      return db.User.find({ where: { type: 'client', email: user.email } })
+        .then((fetched) => {
+          agent
+            .get(`${API_BASE}/accounts/activate/${fetched.get('activationKey')}`)
+            .end((activationError) => {
+              if (activationError) {
+                return done(activationError);
+              }
+              return agent
+                .post(`${API_BASE}/accounts/login`)
+                .send({ email: user.email, password: user.password })
+                .end((_err, res) => {
+                  if (_err) {
+                    return done(_err);
+                  }
 
-          jwtToken = res.body.token;
-          return done();
+                  jwtToken = res.body.token;
+                  return done();
+                });
+            });
         });
     });
 });

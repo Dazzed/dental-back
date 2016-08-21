@@ -1,0 +1,14 @@
+{% extends '../../layout.html' %}
+
+{% block body %}
+
+Welcome to Dentist Market Place,
+
+You have to activate your account is the latest step to keep your account
+working.
+
+Click on the link to activate it:
+
+{{ site }}accounts/activate/{{ user.get('activationKey') }}
+
+{% endblock %}

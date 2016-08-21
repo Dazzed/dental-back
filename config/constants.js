@@ -20,8 +20,18 @@ export const MEMBER_RELATIONSHIP_TYPES = {
   daughter: 'Daughter',
 };
 
+export const EMAIL_SUBJECTS = {
+  client: {
+    signup: 'Welcome',
+  },
+  dentist: {
+    signup: 'Welcome',
+  }
+};
+
 export default {
   SEX_TYPES,
   PREFERRED_CONTACT_METHODS,
   USER_TYPES,
+  EMAIL_SUBJECTS,
 };
