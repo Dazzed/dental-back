@@ -23,6 +23,8 @@ const morgan = require('morgan');
 const router = require('./router');
 const expressValidator = require('express-validator');
 const validators = require('./utils/express-validators');
+const mailer = require('express-mailer');
+const nunjucks = require('nunjucks');
 
 const app = express();
 
@@ -33,6 +35,28 @@ require('./models');
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(isDeveloment ? 'dev' : 'combined'));
 }
+
+let mailerOptions = { transportMethod: 'Stub' };
+
+if (process.env.NODE_ENV === 'production') {
+  mailerOptions = {
+    transportMethod: 'SendGrid',
+    auth: {
+      user: process.env.SENDGRID_USERNAME,
+      pass: process.env.SENDGRID_PASSWORD,
+    }
+  };
+}
+
+mailer.extend(app, mailerOptions);
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'html');
+
+nunjucks.configure('views', {
+  autoescape: true,
+  express: app,
+});
 
 app.use(bodyParser.json({ type: '*/*' }));
 

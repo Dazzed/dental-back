@@ -52,7 +52,30 @@ export const NORMAL_USER_EDIT = {
 };
 
 
-export const NORMAL_USER_REGISTRATION = Object.assign({
+export const NORMAL_USER_REGISTRATION = {
+  email: {
+    notEmpty: true,
+    isEmail: true,
+    isDBUnique: {
+      options: ['User', 'email'],
+      errorMessage: 'This email is in use.'
+    }
+  },
+  firstName: {
+    notEmpty: true,
+  },
+  lastName: {
+    notEmpty: true,
+  },
+  birthDate: {
+    notEmpty: true,
+    isDate: true,
+  },
+  sex: {
+    isIn: {
+      options: [Object.keys(SEX_TYPES)],
+    },
+  },
   password: {
     notEmpty: true,
     matches: {
@@ -70,12 +93,7 @@ export const NORMAL_USER_REGISTRATION = Object.assign({
   tos: {
     notEmpty: true,
   },
-  familyMembers: {
-    checkFamilyMembers: {
-      errorMessage: 'Invalid values for some family member',
-    }
-  }
-}, NORMAL_USER_EDIT);
+};
 
 
 export const FAMILY_MEMBER = {

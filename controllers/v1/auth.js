@@ -1,40 +1,49 @@
 import HTTPStatus from 'http-status';
 import _ from 'lodash';
-import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import isPlainObject from 'is-plain-object';
 import passport from 'passport';
 import { Router } from 'express';
 
 import db from '../../models';
-import { BadRequestError } from '../errors';
 
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from '../errors';
 
 import {
   NORMAL_USER_REGISTRATION,
   DENTIST_USER_REGISTRATION,
 } from '../../utils/schema-validators';
 
+import {
+  EMAIL_SUBJECTS,
+} from '../../config/constants';
+
+
 const router = new Router();
 
 
 // Utils functions
 
-function createAvatar(model, field) {
-  if (field) {
-    const data = `${field.filename}${new Date().toISOString()}`;
-    const filename = crypto.createHash('md5').update(data).digest('hex');
-
-    // TODO: send to S3
-
-    model.avatar = {  // eslint-disable-line  no-param-reassign
-      filename,
-      filetype: field.filetype,
-    };
-
-    model.save();
-  }
-}
-
+// function createAvatar(model, field) {
+//   if (field) {
+//     const data = `${field.filename}${new Date().toISOString()}`;
+//     const filename = crypto.createHash('md5').update(data).digest('hex');
+//
+//     // TODO: send to S3
+//
+//     model.avatar = {  // eslint-disable-line  no-param-reassign
+//       filename,
+//       filetype: field.filetype,
+//     };
+//
+//     model.save();
+//   }
+// }
+//
 // Middlewares
 
 function normalUserSignup(req, res, next) {
@@ -45,35 +54,37 @@ function normalUserSignup(req, res, next) {
   req
     .asyncValidationErrors(true)
     .then(() => {
-      const user = _.omit(req.body,
-        ['avatar', 'phone', 'address', 'familyMembers']);
+      const user = req.body;
 
       return new Promise((resolve, reject) => {
-        db.User.register(user, user.password, (err, createdUser) => {
-          if (err) {
-            reject(err);
+        db.User.register(user, user.password, (registerError, createdUser) => {
+          if (registerError) {
+            reject(registerError);
           } else {
-            createAvatar(createdUser, req.body.avatar);
             resolve(createdUser);
+
+            res.mailer.send('auth/client/signup', {
+              to: user.email,
+              subject: EMAIL_SUBJECTS.client.signup,
+              site: process.env.SITE,
+              user: createdUser,
+            }, (err, info) => {
+              if (err) {
+                console.log(err);
+              }
+
+              if (process.env.NODE_ENV === 'development') {
+                console.log(info);
+              }
+            });
           }
         });
       });
     })
-    .then((user) => {
-      const query = [];
-      query.push(user.createPhoneNumber({ number: req.body.phone }));
-      query.push(user.createAddress({ value: req.body.address }));
-
-      if (req.body.familyMembers) {
-        req.body.familyMembers.forEach((member) => {
-          query.push(user.createFamilyMember(member).then((createdMember) =>
-              createAvatar(createdMember, member.avatar))
-          );
-        });
-      }
-
-      return Promise.all(query);
-    })
+    .then((user) => Promise.all([
+      user.createPhoneNumber({ number: '' }),
+      user.createAddress({ value: '' }),
+    ]))
     .then(() => {
       res
         .status(HTTPStatus.CREATED)
@@ -96,25 +107,37 @@ function dentistUserSignup(req, res, next) {
   req
     .asyncValidationErrors(true)
     .then(() => {
-      const user = _.omit(req.body, ['phone', 'address']);
+      const user = _.omit(req.body, ['phone']);
       user.type = 'dentist';
 
       return new Promise((resolve, reject) => {
-        db.User.register(user, user.password, (err, createdUser) => {
-          if (err) {
-            reject(err);
+        db.User.register(user, user.password, (registerError, createdUser) => {
+          if (registerError) {
+            reject(registerError);
           } else {
             resolve(createdUser);
+            res.mailer.send('auth/dentist/signup', {
+              to: user.email,
+              subject: EMAIL_SUBJECTS.client.signup,
+              site: process.env.SITE,
+              user: createdUser,
+            }, (err, info) => {
+              if (err) {
+                console.log(err);
+              }
+
+              if (process.env.NODE_ENV === 'development') {
+                console.log(info);
+              }
+            });
           }
         });
       });
     })
-    .then((user) => {
-      const query = [];
-      query.push(user.createPhoneNumber({ number: req.body.phone }));
-      query.push(user.createAddress({ value: req.body.address }));
-      return Promise.all(query);
-    })
+    .then((user) => Promise.all([
+      user.createPhoneNumber({ number: req.body.phone }),
+      user.createAddress({ value: '' }),
+    ]))
     .then(() => {
       res
         .status(HTTPStatus.CREATED)
@@ -130,6 +153,24 @@ function dentistUserSignup(req, res, next) {
 }
 
 
+function activate(req, res, next) {
+  db.User.find({ where: { activationKey: req.params.key } })
+    .then((user) => {
+      if (user) {
+        // activate it
+        return user
+          .update({ verified: true, activationKey: null })
+          .then(() => res.end());
+      }
+
+      return next(new NotFoundError());
+    })
+    .catch((errors) => {
+      next(errors);
+    });
+}
+
+
 function login(req, res, next) {
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err) {
@@ -140,8 +181,18 @@ function login(req, res, next) {
       return next(new BadRequestError(null, info.message));
     }
 
+    if (user.isDeleted) {
+      return next(new NotFoundError());
+    }
+
+    if (!user.verified) {
+      return next(new ForbiddenError('Account was not activated.'));
+    }
+
     res.status(HTTPStatus.CREATED);
-    return res.json(_.pick(user.toJSON(), ['id', 'email', 'type']));
+    const response = _.pick(user.toJSON(), ['type']);
+    response.token = jwt.sign({ id: user.get('id') }, process.env.JWT_SECRET);
+    return res.json(response);
   })(req, res, next);
 }
 
@@ -168,4 +219,10 @@ router
   .route('/dentist-signup')
   .post(dentistUserSignup);
 
+router
+  .route('/activate/:key')
+  .get(activate);
+
+
 export default router;
+

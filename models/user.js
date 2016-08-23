@@ -62,23 +62,23 @@ export default function (sequelize, DataTypes) {
     },
     city: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     state: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     zipCode: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     sex: {
       type: new DataTypes.ENUM(Object.keys(SEX_TYPES)),
-      allowNull: false
+      allowNull: true
     },
     contactMethod: {
       type: new DataTypes.ENUM(Object.keys(PREFERRED_CONTACT_METHODS)),
-      allowNull: false
+      allowNull: true
     },
     accountHolder: {
       type: DataTypes.BOOLEAN,
@@ -124,7 +124,7 @@ export default function (sequelize, DataTypes) {
           attributes: {
             exclude: EXCLUDE_FIELDS_LIST,
           },
-          where: { isDeleted: false },
+          where: { isDeleted: false, verified: true },
           include: [
             { model: User.sequelize.models.Address, as: 'addresses' },
             { model: User.sequelize.models.Phone, as: 'phoneNumbers' },
