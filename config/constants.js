@@ -1,3 +1,13 @@
+// TODO: update with real data before go production
+export const DEFAULT_MEMBERSHIPS = [{
+  name: 'First Membership',
+  description: 'Here goes the description',
+  price: '300.00',
+}, {
+  name: 'Second Membership',
+  description: 'Here goes the description',
+  price: '300.99',
+}];
 
 export const SEX_TYPES = {
   M: 'Male',

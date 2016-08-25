@@ -170,3 +170,13 @@ export const DENTIST_USER_REGISTRATION = {
   },
 };
 
+
+export const MEMBERSHIP = {
+  name: {
+    notEmpty: true,
+  },
+  price: {
+    notEmpty: true,
+    isCurrency: true,
+  }
+};

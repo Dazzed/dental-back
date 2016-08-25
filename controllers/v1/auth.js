@@ -20,30 +20,13 @@ import {
 
 import {
   EMAIL_SUBJECTS,
+  DEFAULT_MEMBERSHIPS,
 } from '../../config/constants';
 
 
 const router = new Router();
 
 
-// Utils functions
-
-// function createAvatar(model, field) {
-//   if (field) {
-//     const data = `${field.filename}${new Date().toISOString()}`;
-//     const filename = crypto.createHash('md5').update(data).digest('hex');
-//
-//     // TODO: send to S3
-//
-//     model.avatar = {  // eslint-disable-line  no-param-reassign
-//       filename,
-//       filetype: field.filetype,
-//     };
-//
-//     model.save();
-//   }
-// }
-//
 // Middlewares
 
 function normalUserSignup(req, res, next) {
@@ -134,10 +117,23 @@ function dentistUserSignup(req, res, next) {
         });
       });
     })
-    .then((user) => Promise.all([
-      user.createPhoneNumber({ number: req.body.phone }),
-      user.createAddress({ value: '' }),
-    ]))
+    .then((user) => {
+      const queries = [
+        user.createPhoneNumber({ number: req.body.phone }),
+        user.createAddress({ value: '' }),
+      ];
+
+      DEFAULT_MEMBERSHIPS.forEach((item) => {
+        queries.push(db.Membership.create({
+          name: item.name,
+          price: item.price,
+          description: item.description,
+          userId: user.get('id')
+        }));
+      });
+
+      return Promise.all(queries);
+    })
     .then(() => {
       res
         .status(HTTPStatus.CREATED)

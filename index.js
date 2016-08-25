@@ -64,7 +64,6 @@ app.use(expressValidator({
   customValidators: {
     isDBUnique: validators.isDBUnique,
     existsInDB: validators.existsInDB,
-    checkFamilyMembers: validators.checkFamilyMembers,
   },
 }));
 

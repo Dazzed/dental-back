@@ -181,7 +181,7 @@ describe('Test activations', () => {
     agent
       .get(`${API_BASE}/accounts/activate/notfound`)
         .expect(HTTPStatus.NOT_FOUND)
-        .end((err, res) => {
+        .end((err) => {
           if (err) {
             return done(err);
           }
