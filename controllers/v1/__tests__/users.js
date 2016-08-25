@@ -66,42 +66,42 @@ describe('Get me user', () => {
   it('Returns unautorized', (done) => {
     agent
       .get(`${API_BASE}/users/me`)
-        .expect(HTTPStatus.UNAUTHORIZED)
-        .end((err) => {
-          if (err) {
-            return done(err);
-          }
-          return done();
-        });
+      .expect(HTTPStatus.UNAUTHORIZED)
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+        return done();
+      });
   });
 
-  it('User Not Found', (done) => {
+  it('Forbidden access', (done) => {
     agent
       .get(`${API_BASE}/users/0`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .expect(HTTPStatus.NOT_FOUND)
-        .end((err) => {
-          if (err) {
-            return done(err);
-          }
+      .set('Authorization', `JWT ${jwtToken}`)
+      .expect(HTTPStatus.FORBIDDEN)
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
 
-          return done();
-        });
+        return done();
+      });
   });
 
   it('Returns user', (done) => {
     agent
       .get(`${API_BASE}/users/me`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .expect(HTTPStatus.OK)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
+      .set('Authorization', `JWT ${jwtToken}`)
+      .expect(HTTPStatus.OK)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
 
-          Object.keys(res.body.data).length.should.equal(16);
-          return done();
-        });
+        Object.keys(res.body.data).length.should.equal(16);
+        return done();
+      });
   });
 
   it('Update user', (done) => {
@@ -113,166 +113,38 @@ describe('Get me user', () => {
 
     agent
       .put(`${API_BASE}/users/me`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .send(updatedUser)
-        .expect(HTTPStatus.OK)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
+      .set('Authorization', `JWT ${jwtToken}`)
+      .send(updatedUser)
+      .expect(HTTPStatus.OK)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
 
-          Object.keys(res.body.data).length.should.equal(16);
-          res.body.data.phoneNumbers[0].number.should.equal(updatedUser.phone);
-          res.body.data.addresses[0].value.should.equal(updatedUser.address);
-          res.body.data.firstName.should.equal(updatedUser.firstName);
-          return done();
-        });
+        Object.keys(res.body.data).length.should.equal(16);
+        res.body.data.phoneNumbers[0].number.should.equal(updatedUser.phone);
+        res.body.data.addresses[0].value.should.equal(updatedUser.address);
+        res.body.data.firstName.should.equal(updatedUser.firstName);
+        return done();
+      });
   });
 
   it('Delete user', (done) => {
     agent
       .delete(`${API_BASE}/users/me`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .expect(HTTPStatus.OK)
-        .end((err) => {
-          if (err) {
-            return done(err);
-          }
+      .set('Authorization', `JWT ${jwtToken}`)
+      .expect(HTTPStatus.OK)
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
 
-          return db.User.findOne({ where: { isDeleted: true, email: user.email } })
-            .then((fetchedUser) => {
-              fetchedUser.get('isDeleted').should.be.a('boolean');
-              fetchedUser.get('isDeleted').should.equal(true);
-              return done();
-            });
-        });
-  });
-});
-
-
-describe('Family Members', () => {
-  let createdMember;
-
-  it('Get family members', (done) => {
-    agent
-      .get(`${API_BASE}/users/me/family-members`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .expect(HTTPStatus.OK)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-          res.body.data.length.should.equal(0);
-          return done();
-        });
-  });
-
-  it('Add familyMembers fails', (done) => {
-    agent
-      .post(`${API_BASE}/users/me/family-members`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .send({})
-        .expect(HTTPStatus.BAD_REQUEST)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-
-          Object.keys(res.body.errors).length.should.equal(6);
-          return done();
-        });
-  });
-
-  it('Add familyMembers success', (done) => {
-    const newMember = factory.buildSync('familyMember', {
-      firstName: 'Created member',
-      phone: 'new phone number'
-    });
-
-    agent
-      .post(`${API_BASE}/users/me/family-members`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .send(newMember)
-        .expect(HTTPStatus.OK)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-
-          Object.keys(res.body.data).length.should.equal(11);
-          res.body.data.firstName.should.equal(newMember.firstName);
-          res.body.data.phone.should.equal(newMember.phone);
-          createdMember = res.body.data;
-
-          return db.FamilyMember
-            .count({ where: { userId: res.body.data.userId } })
-            .then((members) => {
-              members.should.equal(1);
-              done();
-            });
-        });
-  });
-
-  it('Get familyMember', (done) => {
-    agent
-      .get(`${API_BASE}/users/me/family-members/${createdMember.id}`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .expect(HTTPStatus.OK)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-
-          Object.keys(res.body.data).length.should.equal(11);
-          res.body.data.firstName.should.equal(createdMember.firstName);
-          res.body.data.phone.should.equal(createdMember.phone);
-          return done();
-        });
-  });
-
-  it('Edit familyMember', (done) => {
-    createdMember.firstName = 'Changed name';
-    createdMember.phone = 'new phone';
-
-    agent
-      .put(`${API_BASE}/users/me/family-members/${createdMember.id}`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .send(createdMember)
-        .expect(HTTPStatus.OK)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-
-          Object.keys(res.body.data).length.should.equal(11);
-          res.body.data.firstName.should.equal(createdMember.firstName);
-          res.body.data.phone.should.equal(createdMember.phone);
-
-          return db.FamilyMember
-            .count({ where: { userId: res.body.data.userId } })
-            .then((members) => {
-              members.should.equal(1);
-              done();
-            });
-        });
-  });
-
-  it('Remove familyMember', (done) => {
-    agent
-      .delete(`${API_BASE}/users/me/family-members/${createdMember.id}`)
-        .set('Authorization', `JWT ${jwtToken}`)
-        .expect(HTTPStatus.OK)
-        .end((err) => {
-          if (err) {
-            return done(err);
-          }
-
-          return db.FamilyMember
-            .count({ where: { userId: createdMember.userId } })
-            .then((members) => {
-              members.should.equal(0);
-              done();
-            });
-        });
+        return db.User.findOne({ where: { isDeleted: true, email: user.email } })
+          .then((fetchedUser) => {
+            fetchedUser.get('isDeleted').should.be.a('boolean');
+            fetchedUser.get('isDeleted').should.equal(true);
+            return done();
+          });
+      });
   });
 });

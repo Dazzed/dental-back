@@ -117,6 +117,13 @@ export default function (sequelize, DataTypes) {
           as: 'familyMembers',
           allowNull: true
         });
+
+        // Membership relationship
+        User.hasMany(models.Membership, {
+          foreignKey: 'userId',
+          as: 'memberships',
+          allowNull: true
+        });
       },
 
       getActiveUser(id) {

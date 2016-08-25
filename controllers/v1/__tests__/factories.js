@@ -49,6 +49,13 @@ factory.define('familyMember', db.FamilyMember, {
 });
 
 
+factory.define('membership', db.Membership, {
+  name: 'Membership member',
+  description: 'Short description',
+  price: '20.00',
+});
+
+
 factory.define('dentistSpecialty', db.DentistSpecialty, {
   name: factory.sequence((n) => `Specialty ${n}`),
 });

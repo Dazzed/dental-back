@@ -1,8 +1,4 @@
-import validator from 'validator';
-import _ from 'lodash';
-
 import db from '../models';
-import { FAMILY_MEMBER } from './schema-validators';
 
 
 export function isDBUnique(value, model, field) {
@@ -49,51 +45,51 @@ export function existsInDB(value, model, field) {
 }
 
 
-export function checkFamilyMembers(members) {
-  const checkFamilyMember = (member) => {
-    let result = true;
-
-    _.forOwn(FAMILY_MEMBER, (value, field) => {
-      _.forOwn(value, (options, check) => {
-        let finalValidator = check;
-        let finalOptions = options.options;
-        const finalValue = member[field] || '';
-
-        if (check === 'notEmpty') {
-          finalValidator = 'isLength';
-          finalOptions = [{ min: 1 }];
-        }
-
-        if (finalOptions) {
-          result &= validator[finalValidator].call(validator,
-            finalValue, ...finalOptions);
-        } else {
-          result &= validator[finalValidator](finalValue);
-        }
-
-        if (!result) {
-          return false;
-        }
-      });
-
-      if (!result) {
-        return false;
-      }
-    });
-
-    return result;
-  };
-
-  let result = true;
-
-  if (members) {
-    members.forEach((member) => {
-      result &= checkFamilyMember(member);
-      if (!result) {
-        return false;
-      }
-    });
-  }
-
-  return result;
-}
+// export function checkFamilyMembers(members) {
+//   const checkFamilyMember = (member) => {
+//     let result = true;
+//
+//     _.forOwn(FAMILY_MEMBER, (value, field) => {
+//       _.forOwn(value, (options, check) => {
+//         let finalValidator = check;
+//         let finalOptions = options.options;
+//         const finalValue = member[field] || '';
+//
+//         if (check === 'notEmpty') {
+//           finalValidator = 'isLength';
+//           finalOptions = [{ min: 1 }];
+//         }
+//
+//         if (finalOptions) {
+//           result &= validator[finalValidator].call(validator,
+//             finalValue, ...finalOptions);
+//         } else {
+//           result &= validator[finalValidator](finalValue);
+//         }
+//
+//         if (!result) {
+//           return false;
+//         }
+//       });
+//
+//       if (!result) {
+//         return false;
+//       }
+//     });
+//
+//     return result;
+//   };
+//
+//   let result = true;
+//
+//   if (members) {
+//     members.forEach((member) => {
+//       result &= checkFamilyMember(member);
+//       if (!result) {
+//         return false;
+//       }
+//     });
+//   }
+//
+//   return result;
+// }
