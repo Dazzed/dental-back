@@ -36,7 +36,7 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(isDeveloment ? 'dev' : 'combined'));
 }
 
-let mailerOptions = { transportMethod: 'Stub' };
+var mailerOptions = { transportMethod: 'Stub' };
 
 if (process.env.NODE_ENV === 'production') {
   mailerOptions = {
