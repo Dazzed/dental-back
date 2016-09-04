@@ -18,7 +18,6 @@ factory.define('user', db.User, {
   email: factory.sequence((n) => `user${n}@demo.com`),
   firstName: 'First name',
   lastName: 'Last name',
-  birthDate: () => new Date(),
   city: 'City',
   state: 'State',
   zipCode: 'Zip code',

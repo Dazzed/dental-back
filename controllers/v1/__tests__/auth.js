@@ -39,6 +39,7 @@ describe('Normal user signup', () => {
     user.tos = true;
     user.confirmPassword = user.password = 'thisPassword43';
     user.confirmEmail = user.email;
+    user.birthDate = new Date();
 
     agent
       .post(`${API_BASE}/accounts/signup`)
@@ -160,6 +161,7 @@ describe('Test activations', () => {
     user.tos = true;
     user.confirmPassword = user.password = 'thisPassword43';
     user.confirmEmail = user.email;
+    user.birthDate = new Date();
 
     agent
       .post(`${API_BASE}/accounts/signup`)
@@ -223,6 +225,7 @@ describe('Login test feature', () => {
     user.tos = true;
     user.confirmPassword = user.password = 'thisPassword43';
     user.confirmEmail = user.email;
+    user.birthDate = new Date();
 
     agent
       .post(`${API_BASE}/accounts/signup`)

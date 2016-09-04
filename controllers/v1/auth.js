@@ -156,7 +156,7 @@ function activate(req, res, next) {
         // activate it
         return user
           .update({ verified: true, activationKey: null })
-          .then(() => res.end());
+          .then(() => res.json({}));
       }
 
       return next(new NotFoundError());
