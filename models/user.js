@@ -44,7 +44,7 @@ export default function (sequelize, DataTypes) {
     },
     birthDate: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
     email: {
       type: DataTypes.STRING,

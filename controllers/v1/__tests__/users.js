@@ -21,6 +21,7 @@ const user = factory.buildSync('user').toJSON();
 user.tos = true;
 user.confirmPassword = user.password = 'thisPassword43';
 user.confirmEmail = user.email;
+user.birthDate = new Date();
 
 
 before((done) => {
