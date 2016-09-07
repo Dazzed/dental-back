@@ -31,7 +31,7 @@ export function getUserFromParam(req, res, next) {
   const userId = req.params.userId;
 
   if (userId === 'me' || req.user.get('id') === parseInt(userId, 10)) {
-    req.locals.user = req.user;  // eslint-disable-line no-param-reassign
+    req.locals.user = req.user;
     return next();
   }
 

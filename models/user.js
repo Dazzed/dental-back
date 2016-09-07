@@ -124,6 +124,12 @@ export default function (sequelize, DataTypes) {
           as: 'memberships',
           allowNull: true
         });
+
+        User.belongsTo(models.DentistSpecialty, {
+          foreignKey: 'dentistSpecialtyId',
+          as: 'dentistSpecialty',
+          allowNull: true
+        });
       },
 
       getActiveUser(id) {
@@ -135,6 +141,10 @@ export default function (sequelize, DataTypes) {
           include: [
             { model: User.sequelize.models.Address, as: 'addresses' },
             { model: User.sequelize.models.Phone, as: 'phoneNumbers' },
+            {
+              model: User.sequelize.models.DentistSpecialty,
+              as: 'dentistSpecialty'
+            },
           ],
         });
       }
