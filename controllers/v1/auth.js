@@ -65,6 +65,7 @@ function normalUserSignup(req, res, next) {
       });
     })
     .then((user) => Promise.all([
+      // This should be created so we can edit values
       user.createPhoneNumber({ number: '' }),
       user.createAddress({ value: '' }),
     ]))
@@ -92,6 +93,7 @@ function dentistUserSignup(req, res, next) {
     .then(() => {
       const user = _.omit(req.body, ['phone']);
       user.type = 'dentist';
+      user.dentistSpecialtyId = req.body.specialtyId;
 
       return new Promise((resolve, reject) => {
         db.User.register(user, user.password, (registerError, createdUser) => {
@@ -120,6 +122,7 @@ function dentistUserSignup(req, res, next) {
     .then((user) => {
       const queries = [
         user.createPhoneNumber({ number: req.body.phone }),
+        // This should be created so we can edit values
         user.createAddress({ value: '' }),
       ];
 
