@@ -80,9 +80,7 @@ function getFamilyMembers(req, res, next) {
   }
 
   const query = {
-    where: {
-      id: req.params.familyMemberId,
-    },
+    where: { },
     raw: true
   };
 
