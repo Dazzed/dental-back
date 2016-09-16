@@ -59,7 +59,7 @@ function getUser(req, res) {
 
 
 function deleteUser(req, res) {
-  req.locals.user.update({ isDeleted: true }).then(() => res.json());
+  req.locals.user.update({ isDeleted: true }).then(() => res.json({}));
 }
 
 
