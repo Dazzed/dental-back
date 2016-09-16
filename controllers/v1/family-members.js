@@ -168,7 +168,7 @@ function updateFamilyMember(req, res, next) {
 
 
 function deleteFamilyMember(req, res) {
-  req.locals.familyMember.destroy().then(() => res.json());
+  req.locals.familyMember.destroy().then(() => res.json({}));
 }
 
 
