@@ -16,12 +16,32 @@ export default function (sequelize, DataTypes) {
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
-    }
+    },
+    activationCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    discount: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    default: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   }, {
     tableName: 'memberships',
     classMethods: {
       associate(models) {
         Membership.belongsTo(models.User, { foreignKey: 'userId' });
+        Membership.hasMany(models.MembershipItem, {
+          foreignKey: 'membershipId',
+          as: 'items',
+        });
       }
     }
   });
