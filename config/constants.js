@@ -1,13 +1,37 @@
 // TODO: update with real data before go production
-export const DEFAULT_MEMBERSHIPS = [{
-  name: 'First Membership',
-  description: 'Here goes the description',
-  price: '300.00',
+export const MEMBERSHIP_ITEMS_DEFAULTS = [{
+  code: '1110',
 }, {
-  name: 'Second Membership',
-  description: 'Here goes the description',
-  price: '300.99',
+  code: '1120'
+}, {
+  code: '0120',
+}, {
+  code: '4910',
+}, {
+  code: '1208'
+}, {
+  code: '0274',
+}, {
+  code: '0272',
+}, {
+  code: '0210'
+}, {
+  code: '0330',
+}, {
+  code: '0140',
+}, {
+  code: '0220',
 }];
+
+export const DAYS = [
+  'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+];
 
 export const SEX_TYPES = {
   M: 'Male',

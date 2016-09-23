@@ -20,12 +20,39 @@ import {
 
 import {
   EMAIL_SUBJECTS,
-  DEFAULT_MEMBERSHIPS,
+  MEMBERSHIP_ITEMS_DEFAULTS,
+  DAYS,
 } from '../../config/constants';
 
 
 const router = new Router();
 
+
+// util methods
+
+function createDentistInfo(user) {
+  user.createMembership({
+    name: 'Default',
+    default: true,
+    isActive: true,
+    price: 0,
+  }).then((membership) => {
+    user.createDentistInfo({
+      membershipId: membership.get('id'),
+    }).then((info) => {
+      DAYS.forEach(item => {
+        info.createWorkingHour({ day: item });
+      });
+    });
+
+    MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
+      membership.createMembershipItem({
+        pricingCode: item.code,
+        price: 0,
+      });
+    });
+  });
+}
 
 // Middlewares
 
@@ -101,6 +128,7 @@ function dentistUserSignup(req, res, next) {
             reject(registerError);
           } else {
             resolve(createdUser);
+            createDentistInfo(createdUser);
             res.mailer.send('auth/dentist/signup', {
               to: user.email,
               subject: EMAIL_SUBJECTS.client.signup,
@@ -119,24 +147,13 @@ function dentistUserSignup(req, res, next) {
         });
       });
     })
-    .then((user) => {
-      const queries = [
+    .then((user) => (
+      Promise.all([
         user.createPhoneNumber({ number: req.body.phone }),
         // This should be created so we can edit values
         user.createAddress({ value: '' }),
-      ];
-
-      DEFAULT_MEMBERSHIPS.forEach((item) => {
-        queries.push(db.Membership.create({
-          name: item.name,
-          price: item.price,
-          description: item.description,
-          userId: user.get('id')
-        }));
-      });
-
-      return Promise.all(queries);
-    })
+      ])
+    ))
     .then(() => {
       res
         .status(HTTPStatus.CREATED)

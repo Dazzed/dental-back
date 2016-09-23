@@ -130,6 +130,11 @@ export default function (sequelize, DataTypes) {
           as: 'dentistSpecialty',
           allowNull: true
         });
+
+        User.hasOne(models.DentistInfo, {
+          foreignKey: 'userId',
+          as: 'dentistInfo',
+        });
       },
 
       getActiveUser(id) {
