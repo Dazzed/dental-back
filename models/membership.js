@@ -25,6 +25,10 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    recommendedFee: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     default: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
