@@ -1,17 +1,15 @@
 import { Router } from 'express';
 import passport from 'passport';
 import HTTPStatus from 'http-status';
-import _ from 'lodash';
 
 import db from '../../models';
 
 import {
-  MEMBERSHIP,
+  MESSAGE,
 } from '../../utils/schema-validators';
 
 import {
   BadRequestError,
-  NotFoundError,
 } from '../errors';
 
 
@@ -48,6 +46,14 @@ function getMessages(req, res, next) {
 
 
 function addMessage(req, res, next) {
+  req.checkBody(MESSAGE);
+
+  const errors = req.validationErrors(true);
+
+  if (errors) {
+    return next(new BadRequestError(errors));
+  }
+
   const data = {};
 
   switch (req.user.get('type')) {
@@ -65,7 +71,7 @@ function addMessage(req, res, next) {
       break;
   }
 
-  db.Conversation
+  return db.Conversation
     .find({ where: data })
     .then(conversation => {
       if (!conversation) {
@@ -77,9 +83,11 @@ function addMessage(req, res, next) {
       db.Message.create({
         conversationId: conversation.get('id'),
         body: req.body.message,
+        userId: req.user.get('id'),
       })
     )
     .then(message => {
+      res.status(HTTPStatus.CREATED);
       res.json(message.toJSON());
     })
     .catch(next);

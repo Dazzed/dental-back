@@ -180,3 +180,10 @@ export const MEMBERSHIP = {
     isCurrency: true,
   }
 };
+
+
+export const MESSAGE = {
+  body: {
+    notEmpty: true,
+  },
+};
