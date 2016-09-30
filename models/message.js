@@ -1,6 +1,9 @@
 export default function (sequelize, DataTypes) {
   const Message = sequelize.define('Message', {
-    body: DataTypes.TEXT,
+    body: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
   }, {
     tableName: 'messages',
     classMethods: {
