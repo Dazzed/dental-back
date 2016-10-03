@@ -125,6 +125,17 @@ export default function (sequelize, DataTypes) {
           allowNull: true
         });
 
+        // subscription relationship
+        User.hasMany(models.Subscription, {
+          foreignKey: 'dentistId',
+          as: 'clients',
+        });
+
+        User.hasMany(models.Subscription, {
+          foreignKey: 'clientId',
+          as: 'dentists',
+        });
+
         User.belongsTo(models.DentistSpecialty, {
           foreignKey: 'dentistSpecialtyId',
           as: 'dentistSpecialty',

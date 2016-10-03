@@ -22,6 +22,12 @@ module.exports = {
           key: 'id',
         },
       },
+      createdAt: {
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+      },
     };
 
     const messageSchema = {
@@ -48,6 +54,12 @@ module.exports = {
           key: 'id',
         },
       },
+      createdAt: {
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+      },
     };
 
     return Promise.all([
@@ -58,8 +70,8 @@ module.exports = {
 
   down: function (queryInterface, Sequelize) {
     return Promise.all([
-      queryInterface.dropTable('conversations'),
       queryInterface.dropTable('messages'),
+      queryInterface.dropTable('conversations'),
     ]);
   }
 };

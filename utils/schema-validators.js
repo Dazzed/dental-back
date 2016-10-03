@@ -93,6 +93,13 @@ export const NORMAL_USER_REGISTRATION = {
   tos: {
     notEmpty: true,
   },
+  dentistId: {
+    notEmpty: true,
+    existsInDB: {
+      options: ['User', 'id', { type: 'dentist' }],
+      errorMessage: 'Dentist does not exists',
+    }
+  }
 };
 
 
