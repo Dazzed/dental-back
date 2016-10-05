@@ -23,12 +23,12 @@ export function isDBUnique(value, model, field) {
 }
 
 
-export function existsInDB(value, model, field) {
+export function existsInDB(value, model, field, extraWhere = {}) {
+  const query = Object.assign({ [field]: value }, extraWhere);
+
   return new Promise((resolve, reject) => {
     db[model].count({
-      where: {
-        [field]: value,
-      }
+      where: query,
     }).then((count) => {
       if (count > 0) {
         resolve(count);

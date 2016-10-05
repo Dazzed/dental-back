@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import isPlainObject from 'is-plain-object';
 import passport from 'passport';
 import { Router } from 'express';
+import moment from 'moment';
 
 import db from '../../models';
 
@@ -90,6 +91,28 @@ function normalUserSignup(req, res, next) {
           }
         });
       });
+    })
+    .then(user => {
+      db.Membership.find({
+        attributes: ['price', 'id'],
+        where: { default: true, isActive: true, userId: req.body.dentistId },
+        raw: true,
+      }).then(membership => {
+        if (membership) {
+          const today = moment();
+
+          db.Subscription.create({
+            startAt: today,
+            endAt: today.add(1, 'months'),
+            total: membership.price,
+            membershipId: membership.id,
+            clientId: user.get('id'),
+            dentistId: req.body.dentistId,
+          });
+        }
+      });
+
+      return user;
     })
     .then((user) => Promise.all([
       // This should be created so we can edit values
