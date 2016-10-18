@@ -23,6 +23,7 @@ export const MEMBERSHIP_ITEMS_DEFAULTS = [{
   code: '0220',
 }];
 
+
 export const DAYS = [
   'sunday',
   'monday',
@@ -33,14 +34,17 @@ export const DAYS = [
   'saturday',
 ];
 
+
 export const SEX_TYPES = {
   M: 'Male',
   F: 'Female',
 };
 
+
 export const PREFERRED_CONTACT_METHODS = {
   office: 'I will contact the office',
 };
+
 
 export const USER_TYPES = {
   admin: 'Admin',
@@ -48,11 +52,13 @@ export const USER_TYPES = {
   dentist: 'Dentist',
 };
 
+
 export const MEMBER_RELATIONSHIP_TYPES = {
   partner: 'Partner',
   son: 'Son',
   daughter: 'Daughter',
 };
+
 
 export const EMAIL_SUBJECTS = {
   client: {
@@ -62,6 +68,18 @@ export const EMAIL_SUBJECTS = {
     signup: 'Welcome',
   }
 };
+
+
+export const SUBSCRIPTION_STATES = [
+  'active',
+  'canceled',
+  'inactive',
+  'past_due',
+];
+
+
+export const RECOMMENDED_DISCOUNT = 25;
+
 
 export default {
   SEX_TYPES,

@@ -55,11 +55,77 @@ function getDentist(req, res, next) {
 }
 
 
+function getClients(req, res, next) {
+  return db.User.findAll({
+    attributes: ['id', 'firstName', 'lastName', 'avatar', 'email',
+      'createdAt', 'contactMethod'],
+    include: [{
+      as: 'clientSubscriptions',
+      model: db.Subscription,
+      where: {
+        dentistId: req.user.get('id'),
+      },
+      include: [{
+        attributes: ['name', 'default'],
+        model: db.Membership,
+      }]
+    }, {
+      as: 'familyMembers',
+      model: db.FamilyMember,
+    }, {
+      as: 'phoneNumbers',
+      model: db.Phone,
+    }],
+    subquery: false,
+  }).then(clients => {
+    const result = [];
+
+    clients.forEach(client => {
+      const item = client.toJSON();
+
+      const data = {
+        firstName: item.firstName,
+        lastName: item.lastName,
+        email: item.email,
+        dentistInfo: item.dentistInfo,
+        createdAt: item.createdAt,
+        subscriptions: [],
+        familyMembers: item.familyMembers,
+        contactMethod: item.contactMethod,
+        phoneNumbers: item.phoneNumbers,
+      };
+
+      item.clientSubscriptions.forEach(subscription => {
+        data.subscriptions.push({
+          total: subscription.total,
+          startAt: subscription.startAt,
+          endAt: subscription.endAt,
+          membership: subscription.Membership,
+        });
+      });
+
+      result.push(data);
+    });
+    // format data
+    res.json({ data: result });
+  }).catch((error) => {
+    next(error);
+  });
+}
+
+
 router
-  .route('/')
+  .route('/dentist')
   .get(
     passport.authenticate('jwt', { session: false }),
     getDentist);
+
+
+router
+  .route('/clients')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    getClients);
 
 
 export default router;

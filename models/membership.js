@@ -1,3 +1,6 @@
+import { updateTotalMembership } from '../utils/helpers';
+
+
 export default function (sequelize, DataTypes) {
   const Membership = sequelize.define('Membership', {
     name: {
@@ -6,6 +9,11 @@ export default function (sequelize, DataTypes) {
     },
     price: {
       type: new DataTypes.DECIMAL(6, 2),
+      allowNull: false,
+    },
+    withDiscount: {
+      type: new DataTypes.DECIMAL(6, 2),
+      defaultValue: 0,
       allowNull: false,
     },
     description: {
@@ -39,6 +47,11 @@ export default function (sequelize, DataTypes) {
     },
   }, {
     tableName: 'memberships',
+    hooks: {
+      beforeCreate: updateTotalMembership,
+      beforeUpdate: updateTotalMembership,
+      beforeSave: updateTotalMembership,
+    },
     classMethods: {
       associate(models) {
         Membership.belongsTo(models.User, { foreignKey: 'userId' });
