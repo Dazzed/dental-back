@@ -32,14 +32,26 @@ const router = new Router();
 // util methods
 
 function createDentistInfo(user) {
-  user.createMembership({
-    name: 'Default',
-    default: true,
-    isActive: true,
-    price: 0,
-  }).then((membership) => {
+  Promise.all([
+    user.createMembership({
+      name: 'default membership',
+      default: true,
+      isActive: true,
+      price: 0,
+      withDiscount: 0,
+    }),
+
+    user.createMembership({
+      name: 'default child membership',
+      default: true,
+      isActive: true,
+      withDiscount: 0,
+      price: 0,
+    }),
+  ]).then(([adult, child]) => {
     user.createDentistInfo({
-      membershipId: membership.get('id'),
+      membershipId: adult.get('id'),
+      childMembershipId: child.get('id'),
     }).then((info) => {
       DAYS.forEach(item => {
         info.createWorkingHour({ day: item });
@@ -47,7 +59,14 @@ function createDentistInfo(user) {
     });
 
     MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
-      membership.createMembershipItem({
+      adult.createItem({
+        pricingCode: item.code,
+        price: 0,
+      });
+    });
+
+    MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
+      child.createItem({
         pricingCode: item.code,
         price: 0,
       });

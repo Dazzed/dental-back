@@ -1,3 +1,6 @@
+import { SUBSCRIPTION_STATES } from '../config/config';
+
+
 export default function (sequelize, DataTypes) {
   const Subscription = sequelize.define('Subscription', {
     total: {
@@ -12,6 +15,14 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    paidAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    status: {
+      type: new DataTypes.ENUM(SUBSCRIPTION_STATES),
+      defaultValue: 'inactive',
+    }
   }, {
     tableName: 'subscriptions',
     classMethods: {

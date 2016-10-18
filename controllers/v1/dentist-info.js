@@ -3,6 +3,7 @@ import passport from 'passport';
 import _ from 'lodash';
 
 import db from '../../models';
+import { updateTotalMembership } from '../../utils/helpers';
 
 import {
   NotFoundError,
@@ -57,9 +58,34 @@ function getDentistInfoFromParams(req, res, next) {
         },
       }],
     }, {
+      model: db.Membership,
+      as: 'childMembership',
+      attributes: {
+        exclude: ['isDeleted', 'default', 'userId'],
+      },
+      include: [{
+        model: db.MembershipItem,
+        as: 'items',
+        attributes: {
+          exclude: ['membershipId'],
+        },
+      }],
+    }, {
       model: db.Service,
       as: 'services',
     }],
+    order: [
+      [
+        { model: db.Membership, as: 'membership' },
+        { model: db.MembershipItem, as: 'items' },
+        'id', 'asc'
+      ],
+      [
+        { model: db.Membership, as: 'childMembership' },
+        { model: db.MembershipItem, as: 'items' },
+        'id', 'asc'
+      ]
+    ]
   };
 
   if (req.params.dentistInfoId) {
@@ -133,13 +159,6 @@ function updateDentistInfo(req, res, next) {
         zipCode: req.body.zipCode,
       }));
 
-      // update membership
-      queries.push(db.Membership.update({
-        recommendedFee: req.body.membership.recommendedFee,
-        activationCode: req.body.membership.activationCode,
-        discount: req.body.membership.discount,
-      }, { where: { id: info.get('membershipId') } }));
-
       // update membership items
       req.body.membership.items.forEach(item => {
         queries.push(db.MembershipItem.update({
@@ -151,6 +170,42 @@ function updateDentistInfo(req, res, next) {
           },
         }));
       });
+
+      updateTotalMembership(req.body.membership);
+
+      // update membership
+      queries.push(db.Membership.update({
+        recommendedFee: req.body.membership.recommendedFee,
+        activationCode: req.body.membership.activationCode,
+        discount: req.body.membership.discount,
+        price: req.body.membership.price,
+        withDiscount: req.body.membership.withDiscount,
+      }, { where: { id: info.get('membershipId') } }));
+
+
+      // update child membership items
+      req.body.childMembership.items.forEach(item => {
+        queries.push(db.MembershipItem.update({
+          price: item.price,
+        }, {
+          where: {
+            membershipId: info.get('childMembershipId'),
+            pricingCode: item.pricingCode,
+          },
+        }));
+      });
+
+      updateTotalMembership(req.body.childMembership);
+
+      // update membership
+      queries.push(db.Membership.update({
+        recommendedFee: req.body.childMembership.recommendedFee,
+        activationCode: req.body.childMembership.activationCode,
+        discount: req.body.childMembership.discount,
+        price: req.body.childMembership.price,
+        withDiscount: req.body.childMembership.withDiscount,
+      }, { where: { id: info.get('childMembershipId') } }));
+
 
       // update working hours
       req.body.workingHours.forEach(workingHour => {
