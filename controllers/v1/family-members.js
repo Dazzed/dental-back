@@ -2,6 +2,7 @@ import { Router } from 'express';
 import passport from 'passport';
 import _ from 'lodash';
 import HTTPStatus from 'http-status';
+import moment from 'moment';
 
 import db from '../../models';
 
@@ -138,7 +139,41 @@ function addFamilyMember(req, res, next) {
     data.userId = req.body.userId;
   }
 
+  let subscription;
+
   return db.FamilyMember.create(data).then((member) => {
+    // NOTE: work on latest subscription
+    // TODO: improve query
+    db.Subscription.find({
+      attributes: ['dentistId', 'id'],
+      where: {
+        clientId: req.user.get('id'),
+      },
+      raw: true,
+    }).then(_subscription => {
+      subscription = _subscription;
+
+      return db.DentistInfo.find({
+        attributes: ['membershipId', 'childMembershipId'],
+        where: {
+          userId: subscription.dentistId,
+        },
+        raw: true,
+      });
+    }).then(info => {
+      const years = moment().diff(member.get('birthDate'), 'years', false);
+      if (years < 13) {
+        return db.Membership.find({ where: { id: info.childMembershipId } });
+      }
+      return db.Membership.find({ where: { id: info.membershipId } });
+    }).then(membership =>
+      member.createSubscription({
+        total: membership.price,
+        monthly: membership.monthly,
+        subscriptionId: subscription.id,
+      })
+    );
+
     res.status(HTTPStatus.CREATED);
     res.json({ data: member.toJSON() });
   });
@@ -161,7 +196,47 @@ function updateFamilyMember(req, res, next) {
     data.userId = req.body.userId;
   }
 
+  const firstYears = moment()
+    .diff(req.locals.familyMember.get('birthDate'), 'years', false);
+
   return req.locals.familyMember.update(data).then((member) => {
+    const years = moment().diff(member.get('birthDate'), 'years', false);
+    if (years !== firstYears) {
+      let subscription;
+      // TODO: improve query
+      db.Subscription.find({
+        attributes: ['dentistId', 'id'],
+        where: {
+          clientId: req.user.get('id'),
+        },
+        raw: true,
+      }).then(_subscription => {
+        subscription = _subscription;
+
+        return db.DentistInfo.find({
+          attributes: ['membershipId', 'childMembershipId'],
+          where: {
+            userId: subscription.dentistId,
+          },
+          raw: true,
+        });
+      }).then(info => {
+        if (years < 13) {
+          return db.Membership.find({ where: { id: info.childMembershipId } });
+        }
+        return db.Membership.find({ where: { id: info.membershipId } });
+      }).then(membership =>
+        // FIXME: only update current subscription
+        db.MemberSubscription.update({
+          total: membership.price,
+          monthly: membership.monthly,
+          subscriptionId: subscription.id,
+        }, { where: {
+          memberId: member.get('id'),
+          subscriptionId: subscription.id,
+        } })
+      );
+    }
     res.json({ data: member.toJSON() });
   });
 }

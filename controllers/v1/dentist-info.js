@@ -180,6 +180,7 @@ function updateDentistInfo(req, res, next) {
         discount: req.body.membership.discount,
         price: req.body.membership.price,
         withDiscount: req.body.membership.withDiscount,
+        monthly: req.body.membership.monthly,
       }, { where: { id: info.get('membershipId') } }));
 
 
@@ -204,6 +205,7 @@ function updateDentistInfo(req, res, next) {
         discount: req.body.childMembership.discount,
         price: req.body.childMembership.price,
         withDiscount: req.body.childMembership.withDiscount,
+        monthly: req.body.childMembership.monthly,
       }, { where: { id: info.get('childMembershipId') } }));
 
 
