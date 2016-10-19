@@ -37,7 +37,11 @@ export default function (sequelize, DataTypes) {
   }, {
     tableName: 'familyMembers',
     classMethods: {
-      associate() {
+      associate(models) {
+        FamilyMember.hasMany(models.MemberSubscription, {
+          as: 'subscriptions',
+          foreignKey: 'memberId',
+        });
       }
     }
   });

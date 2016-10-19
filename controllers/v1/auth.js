@@ -39,6 +39,7 @@ function createDentistInfo(user) {
       isActive: true,
       price: 0,
       withDiscount: 0,
+      monthly: 0,
     }),
 
     user.createMembership({
@@ -47,6 +48,7 @@ function createDentistInfo(user) {
       isActive: true,
       withDiscount: 0,
       price: 0,
+      monthly: 0,
     }),
   ]).then(([adult, child]) => {
     user.createDentistInfo({
@@ -112,18 +114,24 @@ function normalUserSignup(req, res, next) {
       });
     })
     .then(user => {
-      db.Membership.find({
-        attributes: ['price', 'id'],
-        where: { default: true, isActive: true, userId: req.body.dentistId },
-        raw: true,
-      }).then(membership => {
-        if (membership) {
+      db.DentistInfo.find({
+        attributes: ['membershipId'],
+        where: { userId: req.body.dentistId },
+        include: [{
+          model: db.Membership,
+          as: 'membership',
+          attributes: ['id', 'price', 'monthly'],
+        }]
+      }).then(info => {
+        if (info) {
+          const membership = info.membership.toJSON();
           const today = moment();
 
           db.Subscription.create({
             startAt: today,
             endAt: today.add(1, 'months'),
             total: membership.price,
+            monthly: membership.monthly,
             membershipId: membership.id,
             clientId: user.get('id'),
             dentistId: req.body.dentistId,

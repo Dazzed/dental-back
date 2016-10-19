@@ -11,6 +11,11 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.DECIMAL(6, 2),
       allowNull: false,
     },
+    monthly: {
+      type: new DataTypes.DECIMAL(6, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
     withDiscount: {
       type: new DataTypes.DECIMAL(6, 2),
       defaultValue: 0,

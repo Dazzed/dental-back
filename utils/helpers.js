@@ -14,11 +14,13 @@ export function updateTotalMembership(membership) {
 
     if (membership.recommendedFee) {
       withDiscount = withDiscount.subtract(
-        withDiscount.multiply(membership.discount / 100)
+        withDiscount.multiplyPercent(membership.discount)
       );
     }
 
     membership.price = total.dollars();
     membership.withDiscount = withDiscount.dollars();
+    membership.monthly = new Change({ cents: withDiscount.cents / 12 });
+    membership.monthly = membership.monthly.dollars();
   }
 }

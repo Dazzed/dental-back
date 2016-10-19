@@ -36,6 +36,8 @@ export default function (sequelize, DataTypes) {
           as: 'client',
         });
 
+        // NOTE: Maybe this is not useful, we can know the dentistId from
+        // membership
         Subscription.belongsTo(models.User, {
           foreignKey: 'dentistId',
           as: 'dentist',
