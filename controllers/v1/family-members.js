@@ -82,7 +82,11 @@ function getFamilyMembers(req, res, next) {
 
   const query = {
     where: { },
-    raw: true
+    include: [{
+      model: db.MemberSubscription,
+      as: 'subscriptions',
+      attributes: { exclude: ['memberId', 'membershipId', 'subscriptionId'] },
+    }]
   };
 
   // if not admin limit query to related data userId
@@ -91,7 +95,12 @@ function getFamilyMembers(req, res, next) {
   }
 
   return db.FamilyMember.findAll(query).then((members) =>
-    res.json({ data: members || [] })
+      res.json({ data: members.map(member => {
+        const m = member.toJSON();
+        const r = _.omit(m, 'subscriptions');
+        r.subscription = m.subscriptions[0];
+        return r;
+      }) })
   ).catch((error) => {
     next(error);
   });
