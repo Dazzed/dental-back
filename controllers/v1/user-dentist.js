@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
+import _ from 'lodash';
 
 import db from '../../models';
 
@@ -18,15 +19,28 @@ function getDentist(req, res, next) {
         clientId: req.user.get('id'),
       },
       include: [{
-        attributes: ['name', 'default'],
+        attributes: ['name', 'default', 'monthly'],
         model: db.Membership,
       }]
     }, {
-      attributes: {
-        exclude: ['id', 'membershipId', 'userId'],
-      },
       as: 'dentistInfo',
       model: db.DentistInfo,
+      attributes: {
+        exclude: ['id', 'membershipId', 'userId', 'childMembershipId'],
+      },
+      include: [{
+        model: db.Membership,
+        as: 'membership',
+        attributes: {
+          exclude: ['isDeleted', 'default', 'userId'],
+        },
+      }, {
+        model: db.Membership,
+        as: 'childMembership',
+        attributes: {
+          exclude: ['isDeleted', 'default', 'userId'],
+        },
+      }],
     }],
     subquery: false,
   }).then((user) => {
@@ -45,6 +59,7 @@ function getDentist(req, res, next) {
         startAt: subscription.startAt,
         endAt: subscription.endAt,
         monthly: subscription.monthly,
+        status: subscription.status,
         membership: subscription.Membership,
       });
     });
@@ -73,6 +88,13 @@ function getClients(req, res, next) {
     }, {
       as: 'familyMembers',
       model: db.FamilyMember,
+      include: [{
+        model: db.MemberSubscription,
+        as: 'subscriptions',
+        attributes: {
+          exclude: ['memberId', 'membershipId', 'subscriptionId']
+        },
+      }]
     }, {
       as: 'phoneNumbers',
       model: db.Phone,
@@ -91,10 +113,16 @@ function getClients(req, res, next) {
         dentistInfo: item.dentistInfo,
         createdAt: item.createdAt,
         subscriptions: [],
-        familyMembers: item.familyMembers,
         contactMethod: item.contactMethod,
         phoneNumbers: item.phoneNumbers,
       };
+
+
+      data.familyMembers = item.familyMembers.map(member => {
+        const r = _.omit(member, 'subscriptions');
+        r.subscription = member.subscriptions[0];
+        return r;
+      });
 
       item.clientSubscriptions.forEach(subscription => {
         data.subscriptions.push({
