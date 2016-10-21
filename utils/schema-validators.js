@@ -190,7 +190,17 @@ export const MEMBERSHIP = {
 
 
 export const MESSAGE = {
-  body: {
+  message: {
+    notEmpty: true,
+  },
+};
+
+
+export const REVIEW = {
+  title: {
+    notEmpty: true,
+  },
+  review: {
     notEmpty: true,
   },
 };

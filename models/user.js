@@ -136,6 +136,17 @@ export default function (sequelize, DataTypes) {
           as: 'clientSubscriptions',
         });
 
+        // reviews relationship
+        User.hasMany(models.Review, {
+          foreignKey: 'dentistId',
+          as: 'dentistReviews',
+        });
+
+        User.hasMany(models.Review, {
+          foreignKey: 'clientId',
+          as: 'clientReviews',
+        });
+
         User.belongsTo(models.DentistSpecialty, {
           foreignKey: 'dentistSpecialtyId',
           as: 'dentistSpecialty',
