@@ -47,6 +47,7 @@ function getDentist(req, res, next) {
     // format data
     const result = user.toJSON();
     const data = {
+      id: result.id,
       firstName: result.firstName,
       lastName: result.lastName,
       dentistInfo: result.dentistInfo,
@@ -98,6 +99,10 @@ function getClients(req, res, next) {
     }, {
       as: 'phoneNumbers',
       model: db.Phone,
+    }, {
+      as: 'clientReviews',
+      model: db.Review,
+      attributes: { exclude: ['clientId', 'dentistId'] },
     }],
     subquery: false,
   }).then(clients => {
@@ -115,6 +120,7 @@ function getClients(req, res, next) {
         subscriptions: [],
         contactMethod: item.contactMethod,
         phoneNumbers: item.phoneNumbers,
+        latestReview: _.maxBy(item.clientReviews, _i => _i.id),
       };
 
 

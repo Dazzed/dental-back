@@ -7,6 +7,7 @@ import familyMembers from './family-members';
 import services from './services';
 import dentistSpecialties from './dentist-specialties';
 import messages from './messages';
+import dentists from './dentists';
 import userDentist from './user-dentist';
 
 // just one to one resources
@@ -21,6 +22,7 @@ router.use('/users/:userId/family-members', familyMembers);
 router.use('/users/:userId/memberships', memberships);
 router.use('/users/:userId/messages', messages);
 router.use('/users/:userId', userDentist);
+router.use('/dentists/:userId', dentists);
 
 // just one to one resources
 router.use('/users/:userId/dentist-info', dentistInfo);
