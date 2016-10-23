@@ -1,10 +1,10 @@
 module.exports = {
   development: {
-    username: process.env.POSTGRESQL_USERNAME,
-    password: process.env.POSTGRESQL_PASSWORD,
+    username: process.env.POSTGRESQL_USERNAME || 'dental',
+    password: process.env.POSTGRESQL_PASSWORD || 'dental',
     database: process.env.POSTGRESQL_DATABASE || 'dental',
-    host: process.env.POSTGRESQL_HOST,
-    port: process.env.POSTGRESQL_PORT,
+    host: process.env.POSTGRESQL_HOST || 'localhost',
+    port: process.env.POSTGRESQL_PORT || 5432,
     dialect: 'postgres'
   },
   test: {
