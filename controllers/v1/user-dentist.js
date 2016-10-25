@@ -112,6 +112,7 @@ function getClients(req, res, next) {
       const item = client.toJSON();
 
       const data = {
+        id: item.id,
         firstName: item.firstName,
         lastName: item.lastName,
         email: item.email,
