@@ -21,6 +21,7 @@ function getMessages(req, res, next) {
     where: {},
     include: [{
       model: db.Message,
+      as: 'messages',
     }],
   };
 
@@ -40,8 +41,19 @@ function getMessages(req, res, next) {
   }
 
   db.Conversation
-    .findAll(query)
-    .then(conversation => res.json(conversation.toJSON())).catch(next);
+    .find(query)
+    .then(conversation => {
+      if (!conversation) {
+        return res.json({
+          data: {
+            message: []
+          }
+        });
+      }
+      return res.json({
+        data: conversation.toJSON()
+      });
+    }).catch(next);
 }
 
 
