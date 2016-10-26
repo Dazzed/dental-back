@@ -11,7 +11,7 @@ playbooks/playbook.retry
 .vagrant
 Vagrantfile
 
-.npm-debug.log
+npm-debug.log*
 webpack-assets.json
 
 static/dist/
