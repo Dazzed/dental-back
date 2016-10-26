@@ -62,11 +62,12 @@ export const MEMBER_RELATIONSHIP_TYPES = {
 
 export const EMAIL_SUBJECTS = {
   client: {
-    signup: 'Welcome',
+    activation_required: 'Activate Your Account',
   },
   dentist: {
-    signup: 'Welcome',
-  }
+    activation_required: 'Activate Your Account',
+  },
+  activation_complete: 'Welcome to the Dental Marketplace!',
 };
 
 

@@ -95,9 +95,9 @@ function normalUserSignup(req, res, next) {
           } else {
             resolve(createdUser);
 
-            res.mailer.send('auth/client/signup', {
+            res.mailer.send('auth/client/activation_required', {
               to: user.email,
-              subject: EMAIL_SUBJECTS.client.signup,
+              subject: EMAIL_SUBJECTS.client.activation_required,
               site: process.env.SITE,
               user: createdUser,
             }, (err, info) => {
@@ -179,9 +179,9 @@ function dentistUserSignup(req, res, next) {
           } else {
             resolve(createdUser);
             createDentistInfo(createdUser);
-            res.mailer.send('auth/dentist/signup', {
+            res.mailer.send('auth/dentist/activation_required', {
               to: user.email,
-              subject: EMAIL_SUBJECTS.client.signup,
+              subject: EMAIL_SUBJECTS.client.activation_required,
               site: process.env.SITE,
               user: createdUser,
             }, (err, info) => {
@@ -226,7 +226,24 @@ function activate(req, res, next) {
         // activate it
         return user
           .update({ verified: true, activationKey: null })
-          .then(() => res.json({}));
+          .then(() => {
+            res.mailer.send('auth/activation_complete', {
+              to: user.email,
+              subject: EMAIL_SUBJECTS.activation_complete,
+              site: process.env.SITE,
+              user,
+            }, (err, info) => {
+              if (err) {
+                console.log(err);
+              }
+
+              if (process.env.NODE_ENV === 'development') {
+                console.log(info);
+              }
+            });
+
+            res.json({});
+          });
       }
 
       return next(new NotFoundError());
