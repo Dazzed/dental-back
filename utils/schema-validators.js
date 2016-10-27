@@ -204,3 +204,9 @@ export const REVIEW = {
     notEmpty: true,
   },
 };
+
+export const INVITE_PATIENT = {
+  email: {
+    notEmpty: true,
+  },
+};
