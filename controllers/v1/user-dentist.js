@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import passport from 'passport';
 import _ from 'lodash';
+import changeFactory from 'change-js';
 
 import db from '../../models';
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+const Change = changeFactory();
 
 
 const router = new Router({ mergeParams: true });
@@ -152,12 +157,120 @@ function getClients(req, res, next) {
 }
 
 
+/**
+ * Return latest bill.
+ *
+ */
+function getBill(req, res, next) {
+  // FIXME: Do better request, now just for testing
+  db.Subscription.find({
+    where: { clientId: req.user.get('id'), status: 'inactive' },
+  }).then(subscription => {
+    if (subscription) {
+      return Promise.all([
+        subscription,
+        subscription.getItems(),
+      ]);
+    }
+    return [];
+  }).then(([subscription, members]) => {
+    if (subscription) {
+      let total = new Change({ dollars: subscription.get('monthly') });
+
+      members.forEach(item => {
+        total = total.add(new Change({ dollars: item.get('monthly') }));
+      });
+
+      return res.json({
+        total: total.cents,
+      });
+    }
+
+    return res.json({});
+  }).catch(next);
+}
+
+
+function chargeBill(req, res, next) {
+  const token = req.body.token;
+
+  db.Subscription.find({
+    where: { clientId: req.user.get('id'), status: 'inactive' },
+  }).then(subscription => {
+    if (subscription) {
+      return Promise.all([
+        subscription,
+        subscription.getItems(),
+      ]);
+    }
+    return [];
+  }).then(([subscription, members]) => {
+    if (subscription) {
+      const member_subscriptions = [];
+      let total = new Change({ dollars: subscription.get('monthly') });
+      const meta = {
+        subscription_id: subscription.get('id'),
+      };
+
+      members.forEach(item => {
+        total = total.add(new Change({ dollars: item.get('monthly') }));
+        member_subscriptions.push(item.get('id'));
+      });
+
+      meta.member_subscriptions = member_subscriptions.join(',');
+
+      stripe.charges.create({
+        amount: total.cents, // Amount in cents
+        currency: 'usd',
+        source: token,
+        description: 'Subscription payment',
+        metadata: meta,
+      }, (err, charge) => {
+        if (err && err.type === 'StripeCardError') {
+          // The card has been declined
+          res.status = 400;
+          return res.json({});
+        }
+
+        if (err) {
+          // The card has been declined
+          res.status = 500;
+          return res.json({});
+        }
+
+        subscription.update({
+          paidAt: new Date(),
+          status: 'active',
+          chargeID: charge.id,
+        });
+
+        return res.json({});
+      });
+    } else {
+      return res.json({});
+    }
+  }).catch(next);
+}
+
+
 router
   .route('/dentist')
   .get(
     passport.authenticate('jwt', { session: false }),
     getDentist);
 
+
+router
+  .route('/bill')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    getBill);
+
+router
+  .route('/charge-bill')
+  .post(
+    passport.authenticate('jwt', { session: false }),
+    chargeBill);
 
 router
   .route('/clients')

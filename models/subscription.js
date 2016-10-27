@@ -27,7 +27,11 @@ export default function (sequelize, DataTypes) {
     status: {
       type: new DataTypes.ENUM(SUBSCRIPTION_STATES),
       defaultValue: 'inactive',
-    }
+    },
+    chargeID: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   }, {
     tableName: 'subscriptions',
     classMethods: {
@@ -46,6 +50,11 @@ export default function (sequelize, DataTypes) {
         Subscription.belongsTo(models.User, {
           foreignKey: 'dentistId',
           as: 'dentist',
+        });
+
+        Subscription.hasMany(models.MemberSubscription, {
+          foreignKey: 'subscriptionId',
+          as: 'items',
         });
       }
     }
