@@ -94,6 +94,7 @@ function getClients(req, res, next) {
     }, {
       as: 'familyMembers',
       model: db.FamilyMember,
+      where: { isDeleted: false },
       include: [{
         model: db.MemberSubscription,
         as: 'subscriptions',
@@ -173,7 +174,11 @@ function getBill(req, res, next) {
     if (subscription) {
       return Promise.all([
         subscription,
-        subscription.getItems(),
+        subscription.getItems({ include: [{
+          model: db.FamilyMember,
+          as: 'member',
+          where: { isDeleted: false },
+        }] }),
       ]);
     }
     return [];
@@ -209,7 +214,11 @@ function chargeBill(req, res, next) {
     if (subscription) {
       return Promise.all([
         subscription,
-        subscription.getItems(),
+        subscription.getItems({ include: [{
+          model: db.FamilyMember,
+          as: 'member',
+          where: { isDeleted: false },
+        }] }),
       ]);
     }
     return [];
