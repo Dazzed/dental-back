@@ -1,0 +1,29 @@
+{% extends '../../layout.html' %}
+
+{% block body %}
+
+<table width="100%" cellpadding="0" cellspacing="0">
+
+<tr>
+    <td class="content-block title">
+        <h2>{{ dentist.get('firstName') }} {{ dentist.get('lastName') }} has invited you to join Dental Marketplace</h2>
+    </td>
+</tr>
+
+
+<tr>
+    <td class="content-block content" style="font-style:italic;white-space:pre-line;">
+        "{{ message }}"
+    </td>
+</tr>
+
+<tr>
+    <td class="content-block" style="padding-bottom:0;">
+        <a href="{{ site }}accounts/signup?dentist={{ dentist.get('id') }}" class="btn-primary btn-green" itemprop="url">
+            Sign Up Now!
+        </a>
+    </td>
+</tr>
+
+</table>
+{% endblock %}

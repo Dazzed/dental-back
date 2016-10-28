@@ -66,6 +66,7 @@ export const EMAIL_SUBJECTS = {
   },
   dentist: {
     activation_required: 'Activate Your Account',
+    invite_patient: 'Invitation to join',
   },
   activation_complete: 'Welcome to the Dental Marketplace!',
 };
