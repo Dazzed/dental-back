@@ -143,8 +143,8 @@ function normalUserSignup(req, res, next) {
     })
     .then((user) => Promise.all([
       // This should be created so we can edit values
-      user.createPhoneNumber({ number: '' }),
-      user.createAddress({ value: '' }),
+      user.createPhoneNumber({ number: req.body.phone }),
+      user.createAddress({ value: req.body.address }),
     ]))
     .then(() => {
       res
