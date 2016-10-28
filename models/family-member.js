@@ -17,6 +17,10 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     email: {
       type: DataTypes.STRING,
       allowNull: false,

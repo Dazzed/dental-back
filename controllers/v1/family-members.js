@@ -43,6 +43,7 @@ function getFamilyMemberFromParam(req, res, next) {
   const query = {
     where: {
       id: req.params.familyMemberId,
+      isDeleted: false,
     }
   };
 
@@ -81,7 +82,7 @@ function getFamilyMembers(req, res, next) {
   }
 
   const query = {
-    where: { },
+    where: { isDeleted: false },
     include: [{
       model: db.MemberSubscription,
       as: 'subscriptions',
@@ -252,7 +253,7 @@ function updateFamilyMember(req, res, next) {
 
 
 function deleteFamilyMember(req, res) {
-  req.locals.familyMember.destroy().then(() => res.json({}));
+  req.locals.familyMember.update({ isDeleted: true }).then(() => res.json({}));
 }
 
 
