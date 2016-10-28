@@ -165,7 +165,10 @@ function getClients(req, res, next) {
 function getBill(req, res, next) {
   // FIXME: Do better request, now just for testing
   db.Subscription.find({
-    where: { clientId: req.user.get('id'), status: 'inactive' },
+    where: {
+      clientId: req.user.get('id'),
+      $or: [{ status: 'inactive' }, { status: 'active' }],
+    },
   }).then(subscription => {
     if (subscription) {
       return Promise.all([
@@ -187,6 +190,8 @@ function getBill(req, res, next) {
 
       return res.json({
         total: total.cents,
+        status: subscription.status,
+        endAt: subscription.endAt,
       });
     }
 
@@ -210,7 +215,7 @@ function chargeBill(req, res, next) {
     return [];
   }).then(([subscription, members]) => {
     if (subscription) {
-      const member_subscriptions = [];
+      const memberSubscriptions = [];
       let total = new Change({
         dollars: req.user.get('accountHolder') ?
           subscription.get('monthly') : 0,
@@ -221,12 +226,12 @@ function chargeBill(req, res, next) {
 
       members.forEach(item => {
         total = total.add(new Change({ dollars: item.get('monthly') }));
-        member_subscriptions.push(item.get('id'));
+        memberSubscriptions.push(item.get('id'));
       });
 
-      meta.member_subscriptions = member_subscriptions.join(',');
+      meta.memberSubscriptions = memberSubscriptions.join(',');
 
-      stripe.charges.create({
+      return stripe.charges.create({
         amount: total.cents, // Amount in cents
         currency: 'usd',
         source: token,
@@ -253,9 +258,9 @@ function chargeBill(req, res, next) {
 
         return res.json({});
       });
-    } else {
-      return res.json({});
     }
+
+    return res.json({});
   }).catch(next);
 }
 
