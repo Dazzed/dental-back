@@ -95,6 +95,7 @@ function getClients(req, res, next) {
       as: 'familyMembers',
       model: db.FamilyMember,
       where: { isDeleted: false },
+      required: false,
       include: [{
         model: db.MemberSubscription,
         as: 'subscriptions',
