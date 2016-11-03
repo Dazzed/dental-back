@@ -32,9 +32,10 @@ function getFamilyMemberFromParam(req, res, next) {
    * If user is not admin and try to requests paths not related
    * to that user will return forbidden.
    */
+  // FIXME: control if dentist has permission to edit
   const canEdit =
     userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-    req.user.get('type') === 'admin';
+    req.user.get('type') === 'admin' || req.user.get('type') === 'dentist';
 
   if (!canEdit) {
     return next(new ForbiddenError());
@@ -49,7 +50,7 @@ function getFamilyMemberFromParam(req, res, next) {
 
   // if not admin limit query to related data userId
   if (req.user.get('type') !== 'admin') {
-    query.where.userId = req.user.get('id');
+    query.where.userId = userId === 'me' ? req.user.get('id') : userId;
   }
 
   return db.FamilyMember.find(query).then((member) => {
@@ -122,7 +123,7 @@ function addFamilyMember(req, res, next) {
    */
   const canCreate =
     userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-    req.user.get('type') === 'admin';
+    req.user.get('type') === 'admin' || req.user.get('type') === 'dentist';
 
   if (!canCreate) {
     return next(new ForbiddenError());
@@ -142,6 +143,8 @@ function addFamilyMember(req, res, next) {
   // if user is me update id.
   if (userId === 'me') {
     data.userId = req.user.get('id');
+  } else {
+    data.userId = userId;
   }
 
   // if userId is undefined set body param
@@ -157,7 +160,7 @@ function addFamilyMember(req, res, next) {
     db.Subscription.find({
       attributes: ['dentistId', 'id'],
       where: {
-        clientId: req.user.get('id'),
+        clientId: data.userId,
       },
       raw: true,
     }).then(_subscription => {
@@ -217,7 +220,8 @@ function updateFamilyMember(req, res, next) {
       db.Subscription.find({
         attributes: ['dentistId', 'id'],
         where: {
-          clientId: req.user.get('id'),
+          clientId: req.params.userId === 'me' ?
+            req.user.get('id') : req.params.userId,
         },
         raw: true,
       }).then(_subscription => {

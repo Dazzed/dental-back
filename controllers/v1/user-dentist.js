@@ -94,6 +94,7 @@ function getClients(req, res, next) {
     }, {
       as: 'familyMembers',
       model: db.FamilyMember,
+      required: false,
       where: { isDeleted: false },
       required: false,
       include: [{
@@ -208,9 +209,11 @@ function getBill(req, res, next) {
 
 function chargeBill(req, res, next) {
   const token = req.body.token;
+  const userId =
+    req.params.userId === 'me' ? req.user.get('id') : req.params.userId;
 
   db.Subscription.find({
-    where: { clientId: req.user.get('id'), status: 'inactive' },
+    where: { clientId: userId, status: 'inactive' },
   }).then(subscription => {
     if (subscription) {
       return Promise.all([
