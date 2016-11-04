@@ -60,6 +60,9 @@ export const MEMBER_RELATIONSHIP_TYPES = {
 };
 
 
+export const CONTACT_SUPPORT_EMAIL = 'support@cawasa.com';
+
+
 export const EMAIL_SUBJECTS = {
   client: {
     activation_required: 'Activate Your Account',
@@ -69,6 +72,7 @@ export const EMAIL_SUBJECTS = {
     invite_patient: 'Invitation to join',
   },
   activation_complete: 'Welcome to the Dental Marketplace!',
+  contact_support: 'Contact Support',
 };
 
 
