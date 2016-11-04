@@ -141,17 +141,17 @@ function normalUserSignup(req, res, next) {
 
       return user;
     }).then((user) => {
-      const queries = Promise.all([
+      const queries = [
         // This should be created so we can edit values
         user.createPhoneNumber({ number: req.body.phone }),
         user.createAddress({ value: req.body.address }),
-      ]);
+      ];
 
       if (req.body.address2) {
         queries.push(user.createAddress({ value: req.body.address2 }));
       }
 
-      return queries;
+      return Promise.all(queries);
     })
     .then(() => {
       res
