@@ -4,12 +4,14 @@ import passport from 'passport';
 import db from '../../models';
 
 import {
+  CONTACT_SUPPORT_EMAIL,
   EMAIL_SUBJECTS,
 } from '../../config/constants';
 
 import {
   REVIEW,
-  INVITE_PATIENT
+  INVITE_PATIENT,
+  CONTACT_SUPPORT,
 } from '../../utils/schema-validators';
 
 import {
@@ -70,6 +72,36 @@ function invitePatient(req, res, next) { // eslint-disable-line
   });
 }
 
+
+function contactSupport(req, res, next) { // eslint-disable-line
+  req.checkBody(CONTACT_SUPPORT);
+
+  const errors = req.validationErrors(true);
+
+  if (errors) {
+    return next(new BadRequestError(errors));
+  }
+
+  res.mailer.send('contact-support/index', {
+    to: CONTACT_SUPPORT_EMAIL, // process.env.CONTACT_SUPPORT_EMAIL ??
+    subject: EMAIL_SUBJECTS.contact_support,
+    site: process.env.SITE,
+    dentist: req.user,
+    message: req.body.message,
+  }, (err, info) => {
+    if (err) {
+      console.log(err);
+      return next(new BadRequestError({}));
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(info);
+    }
+
+    return res.json({});
+  });
+}
+
 router
   .route('/review')
   .post(
@@ -82,6 +114,11 @@ router
     passport.authenticate('jwt', { session: false }),
     invitePatient);
 
+router
+  .route('/contact_support')
+  .post(
+    passport.authenticate('jwt', { session: false }),
+    contactSupport);
 
 export default router;
 

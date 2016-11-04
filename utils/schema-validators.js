@@ -210,3 +210,9 @@ export const INVITE_PATIENT = {
     notEmpty: true,
   },
 };
+
+export const CONTACT_SUPPORT = {
+  message: {
+    notEmpty: true,
+  }
+};
