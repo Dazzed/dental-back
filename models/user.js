@@ -84,6 +84,10 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    payingMember: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
