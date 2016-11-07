@@ -247,29 +247,27 @@ function chargeBill(req, res, next) {
       const body = {
         transaction: {
           payment_method_token: req.body.token,
-          amount: total,
+          amount: total.cents,
           currency_code: 'USD',
           retain_on_success: true,
           description: JSON.stringify(meta),
         },
       };
 
+      const encodeString = (new Buffer('MY4WccjEpI34lIikNK7qDAXpRVQ:IXxLQd4Nvur5nv4Od2ZBgN0yWS0WpzYZlM9IzysVdGO4z3rc44sngVcW0n4SxibI').toString('base64'));  // eslint-disable-line
+
       const headers = {
         'Access-Control-Allow-Origin': '*',
-        Authorization: 'Basic o5ieebccc8qfqhUcOjvEUXELKmtgRMiHBbbZb57OTjHSe1Bus4O2UY5coUZ4rUlT',
+        'Content-Type': 'application/json',
+        Authorization: `Basic ${encodeString}`,
       };
 
       fetch(url, {
         method: 'POST',
-        body,
+        body: JSON.stringify(body),
         headers,
       }).then(response => response.json()
       ).then(response => {
-        console.log(response.body);
-        console.log(response.status);
-        console.log(typeof response.body);
-        console.log('Response : ', response);
-
         if (response.transaction && response.transaction.response.success) {
           subscription.update({
             paidAt: new Date(),
