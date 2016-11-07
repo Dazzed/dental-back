@@ -9,12 +9,96 @@ import {
 } from '../../utils/schema-validators';
 
 import {
+  NotFoundError,
   BadRequestError,
 } from '../errors';
 
 
 const router = new Router({ mergeParams: true });
 
+
+function userQueryHelper(userType, userId, recipentId) {
+  const where = {};
+
+  if (userType === 'client') {
+    where.clientId = userId;
+    where.dentistId = recipentId;
+  } else if (userType === 'dentist') {
+    where.clientId = recipentId;
+    where.dentistId = userId;
+  }
+
+  return where;
+}
+
+function getUnreadCount(req, res, next) {
+  const where = userQueryHelper(
+    req.user.get('type'),
+    req.user.get('id'),
+    req.params.recipentId
+  );
+
+  db.Conversation
+    .find({ where })
+    .then(conversation => {
+      if (!conversation) {
+        return res.json({
+          data: { unread_count: 0 }
+        });
+      }
+
+      return conversation.id;
+    })
+    .then(conversationId => {
+      db.Message
+        .count({
+          where: {
+            isRead: false,
+            conversationId,
+            userId: req.params.recipentId,
+          }
+        })
+        .then(count => {
+          res.json({
+            data: { unread_count: count }
+          });
+        });
+    })
+    .catch(next);
+}
+
+function makeAllRead(req, res, next) {
+  const where = userQueryHelper(
+    req.user.get('type'),
+    req.user.get('id'),
+    req.params.recipentId
+  );
+
+  db.Conversation
+    .find({ where })
+    .then(conversation => {
+      if (!conversation) {
+        return next(new NotFoundError());
+      }
+
+      return conversation.id;
+    })
+    .then(conversationId => {
+      db.Message.update({
+        isRead: true
+      }, {
+        where: {
+          isRead: false,
+          conversationId,
+          userId: req.params.recipentId,
+        }
+      })
+      .then(() => {
+        res.json({});
+      });
+    })
+    .catch(next);
+}
 
 function getMessages(req, res, next) {
   const query = {
@@ -25,34 +109,22 @@ function getMessages(req, res, next) {
     }],
   };
 
-  switch (req.user.get('type')) {
-    case 'client':
-      query.where.clientId = req.user.get('id');
-      query.where.dentistId = req.params.recipentId;
-      break;
-
-    case 'dentist':
-      query.where.dentistId = req.user.get('id');
-      query.where.clientId = req.params.recipentId;
-      break;
-
-    default:
-      break;
-  }
+  query.where = userQueryHelper(
+    req.user.get('type'),
+    req.user.get('id'),
+    req.params.recipentId
+  );
 
   db.Conversation
     .find(query)
     .then(conversation => {
       if (!conversation) {
-        return res.json({
-          data: {
-            message: []
-          }
+        next(new NotFoundError());
+      } else {
+        res.json({
+          data: conversation.toJSON()
         });
       }
-      return res.json({
-        data: conversation.toJSON()
-      });
     }).catch(next);
 }
 
@@ -66,22 +138,11 @@ function addMessage(req, res, next) {
     return next(new BadRequestError(errors));
   }
 
-  const data = {};
-
-  switch (req.user.get('type')) {
-    case 'client':
-      data.clientId = req.user.get('id');
-      data.dentistId = req.params.recipentId;
-      break;
-
-    case 'dentist':
-      data.dentistId = req.user.get('id');
-      data.clientId = req.params.recipentId;
-      break;
-
-    default:
-      break;
-  }
+  const data = userQueryHelper(
+    req.user.get('type'),
+    req.user.get('id'),
+    req.params.recipentId
+  );
 
   return db.Conversation
     .find({ where: data })
@@ -105,6 +166,17 @@ function addMessage(req, res, next) {
     .catch(next);
 }
 
+router
+  .route('/:recipentId/unread_count')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    getUnreadCount);
+
+router
+  .route('/:recipentId/mark_all_read')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    makeAllRead);
 
 router
   .route('/:recipentId')
