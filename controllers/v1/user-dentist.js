@@ -2,10 +2,9 @@ import { Router } from 'express';
 import passport from 'passport';
 import _ from 'lodash';
 import changeFactory from 'change-js';
+import fetch from 'node-fetch';
 
 import db from '../../models';
-
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const Change = changeFactory();
 
@@ -208,7 +207,6 @@ function getBill(req, res, next) {
 
 
 function chargeBill(req, res, next) {
-  const token = req.body.token;
   const userId =
     req.params.userId === 'me' ? req.user.get('id') : req.params.userId;
 
@@ -244,36 +242,54 @@ function chargeBill(req, res, next) {
 
       meta.memberSubscriptions = memberSubscriptions.join(',');
 
-      return stripe.charges.create({
-        amount: total.cents, // Amount in cents
-        currency: 'usd',
-        source: token,
-        description: 'Subscription payment',
-        metadata: meta,
-      }, (err, charge) => {
-        if (err && err.type === 'StripeCardError') {
-          // The card has been declined
-          res.status = 400;
-          return res.json({});
+      const url = 'https://core.spreedly.com/v1/gateways/UNdlfrv8cVnLhV9c4SFRfgfgCwP/purchase.json';
+
+      const body = {
+        transaction: {
+          payment_method_token: req.body.token,
+          amount: total,
+          currency_code: 'USD',
+          retain_on_success: true,
+          description: JSON.stringify(meta),
+        },
+      };
+
+      const headers = {
+        'Access-Control-Allow-Origin': '*',
+        Authorization: 'Basic o5ieebccc8qfqhUcOjvEUXELKmtgRMiHBbbZb57OTjHSe1Bus4O2UY5coUZ4rUlT',
+      };
+
+      fetch(url, {
+        method: 'POST',
+        body,
+        headers,
+      }).then(response => response.json()
+      ).then(response => {
+        console.log(response.body);
+        console.log(response.status);
+        console.log(typeof response.body);
+        console.log('Response : ', response);
+
+        if (response.transaction && response.transaction.response.success) {
+          subscription.update({
+            paidAt: new Date(),
+            status: 'active',
+            chargeID: req.body.token,
+          });
+
+          return res.json({ status: 'active' });
         }
 
-        if (err) {
-          // The card has been declined
-          res.status = 500;
-          return res.json({});
-        }
-
-        subscription.update({
-          paidAt: new Date(),
-          status: 'active',
-          chargeID: charge.id,
-        });
-
+        return res.json({ status: subscription.status });
+        // (token => {
+        //  alert('Thank you for subscribing!');
+      }).catch(error => {
+        console.log('Error : ', error);
+        // The card has been declined
+        res.status = 400;
         return res.json({});
       });
     }
-
-    return res.json({});
   }).catch(next);
 }
 

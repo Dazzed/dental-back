@@ -33,6 +33,7 @@
     "lodash": "^4.14.2",
     "moment": "^2.15.1",
     "morgan": "^1.7.0",
+    "node-fetch": "^1.6.3",
     "nunjucks": "^2.4.2",
     "passport": "^0.3.2",
     "passport-jwt": "^2.1.0",
