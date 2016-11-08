@@ -30,6 +30,7 @@ const app = express();
 
 // require models
 require('./models');
+require('csv-express');
 
 // App Setup
 if (process.env.NODE_ENV !== 'test') {
