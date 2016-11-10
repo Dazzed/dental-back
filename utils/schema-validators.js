@@ -90,9 +90,9 @@ export const NORMAL_USER_REGISTRATION = {
     isEmail: true,
     notEmpty: true,
   },
-  tos: {
-    notEmpty: true,
-  },
+  // tos: {
+  //   notEmpty: true,
+  // },
   dentistId: {
     notEmpty: true,
     existsInDB: {
