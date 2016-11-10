@@ -1,6 +1,6 @@
 import {
   SEX_TYPES,
-  // PREFERRED_CONTACT_METHODS,
+  PREFERRED_CONTACT_METHODS,
   MEMBER_RELATIONSHIP_TYPES,
 } from '../config/constants';
 
@@ -44,11 +44,11 @@ export const NORMAL_USER_EDIT = {
   zipCode: {
     notEmpty: true,
   },
-  // contactMethod: {
-  //   isIn: {
-  //     options: [Object.keys(PREFERRED_CONTACT_METHODS)],
-  //   },
-  // },
+  contactMethod: {
+    isIn: {
+      options: [Object.keys(PREFERRED_CONTACT_METHODS)],
+    },
+  },
 };
 
 
