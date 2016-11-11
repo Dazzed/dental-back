@@ -21,7 +21,8 @@ import {
 
 import {
   EMAIL_SUBJECTS,
-  MEMBERSHIP_ITEMS_DEFAULTS,
+  ADULT_MEMBERSHIP_ITEMS_DEFAULTS,
+  CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS,
   DAYS,
 } from '../../config/constants';
 
@@ -60,14 +61,14 @@ function createDentistInfo(user) {
       });
     });
 
-    MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
+    ADULT_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
       adult.createItem({
         pricingCode: item.code,
         price: 0,
       });
     });
 
-    MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
+    CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
       child.createItem({
         pricingCode: item.code,
         price: 0,
