@@ -1,6 +1,31 @@
 // TODO: update with real data before go production
-export const MEMBERSHIP_ITEMS_DEFAULTS = [{
+export const ADULT_MEMBERSHIP_ITEMS_DEFAULTS = [{
   code: '1110',
+}, {
+  code: '0150'
+}, {
+  code: '0120',
+}, {
+  code: '4910',
+}, {
+  code: '1208'
+}, {
+  code: '0274',
+}, {
+  code: '0272',
+}, {
+  code: '0210'
+}, {
+  code: '0330',
+}, {
+  code: '0140',
+}, {
+  code: '0220',
+}];
+
+
+export const CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS = [{
+  code: '0150',
 }, {
   code: '1120'
 }, {
@@ -8,7 +33,7 @@ export const MEMBERSHIP_ITEMS_DEFAULTS = [{
 }, {
   code: '4910',
 }, {
-  code: '1208'
+  code: '1206'
 }, {
   code: '0274',
 }, {
