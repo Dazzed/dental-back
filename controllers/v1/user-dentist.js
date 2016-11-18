@@ -211,6 +211,11 @@ function chargeBill(req, res, next) {
 
   db.Subscription.find({
     where: { clientId: userId, status: 'inactive' },
+    include: [{
+      attributes: ['payingMember'],
+      model: db.User,
+      as: 'client',
+    }]
   }).then(subscription => {
     if (subscription) {
       return Promise.all([
@@ -227,7 +232,7 @@ function chargeBill(req, res, next) {
     if (subscription) {
       const memberSubscriptions = [];
       let total = new Change({
-        dollars: req.user.get('accountHolder') ?
+        dollars: subscription.get('client').get('payingMember') ?
           subscription.get('monthly') : 0,
       });
       const meta = {
