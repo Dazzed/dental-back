@@ -78,7 +78,7 @@ function getDentist(req, res, next) {
 
 function getClients(req, res, next) {
   return db.User.findAll({
-    attributes: ['id', 'firstName', 'lastName', 'avatar', 'email',
+    attributes: ['id', 'firstName', 'lastName', 'birthDate', 'avatar', 'email',
       'createdAt', 'contactMethod', 'payingMember'],
     include: [{
       as: 'clientSubscriptions',
@@ -122,6 +122,7 @@ function getClients(req, res, next) {
         firstName: item.firstName,
         payingMember: item.payingMember,
         lastName: item.lastName,
+        birthDate: item.birthDate,
         email: item.email,
         dentistInfo: item.dentistInfo,
         createdAt: item.createdAt,
