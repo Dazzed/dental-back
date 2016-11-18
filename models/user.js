@@ -96,6 +96,10 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.ENUM(Object.keys(USER_TYPES)),
       allowNull: false,
       defaultValue: 'client',
+    },
+    authorizeId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     }
   }, {
     tableName: 'users',

@@ -3,6 +3,10 @@ import passport from 'passport';
 import _ from 'lodash';
 import changeFactory from 'change-js';
 import fetch from 'node-fetch';
+import {
+  APIContracts,
+  APIControllers,
+} from 'authorizenet';
 
 import db from '../../models';
 
@@ -10,6 +14,124 @@ const Change = changeFactory();
 
 
 const router = new Router({ mergeParams: true });
+
+
+// create profile on authorize
+/* eslint-disable max-len */
+function createCustomerProfile(user) {
+  const merchantAuthenticationType = new APIContracts.MerchantAuthenticationType();
+
+  merchantAuthenticationType.setName(process.env.AUTHORIZE_NAME);
+  merchantAuthenticationType.setTransactionKey(process.env.AUTHORIZE_KEY);
+
+  const creditCard = new APIContracts.CreditCardType();
+  creditCard.setCardNumber(user.cardNumber.replace(/-/g, ''));
+  creditCard.setExpirationDate(user.expiry.replace('/', ''));
+
+  const paymentType = new APIContracts.PaymentType();
+  paymentType.setCreditCard(creditCard);
+
+  const customerPaymentProfileType = new APIContracts.CustomerPaymentProfileType();
+  customerPaymentProfileType.setCustomerType(APIContracts.CustomerTypeEnum.INDIVIDUAL);
+  customerPaymentProfileType.setPayment(paymentType);
+
+  const paymentProfilesList = [];
+  paymentProfilesList.push(customerPaymentProfileType);
+
+  const customerProfileType = new APIContracts.CustomerProfileType();
+  customerProfileType.setMerchantCustomerId(user.id);
+  customerProfileType.setEmail(user.email);
+  customerProfileType.setPaymentProfiles(paymentProfilesList);
+
+  const createRequest = new APIContracts.CreateCustomerProfileRequest();
+  createRequest.setProfile(customerProfileType);
+  createRequest.setMerchantAuthentication(merchantAuthenticationType);
+
+  if (process.env.NODE_ENV !== 'production') {
+    createRequest.setValidationMode(APIContracts.ValidationModeEnum.TESTMODE);
+  }
+
+  const ctrl =
+    new APIControllers.CreateCustomerProfileController(createRequest.getJSON());
+
+  return new Promise((resolve, reject) => {
+    ctrl.execute(() => {
+      const apiResponse = ctrl.getResponse();
+      const response =
+        new APIContracts.CreateCustomerProfileResponse(apiResponse);
+
+      if (response != null) {
+        if (response.getMessages().getResultCode() == APIContracts.MessageTypeEnum.OK) {  // eslint-disable-line
+          resolve(response.getCustomerProfileId());
+        } else {
+          const reason = {
+            resultCode: response.getMessages().getResultCode(),
+            errorCode: response.getMessages().getMessage()[0].getCode(),
+            errorMessage: response.getMessages().getMessage()[0].getText(),
+          };
+
+          const error = new Error(reason.errorMessage);
+          error.json = reason;
+
+          reject(error);
+        }
+      } else {
+        reject(new Error('No content'));
+      }
+    });
+  });
+}
+
+
+function generateToken(user) {
+  const merchantAuthenticationType = new APIContracts.MerchantAuthenticationType();
+  merchantAuthenticationType.setName(process.env.AUTHORIZE_NAME);
+  merchantAuthenticationType.setTransactionKey(process.env.AUTHORIZE_KEY);
+
+  const setting = new APIContracts.SettingType();
+  setting.setSettingName('hostedProfileReturnUrl');
+  setting.setSettingValue(`${process.env.SITE}payment/done`);
+
+  const settingList = [];
+  settingList.push(setting);
+
+  const alist = new APIContracts.ArrayOfSetting();
+  alist.setSetting(settingList);
+
+  const getRequest = new APIContracts.GetHostedProfilePageRequest();
+  getRequest.setMerchantAuthentication(merchantAuthenticationType);
+  getRequest.setCustomerProfileId(user.authorizeId);
+  getRequest.setHostedProfileSettings(alist);
+
+  const ctrl = new APIControllers.GetHostedProfilePageController(getRequest.getJSON());
+
+  return new Promise((resolve, reject) => {
+    ctrl.execute(() => {
+      const apiResponse = ctrl.getResponse();
+      const response = new APIContracts.GetHostedProfilePageResponse(apiResponse);
+
+      if (response !== null) {
+        if (response.getMessages().getResultCode() === APIContracts.MessageTypeEnum.OK) {
+          resolve(response.getToken());
+        } else {
+          const reason = {
+            errorCode: response.getMessages().getMessage()[0].getCode(),
+            errorMessage: response.getMessages().getMessage()[0].getText(),
+          };
+
+          const error = new Error(reason.errorMessage);
+          error.json = reason;
+
+          reject(error);
+        }
+      } else {
+        reject(new Error('No content'));
+      }
+    });
+  });
+}
+
+/* eslint-enable */
 
 
 function getDentist(req, res, next) {
@@ -297,6 +419,40 @@ function chargeBill(req, res, next) {
 }
 
 
+/**
+ * Return token to charge bill.
+ *
+ */
+function getAuthorizeToken(req, res, next) {
+  let userId = req.params.userId;
+
+  if (userId === 'me') {
+    userId = req.user.get('id');
+  }
+
+  db.User.find({
+    where: { id: userId },
+    attributes: ['authorizeId', 'id', 'email'],
+    raw: true,
+  }).then((user) => {
+    if (!user.authorizeId) {
+      user.cardNumber = req.body.cardNumber;
+      user.expiry = req.body.expiry;
+      return createCustomerProfile(user).then((id) => {
+        db.User.update({ authorizeId: id }, { where: { id: userId } });
+        user.authorizeId = id;
+        return user;
+      });
+    }
+    return user;
+  }).then(user => generateToken(user)
+  ).then((token) => {
+    res.json({ data: { token } });
+  })
+    .catch(next);
+}
+
+
 function generateReport(req, res, next) {
   return db.User.findAll({
     attributes: ['id', 'firstName', 'lastName', 'email',
@@ -395,6 +551,12 @@ router
   .get(
     passport.authenticate('jwt', { session: false }),
     getBill);
+
+router
+  .route('/authorize-token')
+  .post(
+    passport.authenticate('jwt', { session: false }),
+    getAuthorizeToken);
 
 router
   .route('/charge-bill')
