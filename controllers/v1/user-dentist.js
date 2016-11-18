@@ -78,7 +78,7 @@ function getDentist(req, res, next) {
 
 function getClients(req, res, next) {
   return db.User.findAll({
-    attributes: ['id', 'firstName', 'lastName', 'avatar', 'email',
+    attributes: ['id', 'firstName', 'lastName', 'birthDate', 'avatar', 'email',
       'createdAt', 'contactMethod', 'payingMember'],
     include: [{
       as: 'clientSubscriptions',
@@ -122,6 +122,7 @@ function getClients(req, res, next) {
         firstName: item.firstName,
         payingMember: item.payingMember,
         lastName: item.lastName,
+        birthDate: item.birthDate,
         email: item.email,
         dentistInfo: item.dentistInfo,
         createdAt: item.createdAt,
@@ -211,6 +212,11 @@ function chargeBill(req, res, next) {
 
   db.Subscription.find({
     where: { clientId: userId, status: 'inactive' },
+    include: [{
+      attributes: ['payingMember'],
+      model: db.User,
+      as: 'client',
+    }]
   }).then(subscription => {
     if (subscription) {
       return Promise.all([
@@ -227,7 +233,7 @@ function chargeBill(req, res, next) {
     if (subscription) {
       const memberSubscriptions = [];
       let total = new Change({
-        dollars: req.user.get('accountHolder') ?
+        dollars: subscription.get('client').get('payingMember') ?
           subscription.get('monthly') : 0,
       });
       const meta = {
