@@ -138,13 +138,14 @@ export function updateCreditCard(profileId, paymentId, card) {
 }
 
 
-export function validateCreditCard(profileId, paymentId) {
+export function validateCreditCard(profileId, paymentId, cvc) {
   const authentication = getAuthentication();
 
   const request = new APIContracts.ValidateCustomerPaymentProfileRequest();
   request.setMerchantAuthentication(authentication);
   request.setCustomerProfileId(profileId);
   request.setCustomerPaymentProfileId(paymentId);
+  request.setCardCode(cvc);
   if (process.env.NODE_ENV !== 'production') {
     request.setValidationMode(APIContracts.ValidationModeEnum.TESTMODE);
   }

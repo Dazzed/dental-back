@@ -2,7 +2,6 @@ import { Router } from 'express';
 import passport from 'passport';
 import _ from 'lodash';
 import changeFactory from 'change-js';
-import fetch from 'node-fetch';
 import isPlainObject from 'is-plain-object';
 import db from '../../models';
 import { BadRequestError } from '../errors';
@@ -329,7 +328,7 @@ function ensureCreditCard(req, res, next) {
     return user;
   }).then(user => {
     if (req.body.card) {
-      return validateCreditCard(user.authorizeId, user.paymentId)
+      return validateCreditCard(user.authorizeId, user.paymentId, req.body.card.cvc)
         .then(() => user);
     }
     return user;
