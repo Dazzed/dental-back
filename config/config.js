@@ -5,7 +5,8 @@ module.exports = {
     database: process.env.POSTGRESQL_DATABASE || 'dental',
     host: process.env.POSTGRESQL_HOST || 'localhost',
     port: process.env.POSTGRESQL_PORT || 5432,
-    dialect: 'postgres'
+    dialect: 'postgres',
+    logging: false,
   },
   test: {
     username: process.env.POSTGRESQL_USERNAME,

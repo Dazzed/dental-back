@@ -3,8 +3,16 @@ import passport from 'passport';
 import _ from 'lodash';
 import changeFactory from 'change-js';
 import fetch from 'node-fetch';
-
+import isPlainObject from 'is-plain-object';
 import db from '../../models';
+import { BadRequestError } from '../errors';
+import {
+  createCreditCard,
+  updateCreditCard,
+  validateCreditCard,
+  chargeAuthorize,
+} from '../payments';
+
 
 const Change = changeFactory();
 
@@ -213,7 +221,7 @@ function chargeBill(req, res, next) {
   db.Subscription.find({
     where: { clientId: userId, status: 'inactive' },
     include: [{
-      attributes: ['payingMember'],
+      attributes: ['payingMember', 'firstName', 'lastName'],
       model: db.User,
       as: 'client',
     }]
@@ -231,69 +239,111 @@ function chargeBill(req, res, next) {
     return [];
   }).then(([subscription, members]) => {
     if (subscription) {
-      const memberSubscriptions = [];
-      let total = new Change({
-        dollars: subscription.get('client').get('payingMember') ?
-          subscription.get('monthly') : 0,
-      });
-      const meta = {
-        subscription_id: subscription.get('id'),
+      let total = new Change({ dollars: 0 });
+      const data = {
+        members: []
       };
+
+      if (subscription.get('client').get('payingMember')) {
+        const name = subscription.get('client').get('firstName') +
+          subscription.get('client').get('firstName');
+
+        data.members.push({
+          fullName: name,
+          monthly: subscription.get('monthly'),
+        });
+
+        total = new Change({ dollars: subscription.get('monthly') });
+      }
 
       members.forEach(item => {
         total = total.add(new Change({ dollars: item.get('monthly') }));
-        memberSubscriptions.push(item.get('id'));
+        const name = item.get('member').get('firstName') +
+          item.get('member').get('firstName');
+
+        data.members.push({
+          fullName: name,
+          monthly: item.get('monthly'),
+        });
       });
 
-      meta.memberSubscriptions = memberSubscriptions.join(',');
+      data.total = total.dollars().toFixed(2);
 
-      const url = 'https://core.spreedly.com/v1/gateways/UNdlfrv8cVnLhV9c4SFRfgfgCwP/purchase.json';
+      chargeAuthorize(
+        req.locals.chargeTo.authorizeId,
+        req.locals.chargeTo.paymentId,
+        data
+      ).then(transactionId => {
+        subscription.update({
+          paidAt: new Date(),
+          status: 'active',
+          chargeID: transactionId,
+        });
 
-      const body = {
-        transaction: {
-          payment_method_token: req.body.token,
-          amount: total.cents,
-          currency_code: 'USD',
-          retain_on_success: true,
-          description: JSON.stringify(meta),
-        },
-      };
-
-      const encodeString = (new Buffer('MY4WccjEpI34lIikNK7qDAXpRVQ:IXxLQd4Nvur5nv4Od2ZBgN0yWS0WpzYZlM9IzysVdGO4z3rc44sngVcW0n4SxibI').toString('base64'));  // eslint-disable-line
-
-      const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-        Authorization: `Basic ${encodeString}`,
-      };
-
-      fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers,
-      }).then(response => response.json()
-      ).then(response => {
-        if (response.transaction && response.transaction.response.success) {
-          subscription.update({
-            paidAt: new Date(),
-            status: 'active',
-            chargeID: req.body.token,
-          });
-
-          return res.json({ status: 'active' });
+        return res.json({ status: 'active' });
+      }).catch(errors => {
+        if (isPlainObject(errors.json)) {
+          return next(new BadRequestError(errors.json));
         }
 
-        return res.json({ status: subscription.status });
-        // (token => {
-        //  alert('Thank you for subscribing!');
-      }).catch(error => {
-        console.log('Error : ', error);
-        // The card has been declined
-        res.status = 400;
-        return res.json({});
+        return next(errors);
       });
     }
   }).catch(next);
+}
+
+
+/**
+ * Ensure card exists, create or update card if needed.
+ *
+ */
+function ensureCreditCard(req, res, next) {
+  let userId = req.params.userId;
+
+  if (userId === 'me') {
+    userId = req.user.get('id');
+  }
+
+  db.User.find({
+    where: { id: userId },
+    attributes: ['authorizeId', 'id', 'email', 'paymentId'],
+    raw: true,
+  }).then((user) => {
+    if (!user.authorizeId) {
+      return createCreditCard(user, req.body.card)
+        .then(([authorizeId, paymentId]) => {
+          db.User.update({
+            authorizeId,
+            paymentId,
+          }, {
+            where: { id: userId }
+          });
+          user.authorizeId = authorizeId;
+          user.paymentId = paymentId;
+          return user;
+        });
+    } else if (req.body.card) {
+      return updateCreditCard(user.authorizeId, user.paymentId, req.body.card)
+        .then(() => user);
+    }
+    return user;
+  }).then(user => {
+    if (req.body.card) {
+      return validateCreditCard(user.authorizeId, user.paymentId)
+        .then(() => user);
+    }
+    return user;
+  }).then((user) => {
+    req.locals.chargeTo = user;
+    next();
+  })
+    .catch((errors) => {
+      if (isPlainObject(errors.json)) {
+        return next(new BadRequestError(errors.json));
+      }
+
+      return next(errors);
+    });
 }
 
 
@@ -400,6 +450,7 @@ router
   .route('/charge-bill')
   .post(
     passport.authenticate('jwt', { session: false }),
+    ensureCreditCard,
     chargeBill);
 
 router
