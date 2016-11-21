@@ -1,4 +1,4 @@
-import { APIContracts, APIControllers } from 'authorizenet';
+import { APIContracts, APIControllers, Constants } from 'authorizenet';
 
 function getAuthentication() {
   const authentication = new APIContracts.MerchantAuthenticationType();
@@ -49,6 +49,10 @@ export function createCreditCard(user, card) {
 
   const ctrl =
     new APIControllers.CreateCustomerProfileController(createRequest.getJSON());
+
+  if (process.env.NODE_ENV === 'production') {
+    ctrl.setEnvironment(Constants.endpoint.production);
+  }
 
   return new Promise((resolve, reject) => {
     ctrl.execute(() => {
@@ -112,6 +116,10 @@ export function updateCreditCard(profileId, paymentId, card) {
     updateRequest.getJSON()
   );
 
+  if (process.env.NODE_ENV === 'production') {
+    ctrl.setEnvironment(Constants.endpoint.production);
+  }
+
   return new Promise((resolve, reject) => {
     ctrl.execute(() => {
       const apiResponse = ctrl.getResponse();
@@ -159,6 +167,10 @@ export function validateCreditCard(profileId, paymentId, cvc) {
   const ctrl = new APIControllers.ValidateCustomerPaymentProfileController(
     request.getJSON()
   );
+
+  if (process.env.NODE_ENV === 'production') {
+    ctrl.setEnvironment(Constants.endpoint.production);
+  }
 
   return new Promise((resolve, reject) => {
     ctrl.execute(() => {
@@ -235,6 +247,10 @@ export function chargeAuthorize(profileId, paymentId, data) {
     createRequest.getJSON()
   );
 
+  if (process.env.NODE_ENV === 'production') {
+    ctrl.setEnvironment(Constants.endpoint.production);
+  }
+
   return new Promise((resolve, reject) => {
     ctrl.execute(() => {
       const apiResponse = ctrl.getResponse();
@@ -301,6 +317,10 @@ export function getCreditCardInfo(profileId, paymentId) {
   const ctrl = new APIControllers.GetCustomerProfileController(
     getRequest.getJSON()
   );
+
+  if (process.env.NODE_ENV === 'production') {
+    ctrl.setEnvironment(Constants.endpoint.production);
+  }
 
   return new Promise((resolve, reject) => {
     ctrl.execute(() => {
