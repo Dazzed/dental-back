@@ -100,6 +100,10 @@ export default function (sequelize, DataTypes) {
     authorizeId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    paymentId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     }
   }, {
     tableName: 'users',

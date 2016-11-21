@@ -3,135 +3,21 @@ import passport from 'passport';
 import _ from 'lodash';
 import changeFactory from 'change-js';
 import fetch from 'node-fetch';
-import {
-  APIContracts,
-  APIControllers,
-} from 'authorizenet';
-
+import isPlainObject from 'is-plain-object';
 import db from '../../models';
+import { BadRequestError } from '../errors';
+import {
+  createCreditCard,
+  updateCreditCard,
+  validateCreditCard,
+  chargeAuthorize,
+} from '../payments';
+
 
 const Change = changeFactory();
 
 
 const router = new Router({ mergeParams: true });
-
-
-// create profile on authorize
-/* eslint-disable max-len */
-function createCustomerProfile(user) {
-  const merchantAuthenticationType = new APIContracts.MerchantAuthenticationType();
-
-  merchantAuthenticationType.setName(process.env.AUTHORIZE_NAME);
-  merchantAuthenticationType.setTransactionKey(process.env.AUTHORIZE_KEY);
-
-  const creditCard = new APIContracts.CreditCardType();
-  creditCard.setCardNumber(user.cardNumber.replace(/-/g, ''));
-  creditCard.setExpirationDate(user.expiry.replace('/', ''));
-
-  const paymentType = new APIContracts.PaymentType();
-  paymentType.setCreditCard(creditCard);
-
-  const customerPaymentProfileType = new APIContracts.CustomerPaymentProfileType();
-  customerPaymentProfileType.setCustomerType(APIContracts.CustomerTypeEnum.INDIVIDUAL);
-  customerPaymentProfileType.setPayment(paymentType);
-
-  const paymentProfilesList = [];
-  paymentProfilesList.push(customerPaymentProfileType);
-
-  const customerProfileType = new APIContracts.CustomerProfileType();
-  customerProfileType.setMerchantCustomerId(user.id);
-  customerProfileType.setEmail(user.email);
-  customerProfileType.setPaymentProfiles(paymentProfilesList);
-
-  const createRequest = new APIContracts.CreateCustomerProfileRequest();
-  createRequest.setProfile(customerProfileType);
-  createRequest.setMerchantAuthentication(merchantAuthenticationType);
-
-  if (process.env.NODE_ENV !== 'production') {
-    createRequest.setValidationMode(APIContracts.ValidationModeEnum.TESTMODE);
-  }
-
-  const ctrl =
-    new APIControllers.CreateCustomerProfileController(createRequest.getJSON());
-
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response =
-        new APIContracts.CreateCustomerProfileResponse(apiResponse);
-
-      if (response != null) {
-        if (response.getMessages().getResultCode() == APIContracts.MessageTypeEnum.OK) {  // eslint-disable-line
-          resolve(response.getCustomerProfileId());
-        } else {
-          const reason = {
-            resultCode: response.getMessages().getResultCode(),
-            errorCode: response.getMessages().getMessage()[0].getCode(),
-            errorMessage: response.getMessages().getMessage()[0].getText(),
-          };
-
-          const error = new Error(reason.errorMessage);
-          error.json = reason;
-
-          reject(error);
-        }
-      } else {
-        reject(new Error('No content'));
-      }
-    });
-  });
-}
-
-
-function generateToken(user) {
-  const merchantAuthenticationType = new APIContracts.MerchantAuthenticationType();
-  merchantAuthenticationType.setName(process.env.AUTHORIZE_NAME);
-  merchantAuthenticationType.setTransactionKey(process.env.AUTHORIZE_KEY);
-
-  const setting = new APIContracts.SettingType();
-  setting.setSettingName('hostedProfileReturnUrl');
-  setting.setSettingValue(`${process.env.SITE}payment/done`);
-
-  const settingList = [];
-  settingList.push(setting);
-
-  const alist = new APIContracts.ArrayOfSetting();
-  alist.setSetting(settingList);
-
-  const getRequest = new APIContracts.GetHostedProfilePageRequest();
-  getRequest.setMerchantAuthentication(merchantAuthenticationType);
-  getRequest.setCustomerProfileId(user.authorizeId);
-  getRequest.setHostedProfileSettings(alist);
-
-  const ctrl = new APIControllers.GetHostedProfilePageController(getRequest.getJSON());
-
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new APIContracts.GetHostedProfilePageResponse(apiResponse);
-
-      if (response !== null) {
-        if (response.getMessages().getResultCode() === APIContracts.MessageTypeEnum.OK) {
-          resolve(response.getToken());
-        } else {
-          const reason = {
-            errorCode: response.getMessages().getMessage()[0].getCode(),
-            errorMessage: response.getMessages().getMessage()[0].getText(),
-          };
-
-          const error = new Error(reason.errorMessage);
-          error.json = reason;
-
-          reject(error);
-        }
-      } else {
-        reject(new Error('No content'));
-      }
-    });
-  });
-}
-
-/* eslint-enable */
 
 
 function getDentist(req, res, next) {
@@ -335,7 +221,7 @@ function chargeBill(req, res, next) {
   db.Subscription.find({
     where: { clientId: userId, status: 'inactive' },
     include: [{
-      attributes: ['payingMember'],
+      attributes: ['payingMember', 'firstName', 'lastName'],
       model: db.User,
       as: 'client',
     }]
@@ -353,66 +239,54 @@ function chargeBill(req, res, next) {
     return [];
   }).then(([subscription, members]) => {
     if (subscription) {
-      const memberSubscriptions = [];
-      let total = new Change({
-        dollars: subscription.get('client').get('payingMember') ?
-          subscription.get('monthly') : 0,
-      });
-      const meta = {
-        subscription_id: subscription.get('id'),
+      let total = new Change({ dollars: 0 });
+      const data = {
+        members: []
       };
+
+      if (subscription.get('client').get('payingMember')) {
+        const name = subscription.get('client').get('firstName') +
+          subscription.get('client').get('firstName');
+
+        data.members.push({
+          fullName: name,
+          monthly: subscription.get('monthly'),
+        });
+
+        total = new Change({ dollars: subscription.get('monthly') });
+      }
 
       members.forEach(item => {
         total = total.add(new Change({ dollars: item.get('monthly') }));
-        memberSubscriptions.push(item.get('id'));
+        const name = item.get('member').get('firstName') +
+          item.get('member').get('firstName');
+
+        data.members.push({
+          fullName: name,
+          monthly: item.get('monthly'),
+        });
       });
 
-      meta.memberSubscriptions = memberSubscriptions.join(',');
+      data.total = total.dollars().toFixed(2);
 
-      const url = 'https://core.spreedly.com/v1/gateways/UNdlfrv8cVnLhV9c4SFRfgfgCwP/purchase.json';
+      chargeAuthorize(
+        req.locals.chargeTo.authorizeId,
+        req.locals.chargeTo.paymentId,
+        data
+      ).then(transactionId => {
+        subscription.update({
+          paidAt: new Date(),
+          status: 'active',
+          chargeID: transactionId,
+        });
 
-      const body = {
-        transaction: {
-          payment_method_token: req.body.token,
-          amount: total.cents,
-          currency_code: 'USD',
-          retain_on_success: true,
-          description: JSON.stringify(meta),
-        },
-      };
-
-      const encodeString = (new Buffer('MY4WccjEpI34lIikNK7qDAXpRVQ:IXxLQd4Nvur5nv4Od2ZBgN0yWS0WpzYZlM9IzysVdGO4z3rc44sngVcW0n4SxibI').toString('base64'));  // eslint-disable-line
-
-      const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-        Authorization: `Basic ${encodeString}`,
-      };
-
-      fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers,
-      }).then(response => response.json()
-      ).then(response => {
-        if (response.transaction && response.transaction.response.success) {
-          subscription.update({
-            paidAt: new Date(),
-            status: 'active',
-            chargeID: req.body.token,
-          });
-
-          return res.json({ status: 'active' });
+        return res.json({ status: 'active' });
+      }).catch(errors => {
+        if (isPlainObject(errors.json)) {
+          return next(new BadRequestError(errors.json));
         }
 
-        return res.json({ status: subscription.status });
-        // (token => {
-        //  alert('Thank you for subscribing!');
-      }).catch(error => {
-        console.log('Error : ', error);
-        // The card has been declined
-        res.status = 400;
-        return res.json({});
+        return next(errors);
       });
     }
   }).catch(next);
@@ -420,10 +294,10 @@ function chargeBill(req, res, next) {
 
 
 /**
- * Return token to charge bill.
+ * Ensure card exists, create or update card if needed.
  *
  */
-function getAuthorizeToken(req, res, next) {
+function ensureCreditCard(req, res, next) {
   let userId = req.params.userId;
 
   if (userId === 'me') {
@@ -432,24 +306,44 @@ function getAuthorizeToken(req, res, next) {
 
   db.User.find({
     where: { id: userId },
-    attributes: ['authorizeId', 'id', 'email'],
+    attributes: ['authorizeId', 'id', 'email', 'paymentId'],
     raw: true,
   }).then((user) => {
     if (!user.authorizeId) {
-      user.cardNumber = req.body.cardNumber;
-      user.expiry = req.body.expiry;
-      return createCustomerProfile(user).then((id) => {
-        db.User.update({ authorizeId: id }, { where: { id: userId } });
-        user.authorizeId = id;
-        return user;
-      });
+      return createCreditCard(user, req.body.card)
+        .then(([authorizeId, paymentId]) => {
+          db.User.update({
+            authorizeId,
+            paymentId,
+          }, {
+            where: { id: userId }
+          });
+          user.authorizeId = authorizeId;
+          user.paymentId = paymentId;
+          return user;
+        });
+    } else if (req.body.card) {
+      return updateCreditCard(user.authorizeId, user.paymentId, req.body.card)
+        .then(() => user);
     }
     return user;
-  }).then(user => generateToken(user)
-  ).then((token) => {
-    res.json({ data: { token } });
+  }).then(user => {
+    if (req.body.card) {
+      return validateCreditCard(user.authorizeId, user.paymentId)
+        .then(() => user);
+    }
+    return user;
+  }).then((user) => {
+    req.locals.chargeTo = user;
+    next();
   })
-    .catch(next);
+    .catch((errors) => {
+      if (isPlainObject(errors.json)) {
+        return next(new BadRequestError(errors.json));
+      }
+
+      return next(errors);
+    });
 }
 
 
@@ -553,15 +447,10 @@ router
     getBill);
 
 router
-  .route('/authorize-token')
-  .post(
-    passport.authenticate('jwt', { session: false }),
-    getAuthorizeToken);
-
-router
   .route('/charge-bill')
   .post(
     passport.authenticate('jwt', { session: false }),
+    ensureCreditCard,
     chargeBill);
 
 router

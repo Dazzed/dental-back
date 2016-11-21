@@ -6,6 +6,7 @@ import _ from 'lodash';
 
 import db from '../../models';
 import { EXCLUDE_FIELDS_LIST } from '../../models/user';
+import { getCreditCardInfo } from '../payments';
 
 import {
   NORMAL_USER_EDIT,
@@ -35,7 +36,8 @@ export function getUserFromParam(req, res, next) {
     return next();
   }
 
-  if (req.user.get('type') !== 'admin') {
+  // TODO: Test if has subscription
+  if (req.user.get('type') === 'client') {
     return next(new ForbiddenError());
   }
 
@@ -44,6 +46,7 @@ export function getUserFromParam(req, res, next) {
       return next(new NotFoundError());
     }
 
+    req.locals.user = user;
     return next();
   }).catch((error) => {
     next(error);
@@ -113,6 +116,20 @@ function updateUser(req, res, next) {
 }
 
 
+function getCardInfo(req, res, next) {
+  if (req.locals.user.get('authorizeId') && req.locals.user.get('paymentId')) {
+    return getCreditCardInfo(
+      req.locals.user.get('authorizeId'),
+      req.locals.user.get('paymentId')
+    ).then(info => {
+      res.json({ data: info });
+    });
+  }
+
+  return next(new NotFoundError());
+}
+
+
 router
   .route('/:userId')
   .get(
@@ -127,6 +144,13 @@ router
     passport.authenticate('jwt', { session: false }),
     getUserFromParam,
     updateUser);
+
+router
+  .route('/:userId/credit-card')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    getUserFromParam,
+    getCardInfo);
 
 
 export default router;
