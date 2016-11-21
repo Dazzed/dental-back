@@ -43,6 +43,8 @@ export function createCreditCard(user, card) {
 
   if (process.env.NODE_ENV !== 'production') {
     createRequest.setValidationMode(APIContracts.ValidationModeEnum.TESTMODE);
+  } else {
+    createRequest.setValidationMode(APIContracts.ValidationModeEnum.LIVEMODE);
   }
 
   const ctrl =
@@ -102,6 +104,8 @@ export function updateCreditCard(profileId, paymentId, card) {
 
   if (process.env.NODE_ENV !== 'production') {
     updateRequest.setValidationMode(APIContracts.ValidationModeEnum.TESTMODE);
+  } else {
+    updateRequest.setValidationMode(APIContracts.ValidationModeEnum.LIVEMODE);
   }
 
   const ctrl = new APIControllers.UpdateCustomerPaymentProfileController(
@@ -148,6 +152,8 @@ export function validateCreditCard(profileId, paymentId, cvc) {
   request.setCardCode(cvc);
   if (process.env.NODE_ENV !== 'production') {
     request.setValidationMode(APIContracts.ValidationModeEnum.TESTMODE);
+  } else {
+    request.setValidationMode(APIContracts.ValidationModeEnum.LIVEMODE);
   }
 
   const ctrl = new APIControllers.ValidateCustomerPaymentProfileController(
