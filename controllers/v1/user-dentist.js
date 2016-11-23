@@ -8,7 +8,6 @@ import { BadRequestError } from '../errors';
 import {
   createCreditCard,
   updateCreditCard,
-  validateCreditCard,
   chargeAuthorize,
 } from '../payments';
 
@@ -323,12 +322,6 @@ function ensureCreditCard(req, res, next) {
         });
     } else if (req.body.card) {
       return updateCreditCard(user.authorizeId, user.paymentId, req.body.card)
-        .then(() => user);
-    }
-    return user;
-  }).then(user => {
-    if (req.body.card) {
-      return validateCreditCard(user.authorizeId, user.paymentId, req.body.card.cvc)
         .then(() => user);
     }
     return user;
