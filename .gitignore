@@ -15,3 +15,5 @@ npm-debug.log*
 webpack-assets.json
 
 static/dist/
+
+sdk-node.log
