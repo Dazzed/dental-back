@@ -99,9 +99,15 @@ export function updateCreditCard(profileId, paymentId, card) {
   const paymentType = new APIContracts.PaymentType();
   paymentType.setCreditCard(creditCard);
 
+  const customerAddress = new APIContracts.CustomerAddressType();
+  customerAddress.setAddress(card.address);
+  customerAddress.setZip(card.zip);
+  customerAddress.setCountry('USA');
+
   const customerForUpdate = new APIContracts.CustomerPaymentProfileExType();
   customerForUpdate.setPayment(paymentType);
   customerForUpdate.setCustomerPaymentProfileId(paymentId);
+  customerForUpdate.setBillTo(customerAddress);
 
   const updateRequest = new APIContracts.UpdateCustomerPaymentProfileRequest();
   updateRequest.setMerchantAuthentication(authentication);
