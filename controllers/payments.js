@@ -215,6 +215,13 @@ export function chargeAuthorize(profileId, paymentId, data) {
   // orderDetails.setInvoiceNumber('INV-12345');
   orderDetails.setDescription('Subscription');
 
+  const transactionSetting = new APIContracts.SettingType();
+  transactionSetting.setSettingName('duplicateWindow');
+  transactionSetting.setSettingValue(0);
+
+  const transactionSettings = new APIContracts.ArrayOfSetting();
+  transactionSettings.setSetting([transactionSetting]);
+
   const lineItemList = [];
 
   data.members.forEach((member, index) => {
@@ -238,6 +245,7 @@ export function chargeAuthorize(profileId, paymentId, data) {
   transactionRequestType.setAmount(data.total);
   transactionRequestType.setLineItems(lineItems);
   transactionRequestType.setOrder(orderDetails);
+  transactionRequestType.setTransactionSettings(transactionSettings);
 
   const createRequest = new APIContracts.CreateTransactionRequest();
   createRequest.setMerchantAuthentication(authentication);
