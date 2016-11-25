@@ -3,6 +3,7 @@ import {
   SEX_TYPES,
   PREFERRED_CONTACT_METHODS,
   USER_TYPES,
+  MEMBER_RELATIONSHIP_TYPES,
 } from '../config/constants';
 
 export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'avatar', 'salt',
@@ -104,7 +105,11 @@ export default function (sequelize, DataTypes) {
     paymentId: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    }
+    },
+    familyRelationship: {
+      type: new DataTypes.ENUM(Object.keys(MEMBER_RELATIONSHIP_TYPES)),
+      allowNull: true,
+    },
   }, {
     tableName: 'users',
     classMethods: {
@@ -124,8 +129,8 @@ export default function (sequelize, DataTypes) {
         });
 
         // FamilyMember relationship
-        User.hasMany(models.FamilyMember, {
-          foreignKey: 'userId',
+        User.hasMany(User, {
+          foreignKey: 'addedBy',
           as: 'familyMembers',
           allowNull: true
         });

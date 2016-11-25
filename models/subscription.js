@@ -51,11 +51,6 @@ export default function (sequelize, DataTypes) {
           foreignKey: 'dentistId',
           as: 'dentist',
         });
-
-        Subscription.hasMany(models.MemberSubscription, {
-          foreignKey: 'subscriptionId',
-          as: 'items',
-        });
       }
     }
   });
