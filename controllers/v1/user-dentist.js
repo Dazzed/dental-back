@@ -69,6 +69,7 @@ function getDentist(req, res, next) {
         total: subscription.total,
         startAt: subscription.startAt,
         endAt: subscription.endAt,
+        paidAt: subscription.paidAt,
         monthly: subscription.monthly,
         status: subscription.status,
         membership: subscription.Membership,
