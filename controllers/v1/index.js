@@ -3,7 +3,7 @@ import { Router } from 'express';
 import auth from './auth';
 import users from './users';
 import memberships from './memberships';
-import familyMembers from './family-members';
+import members from './members';
 import services from './services';
 import dentistSpecialties from './dentist-specialties';
 import messages from './messages';
@@ -18,7 +18,7 @@ const router = new Router({ mergeParams: true });
 router.use('/accounts', auth);
 
 router.use('/users', users);
-router.use('/users/:userId/family-members', familyMembers);
+router.use('/users/:userId/members', members);
 router.use('/users/:userId/memberships', memberships);
 router.use('/users/:userId/messages', messages);
 router.use('/users/:userId', userDentist);
@@ -31,7 +31,7 @@ router.use('/dentist-specialties', dentistSpecialties);
 
 // root maybe for admin calls? add adminRequired middleware
 // Maybe also add express validators to request type user
-router.use('/family-members', familyMembers);
+router.use('/members', members);
 router.use('/memberships', memberships);
 router.use('/services', services);
 

@@ -20,6 +20,33 @@ import {
 const router = new Router({ mergeParams: true });
 
 
+function checkPermissions(req, res, next) {
+  const userId = req.params.userId;
+
+  const canEdit =
+    userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
+    req.user.get('type') === 'admin';
+
+  if (!canEdit && req.user.get('type') !== 'dentist') {
+    return next(new ForbiddenError());
+  }
+
+  // if (req.user.get('type') !== 'dentist' && userId !== 'me') {
+  //   return req.user.getCurrentSubscription(userId)
+  //   .then(subscription => {
+  //     if (subscription) {
+  //       next();
+  //     } else {
+  //       return next(new ForbiddenError());
+  //     }
+  //   })
+  //   .catch(next);
+  // }
+
+  return next();
+}
+
+// TODO: Move to new schema
 /**
  * Fill req.locals.familyMember with the requested member on url params,
  * if allowed call next middleware.
@@ -33,13 +60,6 @@ function getFamilyMemberFromParam(req, res, next) {
    * to that user will return forbidden.
    */
   // FIXME: control if dentist has permission to edit
-  const canEdit =
-    userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-    req.user.get('type') === 'admin' || req.user.get('type') === 'dentist';
-
-  if (!canEdit) {
-    return next(new ForbiddenError());
-  }
 
   const query = {
     where: {
@@ -66,46 +86,33 @@ function getFamilyMemberFromParam(req, res, next) {
 }
 
 
-// TODO: add pagination and filters?
-function getFamilyMembers(req, res, next) {
+function getMembers(req, res, next) {
   const userId = req.params.userId;
 
   /*
    * If user is not admin and try to requests paths not related
    * to that user will return forbidden.
    */
-  const canEdit =
+  const canShow =
     userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
     req.user.get('type') === 'admin';
 
-  if (!canEdit) {
+  if (!canShow) {
     return next(new ForbiddenError());
   }
 
-  const query = {
-    where: { isDeleted: false },
-    include: [{
-      model: db.MemberSubscription,
-      as: 'subscriptions',
-      attributes: { exclude: ['memberId', 'membershipId', 'subscriptionId'] },
-    }]
-  };
+  let query;
 
-  // if not admin limit query to related data userId
-  if (req.user.get('type') !== 'admin') {
-    query.where.userId = req.user.get('id');
+  // Returns all clients grouped by main user.
+  if (req.user.get('type') === 'dentist') {
+    query = req.user.getClients();
+  } else {
+    query = req.user.getMyMembers();
   }
 
-  return db.FamilyMember.findAll(query).then((members) =>
-      res.json({ data: members.map(member => {
-        const m = member.toJSON();
-        const r = _.omit(m, 'subscriptions');
-        r.subscription = m.subscriptions[0];
-        return r;
-      }) })
-  ).catch((error) => {
-    next(error);
-  });
+  return query
+    .then(data => res.json({ data }))
+    .catch(next);
 }
 
 
@@ -265,7 +272,8 @@ router
   .route('/')
   .get(
     passport.authenticate('jwt', { session: false }),
-    getFamilyMembers)
+    checkPermissions,
+    getMembers)
   .post(
     passport.authenticate('jwt', { session: false }),
     addFamilyMember);
