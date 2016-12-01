@@ -103,7 +103,7 @@ export const NORMAL_USER_REGISTRATION = {
 };
 
 
-export const FAMILY_MEMBER = {
+export const MEMBER = {
   firstName: {
     notEmpty: true,
   },
@@ -120,6 +120,10 @@ export const FAMILY_MEMBER = {
   email: {
     notEmpty: true,
     isEmail: true,
+    isDBUnique: {
+      options: ['User', 'email'],
+      errorMessage: 'This email is in use.'
+    }
   },
   familyRelationship: {
     notEmpty: true,

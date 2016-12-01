@@ -3,11 +3,12 @@ import passport from 'passport';
 import _ from 'lodash';
 import HTTPStatus from 'http-status';
 import moment from 'moment';
+import isPlainObject from 'is-plain-object';
 
 import db from '../../models';
 
 import {
-  FAMILY_MEMBER,
+  MEMBER,
 } from '../../utils/schema-validators';
 
 import {
@@ -31,76 +32,26 @@ function checkPermissions(req, res, next) {
     return next(new ForbiddenError());
   }
 
-  // if (req.user.get('type') !== 'dentist' && userId !== 'me') {
-  //   return req.user.getCurrentSubscription(userId)
-  //   .then(subscription => {
-  //     if (subscription) {
-  //       next();
-  //     } else {
-  //       return next(new ForbiddenError());
-  //     }
-  //   })
-  //   .catch(next);
-  // }
+  // last try to see if subscription exists and are releated with
+  // account holder.
+  if (req.user.get('type') === 'dentist' && !canEdit) {
+    return db.Subscription.getCurrentSubscription(userId)
+      .then(subscription => {
+        if (!subscription &&
+          subscription.get('dentistId') !== req.user.get('id')) {
+          return next(new ForbiddenError());
+        }
+
+        return next();
+      })
+      .catch(next);
+  }
 
   return next();
 }
 
-// TODO: Move to new schema
-/**
- * Fill req.locals.familyMember with the requested member on url params,
- * if allowed call next middleware.
- *
- */
-function getFamilyMemberFromParam(req, res, next) {
-  const userId = req.params.userId;
-
-  /*
-   * If user is not admin and try to requests paths not related
-   * to that user will return forbidden.
-   */
-  // FIXME: control if dentist has permission to edit
-
-  const query = {
-    where: {
-      id: req.params.familyMemberId,
-      isDeleted: false,
-    }
-  };
-
-  // if not admin limit query to related data userId
-  if (req.user.get('type') !== 'admin') {
-    query.where.userId = userId === 'me' ? req.user.get('id') : userId;
-  }
-
-  return db.FamilyMember.find(query).then((member) => {
-    if (!member) {
-      return next(new NotFoundError());
-    }
-
-    req.locals.familyMember = member;
-    return next();
-  }).catch((error) => {
-    next(error);
-  });
-}
-
 
 function getMembers(req, res, next) {
-  const userId = req.params.userId;
-
-  /*
-   * If user is not admin and try to requests paths not related
-   * to that user will return forbidden.
-   */
-  const canShow =
-    userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-    req.user.get('type') === 'admin';
-
-  if (!canShow) {
-    return next(new ForbiddenError());
-  }
-
   let query;
 
   // Returns all clients grouped by main user.
@@ -116,155 +67,211 @@ function getMembers(req, res, next) {
 }
 
 
-function getFamilyMember(req, res) {
-  res.json({ data: req.locals.familyMember.toJSON() });
-}
+function addMember(req, res, next) {
+  req.checkBody(MEMBER);
 
-
-function addFamilyMember(req, res, next) {
   const userId = req.params.userId;
+  let member;
+  let data;
+  let dentistId;
 
-  /*
-   * If user is not admin and try to requests paths not related
-   * to that user will return forbidden.
-   */
-  const canCreate =
-    userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-    req.user.get('type') === 'admin' || req.user.get('type') === 'dentist';
+  req
+    .asyncValidationErrors(true)
+    .then(() => {
+      data = _.pick(req.body, ['email', 'firstName', 'lastName',
+        'phone', 'birthDate', 'familyRelationship']);
 
-  if (!canCreate) {
-    return next(new ForbiddenError());
-  }
+      // if user is me update id.
+      if (userId === 'me') {
+        data.addedBy = req.user.get('id');
+      } else {
+        data.addedBy = userId;
+      }
 
-  req.checkBody(FAMILY_MEMBER);
+      // if userId is undefined set body param
+      if (userId === undefined) {
+        data.addedBy = req.body.userId;
+      }
 
-  const errors = req.validationErrors(true);
+      data.hash = 'NOT_SET';
+      data.salt = 'NOT_SET';
 
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
-  const data = _.pick(req.body,
-    ['email', 'firstName', 'lastName', 'phone', 'birthDate', 'familyRelationship']);
-
-  // if user is me update id.
-  if (userId === 'me') {
-    data.userId = req.user.get('id');
-  } else {
-    data.userId = userId;
-  }
-
-  // if userId is undefined set body param
-  if (userId === undefined) {
-    data.userId = req.body.userId;
-  }
-
-  let subscription;
-
-  return db.FamilyMember.create(data).then((member) => {
-    // NOTE: work on latest subscription
-    // TODO: improve query
-    db.Subscription.find({
-      attributes: ['dentistId', 'id'],
-      where: {
-        clientId: data.userId,
-      },
-      raw: true,
-    }).then(_subscription => {
-      subscription = _subscription;
-
-      return db.DentistInfo.find({
-        attributes: ['membershipId', 'childMembershipId'],
-        where: {
-          userId: subscription.dentistId,
-        },
+      return db.User.create(data);
+    })
+    .then(_member => {
+      member = _member;
+      return db.Subscription.find({
+        attributes: ['dentistId', 'id'],
+        where: { clientId: data.addedBy },
         raw: true,
       });
-    }).then(info => {
+    })
+    .then(subscription => db.DentistInfo.find({
+      attributes: ['membershipId', 'childMembershipId', 'userId'],
+      where: { userId: subscription.dentistId },
+      raw: true,
+    }))
+    .then(info => {
+      dentistId = info.userId;
       const years = moment().diff(member.get('birthDate'), 'years', false);
       if (years < 13) {
         return db.Membership.find({ where: { id: info.childMembershipId } });
       }
       return db.Membership.find({ where: { id: info.membershipId } });
-    }).then(membership =>
-      member.createSubscription({
-        total: membership.price,
-        monthly: membership.monthly,
-        subscriptionId: subscription.id,
-      })
-    );
+    })
+    .then(membership =>
+      Promise.all([
+        member.createSubscription(membership, dentistId),
+        member.createPhoneNumber({
+          number: req.body.phone,
+        }),
+      ])
+    )
+    .then(([subscription, phone]) => {
+      const response = member.toJSON();
+      response.subscription = subscription.toJSON();
+      response.phone = phone.toJSON();
 
-    res.status(HTTPStatus.CREATED);
-    res.json({ data: member.toJSON() });
-  });
+      res.status(HTTPStatus.CREATED);
+      res.json({ data: _.omit(response, ['salt', 'hash', 'dentistSpecialtyId',
+        'authorizeId', 'isDeleted', 'paymentId', 'resetPasswordKey', 'verified'
+      ]) });
+    })
+    .catch((errors) => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
+      }
+
+      return next(errors);
+    });
 }
 
-function updateFamilyMember(req, res, next) {
-  req.checkBody(FAMILY_MEMBER);
 
-  const errors = req.validationErrors(true);
+function updateMember(req, res, next) {
+  const memberValidator = Object.assign({}, MEMBER);
 
-  if (errors) {
-    return next(new BadRequestError(errors));
+  if (req.locals.member.email === req.body.email) {
+    delete memberValidator.email;
   }
 
-  const data = _.pick(req.body,
-    ['email', 'firstName', 'lastName', 'phone', 'birthDate', 'familyRelationship']);
+  req.checkBody(memberValidator);
 
-  // if userId is undefined set body param, this should only for admin endpoints
-  if (req.params.userId === undefined) {
-    data.userId = req.body.userId;
-  }
+  const data = _.pick(req.body, ['email', 'firstName', 'lastName',
+    'birthDate', 'familyRelationship']);
 
-  const firstYears = moment()
-    .diff(req.locals.familyMember.get('birthDate'), 'years', false);
-
-  return req.locals.familyMember.update(data).then((member) => {
-    const years = moment().diff(member.get('birthDate'), 'years', false);
-    if (years !== firstYears) {
-      let subscription;
-      // TODO: improve query
-      db.Subscription.find({
-        attributes: ['dentistId', 'id'],
-        where: {
-          clientId: req.params.userId === 'me' ?
-            req.user.get('id') : req.params.userId,
-        },
-        raw: true,
-      }).then(_subscription => {
-        subscription = _subscription;
-
-        return db.DentistInfo.find({
-          attributes: ['membershipId', 'childMembershipId'],
-          where: {
-            userId: subscription.dentistId,
-          },
-          raw: true,
+  req
+    .asyncValidationErrors(true)
+    .then(() => db.User.update(data, {
+      where: { addedBy: req.params.userId, id: req.params.memberId },
+    }))
+    .then(() => {
+      if (req.locals.member.phone !== req.body.phone) {
+        return db.Phone.update({ number: req.body.phone }, {
+          where: { userId: req.params.memberId },
         });
-      }).then(info => {
-        if (years < 13) {
-          return db.Membership.find({ where: { id: info.childMembershipId } });
-        }
-        return db.Membership.find({ where: { id: info.membershipId } });
-      }).then(membership =>
-        // FIXME: only update current subscription
-        db.MemberSubscription.update({
-          total: membership.price,
-          monthly: membership.monthly,
-          subscriptionId: subscription.id,
-        }, { where: {
-          memberId: member.get('id'),
-          subscriptionId: subscription.id,
-        } })
-      );
+      }
+
+      return null;
+    })
+    .then(() => {
+      const years = moment().diff(req.body.birthDate, 'years', false);
+      const oldYears = moment().diff(
+        req.locals.member.birthDate, 'years', false);
+      let subscriptionId;
+
+      if (years !== oldYears) {
+        return db.Subscription.find({
+          attributes: ['dentistId', 'id'],
+          where: {
+            clientId: req.params.memberId,
+          },
+          order: '"createdAt" DESC',
+          raw: true,
+        }).then(subscription => {
+          subscriptionId = subscription.id;
+
+          return db.DentistInfo.find({
+            attributes: ['membershipId', 'childMembershipId'],
+            where: {
+              userId: subscription.dentistId,
+            },
+            raw: true,
+          });
+        }).then(info => {
+          if (years < 13) {
+            return db.Membership.find({
+              where: { id: info.childMembershipId }
+            });
+          }
+          return db.Membership.find({ where: { id: info.membershipId } });
+        }).then(membership => {
+          req.locals.member.subscription.total = membership.price;
+          req.locals.member.subscription.monthly = membership.monthly;
+          req.locals.member.subscription.membershipId = membership.id;
+
+          return db.Subscription.update({
+            total: membership.price,
+            monthly: membership.monthly,
+            membershipId: membership.id,
+          }, {
+            where: {
+              memberId: req.locals.member.get('id'),
+              id: subscriptionId,
+            }
+          });
+        });
+      }
+      return null;
+    })
+    .then(() => {
+      Object.assign(req.locals.member, data);
+      req.locals.member.phone = req.body.phone;
+      next();
+    })
+    .catch((errors) => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
+      }
+
+      return next(errors);
+    });
+}
+
+
+/**
+ * Fill req.locals.familyMember with the requested member on url params,
+ * if allowed call next middleware.
+ *
+ */
+function getMemberFromParam(req, res, next) {
+  const memberId = req.params.memberId;
+  const userId = req.params.userId;
+  const addedBy = userId === 'me' ? req.user.get('id') : userId;
+
+  db.User.getMyMember(addedBy, memberId).then((member) => {
+    if (!member) {
+      return next(new NotFoundError());
     }
-    res.json({ data: member.toJSON() });
+
+    req.locals.member = member;
+    return next();
+  }).catch((error) => {
+    next(error);
   });
 }
 
 
-function deleteFamilyMember(req, res) {
-  req.locals.familyMember.update({ isDeleted: true }).then(() => res.json({}));
+function getMember(req, res) {
+  res.json({ data: req.locals.member });
+}
+
+
+function deleteMember(req, res) {
+  db.User.update({ isDeleted: true }, {
+    where: {
+      id: req.locals.member.id,
+    },
+  }).then(() => res.json({}));
 }
 
 
@@ -276,23 +283,25 @@ router
     getMembers)
   .post(
     passport.authenticate('jwt', { session: false }),
-    addFamilyMember);
+    checkPermissions,
+    addMember);
 
 
 router
-  .route('/:familyMemberId')
+  .route('/:memberId')
   .get(
     passport.authenticate('jwt', { session: false }),
-    getFamilyMemberFromParam,
-    getFamilyMember)
+    getMemberFromParam,
+    getMember)
   .put(
     passport.authenticate('jwt', { session: false }),
-    getFamilyMemberFromParam,
-    updateFamilyMember)
+    getMemberFromParam,
+    updateMember,
+    getMember)
   .delete(
     passport.authenticate('jwt', { session: false }),
-    getFamilyMemberFromParam,
-    deleteFamilyMember);
+    getMemberFromParam,
+    deleteMember);
 
 
 export default router;
