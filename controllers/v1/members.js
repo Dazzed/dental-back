@@ -130,7 +130,7 @@ function addMember(req, res, next) {
     .then(([subscription, phone]) => {
       const response = member.toJSON();
       response.subscription = subscription.toJSON();
-      response.phone = phone.toJSON();
+      response.phone = phone.toJSON().number;
 
       res.status(HTTPStatus.CREATED);
       res.json({ data: _.omit(response, ['salt', 'hash', 'dentistSpecialtyId',
