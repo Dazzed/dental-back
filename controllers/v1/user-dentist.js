@@ -4,6 +4,8 @@ import changeFactory from 'change-js';
 import isPlainObject from 'is-plain-object';
 import db from '../../models';
 import { BadRequestError } from '../errors';
+import { checkUserDentistPermission } from '../../utils/permissions';
+
 import {
   createCreditCard,
   updateCreditCard,
@@ -22,128 +24,72 @@ function getDentist(req, res, next) {
 }
 
 
-/**
- * Return latest bill.
- *
- */
-function getBill(req, res, next) {
-  // FIXME: Do better request, now just for testing
-  db.Subscription.find({
-    where: {
-      clientId: req.user.get('id'),
-      $or: [{ status: 'inactive' }, { status: 'active' }],
-    },
-  }).then(subscription => {
-    if (subscription) {
-      return Promise.all([
-        subscription,
-        subscription.getItems({ include: [{
-          model: db.FamilyMember,
-          as: 'member',
-          where: { isDeleted: false },
-        }] }),
-      ]);
-    }
-    return [];
-  }).then(([subscription, members]) => {
-    if (subscription) {
-      let total = new Change({
-        dollars: req.user.get('accountHolder') ?
-          subscription.get('monthly') : 0,
-      });
+function getPendingAmount(req, res, next) {
+  let userId = req.params.userId;
+  let dentistId = undefined;
 
-      members.forEach(item => {
-        total = total.add(new Change({ dollars: item.get('monthly') }));
-      });
+  if (userId === 'me' && req.user.get('type') === 'dentist') {
+    return next(new BadRequestError('Dentist donnot have subscription'));
+  }
 
-      return res.json({
-        total: total.cents,
-        status: subscription.status,
-        endAt: subscription.endAt,
-      });
-    }
+  userId = userId === 'me' ? req.user.get('id') : userId;
 
-    return res.json({});
-  }).catch(next);
+  if (req.user.get('type') === 'dentist') {
+    dentistId = req.user.get('id');
+  }
+
+  db.Subscription.getPendingAmount(userId, dentistId)
+    .then(({ total }) => {
+      res.json({ data: total });
+    })
+    .catch(next);
 }
 
 
 function chargeBill(req, res, next) {
-  const userId =
-    req.params.userId === 'me' ? req.user.get('id') : req.params.userId;
+  let userId = req.params.userId;
+  let dentistId = undefined;
 
-  db.Subscription.find({
-    where: { clientId: userId, status: 'inactive' },
-    include: [{
-      attributes: ['payingMember', 'firstName', 'lastName'],
-      model: db.User,
-      as: 'client',
-    }]
-  }).then(subscription => {
-    if (subscription) {
-      return Promise.all([
-        subscription,
-        subscription.getItems({ include: [{
-          model: db.FamilyMember,
-          as: 'member',
-          where: { isDeleted: false },
-        }] }),
-      ]);
-    }
-    return [];
-  }).then(([subscription, members]) => {
-    if (subscription) {
-      let total = new Change({ dollars: 0 });
-      const data = {
-        members: []
-      };
+  if (userId === 'me' && req.user.get('type') === 'dentist') {
+    return next(new BadRequestError('Dentist donnot have subscription'));
+  }
 
-      if (subscription.get('client').get('payingMember')) {
-        const name = subscription.get('client').get('firstName') +
-          subscription.get('client').get('firstName');
+  userId = userId === 'me' ? req.user.get('id') : userId;
 
-        data.members.push({
-          fullName: name,
-          monthly: subscription.get('monthly'),
+  if (req.user.get('type') === 'dentist') {
+    dentistId = req.user.get('id');
+  }
+
+  db.Subscription.getPendingAmount(userId, dentistId)
+    .then(({ total, ids, data, userIds }) => {
+      if (total > 0) {
+        chargeAuthorize(
+          req.locals.chargeTo.authorizeId,
+          req.locals.chargeTo.paymentId,
+          data
+        ).then(transactionId => {
+          db.Subscription.update({
+            paidAt: new Date(),
+            status: 'active',
+            chargeID: transactionId,
+          }, {
+            where: { id: { $in: ids } },
+          }).then(() => {
+            return res.json({ data: userIds });
+          });
+        }).catch(errors => {
+          if (isPlainObject(errors.json)) {
+            return next(new BadRequestError(errors.json));
+          }
+
+          return next(errors);
         });
-
-        total = new Change({ dollars: subscription.get('monthly') });
+      } else {
+        res.json({ data: ids });
       }
+    })
+    .catch(next);
 
-      members.forEach(item => {
-        total = total.add(new Change({ dollars: item.get('monthly') }));
-        const name = item.get('member').get('firstName') +
-          item.get('member').get('firstName');
-
-        data.members.push({
-          fullName: name,
-          monthly: item.get('monthly'),
-        });
-      });
-
-      data.total = total.dollars().toFixed(2);
-
-      chargeAuthorize(
-        req.locals.chargeTo.authorizeId,
-        req.locals.chargeTo.paymentId,
-        data
-      ).then(transactionId => {
-        subscription.update({
-          paidAt: new Date(),
-          status: 'active',
-          chargeID: transactionId,
-        });
-
-        return res.json({ status: 'active' });
-      }).catch(errors => {
-        if (isPlainObject(errors.json)) {
-          return next(new BadRequestError(errors.json));
-        }
-
-        return next(errors);
-      });
-    }
-  }).catch(next);
 }
 
 
@@ -285,19 +231,22 @@ router
   .route('/dentist')
   .get(
     passport.authenticate('jwt', { session: false }),
+    checkUserDentistPermission,
     getDentist);
 
 
 router
-  .route('/bill')
+  .route('/pending-amount')
   .get(
     passport.authenticate('jwt', { session: false }),
-    getBill);
+    checkUserDentistPermission,
+    getPendingAmount);
 
 router
   .route('/charge-bill')
   .post(
     passport.authenticate('jwt', { session: false }),
+    checkUserDentistPermission,
     ensureCreditCard,
     chargeBill);
 
@@ -305,6 +254,7 @@ router
   .route('/reports')
   .get(
     passport.authenticate('jwt', { session: false }),
+    checkUserDentistPermission,
     generateReport);
 
 

@@ -6,6 +6,7 @@ import moment from 'moment';
 import isPlainObject from 'is-plain-object';
 
 import db from '../../models';
+import { checkUserDentistPermission } from '../../utils/permissions';
 
 import {
   MEMBER,
@@ -19,36 +20,6 @@ import {
 
 
 const router = new Router({ mergeParams: true });
-
-
-function checkPermissions(req, res, next) {
-  const userId = req.params.userId;
-
-  const canEdit =
-    userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-    req.user.get('type') === 'admin';
-
-  if (!canEdit && req.user.get('type') !== 'dentist') {
-    return next(new ForbiddenError());
-  }
-
-  // last try to see if subscription exists and are releated with
-  // account holder.
-  if (req.user.get('type') === 'dentist' && !canEdit) {
-    return db.Subscription.getCurrentSubscription(userId)
-      .then(subscription => {
-        if (!subscription &&
-          subscription.get('dentistId') !== req.user.get('id')) {
-          return next(new ForbiddenError());
-        }
-
-        return next();
-      })
-      .catch(next);
-  }
-
-  return next();
-}
 
 
 function getMembers(req, res, next) {
@@ -279,11 +250,11 @@ router
   .route('/')
   .get(
     passport.authenticate('jwt', { session: false }),
-    checkPermissions,
+    checkUserDentistPermission,
     getMembers)
   .post(
     passport.authenticate('jwt', { session: false }),
-    checkPermissions,
+    checkUserDentistPermission,
     addMember);
 
 
