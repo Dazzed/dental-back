@@ -47,14 +47,11 @@ function getUnreadCount(req, res, next) {
         });
       }
 
-      return conversation.id;
-    })
-    .then(conversationId => {
-      db.Message
+      return db.Message
         .count({
           where: {
             isRead: false,
-            conversationId,
+            conversationId: conversation.id,
             userId: req.params.recipentId,
           }
         })

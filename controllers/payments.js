@@ -25,9 +25,15 @@ export function createCreditCard(user, card) {
   const paymentType = new APIContracts.PaymentType();
   paymentType.setCreditCard(creditCard);
 
+  const customerAddress = new APIContracts.CustomerAddressType();
+  customerAddress.setAddress(card.address);
+  customerAddress.setZip(card.zip);
+  customerAddress.setCountry('USA');
+
   const paymentProfileType = new APIContracts.CustomerPaymentProfileType();
   paymentProfileType.setCustomerType(APIContracts.CustomerTypeEnum.INDIVIDUAL);
   paymentProfileType.setPayment(paymentType);
+  paymentProfileType.setBillTo(customerAddress);
 
   const paymentProfilesList = [];
   paymentProfilesList.push(paymentProfileType);
@@ -41,11 +47,7 @@ export function createCreditCard(user, card) {
   createRequest.setProfile(customerProfileType);
   createRequest.setMerchantAuthentication(authentication);
 
-  if (process.env.NODE_ENV !== 'production') {
-    createRequest.setValidationMode(APIContracts.ValidationModeEnum.TESTMODE);
-  } else {
-    createRequest.setValidationMode(APIContracts.ValidationModeEnum.LIVEMODE);
-  }
+  createRequest.setValidationMode(APIContracts.ValidationModeEnum.LIVEMODE);
 
   const ctrl =
     new APIControllers.CreateCustomerProfileController(createRequest.getJSON());
@@ -97,20 +99,22 @@ export function updateCreditCard(profileId, paymentId, card) {
   const paymentType = new APIContracts.PaymentType();
   paymentType.setCreditCard(creditCard);
 
+  const customerAddress = new APIContracts.CustomerAddressType();
+  customerAddress.setAddress(card.address);
+  customerAddress.setZip(card.zip);
+  customerAddress.setCountry('USA');
+
   const customerForUpdate = new APIContracts.CustomerPaymentProfileExType();
   customerForUpdate.setPayment(paymentType);
   customerForUpdate.setCustomerPaymentProfileId(paymentId);
+  customerForUpdate.setBillTo(customerAddress);
 
   const updateRequest = new APIContracts.UpdateCustomerPaymentProfileRequest();
   updateRequest.setMerchantAuthentication(authentication);
   updateRequest.setCustomerProfileId(profileId);
   updateRequest.setPaymentProfile(customerForUpdate);
 
-  if (process.env.NODE_ENV !== 'production') {
-    updateRequest.setValidationMode(APIContracts.ValidationModeEnum.TESTMODE);
-  } else {
-    updateRequest.setValidationMode(APIContracts.ValidationModeEnum.LIVEMODE);
-  }
+  updateRequest.setValidationMode(APIContracts.ValidationModeEnum.LIVEMODE);
 
   const ctrl = new APIControllers.UpdateCustomerPaymentProfileController(
     updateRequest.getJSON()
@@ -158,11 +162,7 @@ export function validateCreditCard(profileId, paymentId, cvc) {
   request.setCustomerProfileId(profileId);
   request.setCustomerPaymentProfileId(paymentId);
   request.setCardCode(cvc);
-  if (process.env.NODE_ENV !== 'production') {
-    request.setValidationMode(APIContracts.ValidationModeEnum.TESTMODE);
-  } else {
-    request.setValidationMode(APIContracts.ValidationModeEnum.LIVEMODE);
-  }
+  request.setValidationMode(APIContracts.ValidationModeEnum.LIVEMODE);
 
   const ctrl = new APIControllers.ValidateCustomerPaymentProfileController(
     request.getJSON()
@@ -215,6 +215,13 @@ export function chargeAuthorize(profileId, paymentId, data) {
   // orderDetails.setInvoiceNumber('INV-12345');
   orderDetails.setDescription('Subscription');
 
+  const transactionSetting = new APIContracts.SettingType();
+  transactionSetting.setSettingName('duplicateWindow');
+  transactionSetting.setSettingValue(0);
+
+  const transactionSettings = new APIContracts.ArrayOfSetting();
+  transactionSettings.setSetting([transactionSetting]);
+
   const lineItemList = [];
 
   data.members.forEach((member, index) => {
@@ -238,6 +245,7 @@ export function chargeAuthorize(profileId, paymentId, data) {
   transactionRequestType.setAmount(data.total);
   transactionRequestType.setLineItems(lineItems);
   transactionRequestType.setOrder(orderDetails);
+  transactionRequestType.setTransactionSettings(transactionSettings);
 
   const createRequest = new APIContracts.CreateTransactionRequest();
   createRequest.setMerchantAuthentication(authentication);
@@ -331,6 +339,7 @@ export function getCreditCardInfo(profileId, paymentId) {
       if (response != null) {
         if (response.getMessages().getResultCode() == APIContracts.MessageTypeEnum.OK) {  // eslint-disable-line
           const cc = response.getPaymentProfile().getPayment().getCreditCard();
+          const address = response.getPaymentProfile().getBillTo();
           let middle;
 
           let expiry = cc.getExpirationDate();
@@ -347,6 +356,8 @@ export function getCreditCardInfo(profileId, paymentId) {
           ].join('-');
 
           resolve({
+            address: address.getAddress(),
+            zip: address.getZip(),
             cvc: 'XXX',
             expiry,
             number,
