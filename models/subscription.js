@@ -1,5 +1,7 @@
 import { SUBSCRIPTION_STATES } from '../config/config';
 
+import { instance, model } from '../orm-methods/subscriptions';
+
 
 export default function (sequelize, DataTypes) {
   const Subscription = sequelize.define('Subscription', {
@@ -34,7 +36,10 @@ export default function (sequelize, DataTypes) {
     },
   }, {
     tableName: 'subscriptions',
-    classMethods: {
+
+    instanceMethods: instance,
+
+    classMethods: Object.assign({
       associate(models) {
         Subscription.belongsTo(models.Membership, {
           foreignKey: 'membershipId',
@@ -51,13 +56,8 @@ export default function (sequelize, DataTypes) {
           foreignKey: 'dentistId',
           as: 'dentist',
         });
-
-        Subscription.hasMany(models.MemberSubscription, {
-          foreignKey: 'subscriptionId',
-          as: 'items',
-        });
       }
-    }
+    }, model),
   });
 
   return Subscription;

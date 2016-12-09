@@ -1,8 +1,12 @@
 import passportLocalSequelize from 'passport-local-sequelize';
+
+import { instance, model } from '../orm-methods/users';
+
 import {
   SEX_TYPES,
   PREFERRED_CONTACT_METHODS,
   USER_TYPES,
+  MEMBER_RELATIONSHIP_TYPES,
 } from '../config/constants';
 
 export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'avatar', 'salt',
@@ -104,10 +108,17 @@ export default function (sequelize, DataTypes) {
     paymentId: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    }
+    },
+    familyRelationship: {
+      type: new DataTypes.ENUM(Object.keys(MEMBER_RELATIONSHIP_TYPES)),
+      allowNull: true,
+    },
   }, {
     tableName: 'users',
-    classMethods: {
+
+    instanceMethods: instance,
+
+    classMethods: Object.assign({
       associate(models) {
         // Phone numbers relationship
         User.hasMany(models.Phone, {
@@ -124,9 +135,9 @@ export default function (sequelize, DataTypes) {
         });
 
         // FamilyMember relationship
-        User.hasMany(models.FamilyMember, {
-          foreignKey: 'userId',
-          as: 'familyMembers',
+        User.hasMany(User, {
+          foreignKey: 'addedBy',
+          as: 'members',
           allowNull: true
         });
 
@@ -187,7 +198,7 @@ export default function (sequelize, DataTypes) {
           ],
         });
       }
-    }
+    }, model),
   });
 
   passportLocalSequelize.attachToUser(User, {
