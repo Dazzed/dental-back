@@ -84,6 +84,41 @@ export const NORMAL_USER_REGISTRATION = {
 };
 
 
+export const COMPLETE_NORMAL_USER_REGISTRATION = {
+  birthDate: {
+    notEmpty: true,
+    isDate: true,
+  },
+  sex: {
+    isIn: {
+      options: [Object.keys(SEX_TYPES)],
+    },
+  },
+  officeId: {
+    notEmpty: true,
+    existsInDB: {
+      options: ['DentistInfo', 'id'],
+      errorMessage: 'Dentist office does not exists',
+    }
+  },
+  phone: {
+    notEmpty: true,
+  },
+  address: {
+    notEmpty: true,
+  },
+  city: {
+    notEmpty: true,
+  },
+  state: {
+    notEmpty: true,
+  },
+  zipCode: {
+    notEmpty: true,
+  },
+};
+
+
 export const MEMBER = {
   firstName: {
     notEmpty: true,
