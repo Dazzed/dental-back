@@ -2,6 +2,9 @@ import { Router } from 'express';
 import passport from 'passport';
 import isPlainObject from 'is-plain-object';
 import HTTPStatus from 'http-status';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
+import aws from 'aws-sdk';
 import _ from 'lodash';
 
 import db from '../../models';
@@ -22,6 +25,19 @@ import {
 
 const router = new Router();
 
+const s3 = new aws.S3();
+const upload = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.S3_BUCKER || 'dentalmarket',
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    acl: 'public-read',
+    key(req, file, cb) {
+      cb(null, Date.now().toString());
+    },
+  }),
+});
+
 
 /**
  * Fill req.locals.user with the requested used on url params and
@@ -36,12 +52,17 @@ export function getUserFromParam(req, res, next) {
     return next();
   }
 
-  // TODO: Test if has subscription
-  if (req.user.get('type') === 'client') {
+  if (req.user.get('type') === 'client' && userId === 'me') {
     return next(new ForbiddenError());
   }
 
-  return db.User.getActiveUser(userId).then((user) => {
+  let accountOwner;
+
+  if (req.user.get('type') === 'client') {
+    accountOwner = req.user.get('id');
+  }
+
+  return db.User.getActiveUser(userId, accountOwner).then((user) => {
     if (!user) {
       return next(new NotFoundError());
     }
@@ -121,12 +142,21 @@ function getCardInfo(req, res, next) {
     return getCreditCardInfo(
       req.locals.user.get('authorizeId'),
       req.locals.user.get('paymentId')
-    ).then(info => {
+    ).then((info) => {
       res.json({ data: info });
     });
   }
 
   return next(new NotFoundError());
+}
+
+
+function uploadAvatar(req, res, next) {
+  req.locals.user.update({ avatar: req.file })
+    .then(() => {
+      res.json({ data: req.file });
+    })
+    .catch(next);
 }
 
 
@@ -144,6 +174,14 @@ router
     passport.authenticate('jwt', { session: false }),
     getUserFromParam,
     updateUser);
+
+router
+  .route('/:userId/upload-avatar')
+  .post(
+    passport.authenticate('jwt', { session: false }),
+    getUserFromParam,
+    upload.single('avatar'),
+    uploadAvatar);
 
 router
   .route('/:userId/credit-card')
