@@ -67,19 +67,10 @@ export const NORMAL_USER_REGISTRATION = {
   lastName: {
     notEmpty: true,
   },
-  birthDate: {
-    notEmpty: true,
-    isDate: true,
-  },
-  sex: {
-    isIn: {
-      options: [Object.keys(SEX_TYPES)],
-    },
-  },
   password: {
     notEmpty: true,
     matches: {
-      options: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\$\/\*!]{6,}$/]
+      options: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d$/*!]{6,}$/]
     },
     errorMessage: 'Password should have at least 6 characters, upper case, lower case and numbers.'
   },
@@ -90,16 +81,6 @@ export const NORMAL_USER_REGISTRATION = {
     isEmail: true,
     notEmpty: true,
   },
-  // tos: {
-  //   notEmpty: true,
-  // },
-  dentistId: {
-    notEmpty: true,
-    existsInDB: {
-      options: ['User', 'id', { type: 'dentist' }],
-      errorMessage: 'Dentist does not exists',
-    }
-  }
 };
 
 

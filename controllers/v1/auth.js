@@ -88,6 +88,7 @@ function normalUserSignup(req, res, next) {
     .asyncValidationErrors(true)
     .then(() => {
       const user = req.body;
+      user.verified = true;
 
       return new Promise((resolve, reject) => {
         db.User.register(user, user.password, (registerError, createdUser) => {
@@ -96,9 +97,9 @@ function normalUserSignup(req, res, next) {
           } else {
             resolve(createdUser);
 
-            res.mailer.send('auth/client/activation_required', {
+            res.mailer.send('auth/client/welcome', {
               to: user.email,
-              subject: EMAIL_SUBJECTS.client.activation_required,
+              subject: EMAIL_SUBJECTS.client.welcome,
               site: process.env.SITE,
               user: createdUser,
             }, (err, info) => {
@@ -114,43 +115,44 @@ function normalUserSignup(req, res, next) {
         });
       });
     })
-    .then(user => {
-      db.DentistInfo.find({
-        attributes: ['membershipId'],
-        where: { userId: req.body.dentistId },
-        include: [{
-          model: db.Membership,
-          as: 'membership',
-          attributes: ['id', 'price', 'monthly'],
-        }]
-      }).then(info => {
-        if (info) {
-          const membership = info.membership.toJSON();
-          const today = moment();
-
-          db.Subscription.create({
-            startAt: today,
-            endAt: today.add(1, 'months'),
-            total: membership.price,
-            monthly: membership.monthly,
-            membershipId: membership.id,
-            clientId: user.get('id'),
-            dentistId: req.body.dentistId,
-          });
-        }
-      });
-
-      return user;
-    }).then((user) => {
+    // .then(user => {
+    //   db.DentistInfo.find({
+    //     attributes: ['membershipId'],
+    //     where: { userId: req.body.dentistId },
+    //     include: [{
+    //       model: db.Membership,
+    //       as: 'membership',
+    //       attributes: ['id', 'price', 'monthly'],
+    //     }]
+    //   }).then(info => {
+    //     if (info) {
+    //       const membership = info.membership.toJSON();
+    //       const today = moment();
+    //
+    //       db.Subscription.create({
+    //         startAt: today,
+    //         endAt: today.add(1, 'months'),
+    //         total: membership.price,
+    //         monthly: membership.monthly,
+    //         membershipId: membership.id,
+    //         clientId: user.get('id'),
+    //         dentistId: req.body.dentistId,
+    //       });
+    //     }
+    //   });
+    //
+    //   return user;
+    // })
+    .then((user) => {
       const queries = [
         // This should be created so we can edit values
-        user.createPhoneNumber({ number: req.body.phone }),
-        user.createAddress({ value: req.body.address }),
+        user.createPhoneNumber({ number: '' }),
+        user.createAddress({ value: '' }),
       ];
 
-      if (req.body.address2) {
-        queries.push(user.createAddress({ value: req.body.address2 }));
-      }
+      // if (req.body.address2) {
+      //   queries.push(user.createAddress({ value: req.body.address2 }));
+      // }
 
       return Promise.all(queries);
     })
@@ -304,7 +306,6 @@ router
 router
   .route('/signup')
   .post(normalUserSignup);
-
 
 router
   .route('/dentist-signup')
