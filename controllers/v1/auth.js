@@ -146,8 +146,9 @@ function completeNormalUserSignup(req, res, next) {
   req
     .asyncValidationErrors(true)
     .then(() => {
-      const data = _.pick([
+      const data = _.pick(req.body, [
         'city', 'state', 'zipCode', 'birthDate', 'sex', 'payingMember',
+        'contactMethod',
       ]);
 
       req.user.update(data);
