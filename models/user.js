@@ -9,7 +9,7 @@ import {
   MEMBER_RELATIONSHIP_TYPES,
 } from '../config/constants';
 
-export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'avatar', 'salt',
+export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'salt',
   'activationKey', 'resetPasswordKey', 'verified', 'createdAt', 'updatedAt',
   'phone', 'address', 'isDeleted'];
 

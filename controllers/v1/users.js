@@ -2,8 +2,6 @@ import { Router } from 'express';
 import passport from 'passport';
 import isPlainObject from 'is-plain-object';
 import HTTPStatus from 'http-status';
-import multer from 'multer';
-import multerS3 from 'multer-s3';
 import aws from 'aws-sdk';
 import _ from 'lodash';
 
@@ -24,20 +22,6 @@ import {
 
 
 const router = new Router();
-
-const s3 = new aws.S3();
-const upload = multer({
-  storage: multerS3({
-    s3,
-    bucket: process.env.S3_BUCKER || 'dentalmarket',
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    acl: 'public-read',
-    key(req, file, cb) {
-      cb(null, Date.now().toString());
-    },
-  }),
-});
-
 
 /**
  * Fill req.locals.user with the requested used on url params and
@@ -151,12 +135,53 @@ function getCardInfo(req, res, next) {
 }
 
 
-function uploadAvatar(req, res, next) {
-  req.locals.user.update({ avatar: req.file })
-    .then(() => {
-      res.json({ data: req.file });
-    })
-    .catch(next);
+function signS3Upload(req, res, next) {
+  const s3 = new aws.S3();
+  const fileName = req.query['file-name'];
+  const fileType = req.query['file-type'];
+  const key = Date.now().toString();
+
+// const upload = multer({
+//   storage: multerS3({
+//     s3,
+//     bucket: process.env.S3_BUCKER || 'dentalmarket',
+//     contentType: multerS3.AUTO_CONTENT_TYPE,
+//     acl: 'public-read',
+//     key(req, file, cb) {
+//       cb(null, Date.now().toString());
+//     },
+//   }),
+// });
+
+  const s3Params = {
+    Bucket: process.env.S3_BUCKET,
+    Key: key,
+    Expires: 60,
+    ContentType: fileType,
+    ACL: 'public-read'
+  };
+
+  s3.getSignedUrl('putObject', s3Params, (err, data) => {
+    if (err) {
+      return next(err);
+    }
+
+    const location = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${key}`;
+    const avatar = {
+      location,
+      type: fileType,
+      originalName: fileName,
+    };
+
+    req.locals.user.update({ avatar });
+
+    const returnData = {
+      signedRequest: data,
+      avatar,
+    };
+
+    return res.json(returnData);
+  });
 }
 
 
@@ -176,12 +201,11 @@ router
     updateUser);
 
 router
-  .route('/:userId/upload-avatar')
-  .post(
+  .route('/:userId/sign-avatar')
+  .get(
     passport.authenticate('jwt', { session: false }),
     getUserFromParam,
-    upload.single('avatar'),
-    uploadAvatar);
+    signS3Upload);
 
 router
   .route('/:userId/credit-card')
