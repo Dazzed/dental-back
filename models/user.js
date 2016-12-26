@@ -9,7 +9,7 @@ import {
   MEMBER_RELATIONSHIP_TYPES,
 } from '../config/constants';
 
-export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'avatar', 'salt',
+export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'salt',
   'activationKey', 'resetPasswordKey', 'verified', 'createdAt', 'updatedAt',
   'phone', 'address', 'isDeleted'];
 
@@ -182,20 +182,33 @@ export default function (sequelize, DataTypes) {
         });
       },
 
-      getActiveUser(id) {
-        return User.findById(id, {
+      getActiveUser(id, accountOwner) {
+        const where = {
+          id,
+          isDeleted: false,
+          verified: true,
+        };
+
+        if (accountOwner) {
+          where.addedBy = accountOwner;
+          delete where.verified;
+        }
+
+        return User.find({
+          where,
           attributes: {
             exclude: EXCLUDE_FIELDS_LIST,
           },
-          where: { isDeleted: false, verified: true },
-          include: [
-            { model: User.sequelize.models.Address, as: 'addresses' },
-            { model: User.sequelize.models.Phone, as: 'phoneNumbers' },
-            {
-              model: User.sequelize.models.DentistSpecialty,
-              as: 'dentistSpecialty'
-            },
-          ],
+          include: [{
+            model: User.sequelize.models.Address,
+            as: 'addresses',
+          }, {
+            model: User.sequelize.models.Phone,
+            as: 'phoneNumbers',
+          }, {
+            model: User.sequelize.models.DentistSpecialty,
+            as: 'dentistSpecialty',
+          }],
         });
       }
     }, model),
