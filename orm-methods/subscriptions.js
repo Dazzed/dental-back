@@ -44,7 +44,7 @@ export const model = {
           }],
         },
       }],
-    }).then(result => {
+    }).then((result) => {
       let total = new Change({ cents: 0 });
       const ids = [];
       const userIds = [];
@@ -52,7 +52,7 @@ export const model = {
         members: [],
       };
 
-      result.forEach(item => {
+      result.forEach((item) => {
         item = item.toJSON();
         total = total.add(new Change({ dollars: item.monthly }));
         data.members.push({
@@ -61,7 +61,7 @@ export const model = {
         });
         ids.push(item.id);
         userIds.push(item.client.id);
-      })
+      });
 
       total = total.dollars().toFixed(2);
       data.total = total;
