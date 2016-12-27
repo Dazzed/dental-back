@@ -122,19 +122,22 @@ function updateUser(req, res, next) {
 
 
 function getCardInfo(req, res, next) {
+  const queries = [
+    db.Subscription.getPendingAmount(req.locals.user.get('id')),
+  ];
+
   if (req.locals.user.get('authorizeId') && req.locals.user.get('paymentId')) {
-    return Promise.all([
+    queries.push(
       getCreditCardInfo(
         req.locals.user.get('authorizeId'),
         req.locals.user.get('paymentId')
       ),
-      db.Subscription.getPendingAmount(req.locals.user.get('id')),
-    ]).then(([info, { data }]) => {
-      res.json({ data: { info, details: data } });
-    });
+    );
   }
 
-  return next(new NotFoundError());
+  Promise.all(queries).then(([{ data }, info]) => {
+    res.json({ data: { info, details: data } });
+  }).catch(next);
 }
 
 
