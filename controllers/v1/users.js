@@ -123,11 +123,14 @@ function updateUser(req, res, next) {
 
 function getCardInfo(req, res, next) {
   if (req.locals.user.get('authorizeId') && req.locals.user.get('paymentId')) {
-    return getCreditCardInfo(
-      req.locals.user.get('authorizeId'),
-      req.locals.user.get('paymentId')
-    ).then((info) => {
-      res.json({ data: info });
+    return Promise.all([
+      getCreditCardInfo(
+        req.locals.user.get('authorizeId'),
+        req.locals.user.get('paymentId')
+      ),
+      db.Subscription.getPendingAmount(req.locals.user.get('id')),
+    ]).then(([info, { data }]) => {
+      res.json({ data: { info, details: data } });
     });
   }
 
