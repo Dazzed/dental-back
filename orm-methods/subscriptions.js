@@ -36,6 +36,7 @@ export const model = {
         as: 'client',
         attributes: ['firstName', 'lastName', 'id'],
         where: {
+          isDeleted: false,
           $or: [{
             addedBy: userId,
           }, {
