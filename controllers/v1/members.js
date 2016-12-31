@@ -50,7 +50,7 @@ function addMember(req, res, next) {
     .asyncValidationErrors(true)
     .then(() => {
       data = _.pick(req.body, ['email', 'firstName', 'lastName',
-        'phone', 'birthDate', 'familyRelationship']);
+        'phone', 'birthDate', 'familyRelationship', 'sex', 'contactMethod']);
 
       // if user is me update id.
       if (userId === 'me') {
@@ -128,7 +128,7 @@ function updateMember(req, res, next) {
   req.checkBody(memberValidator);
 
   const data = _.pick(req.body, ['email', 'firstName', 'lastName',
-    'birthDate', 'familyRelationship']);
+    'birthDate', 'familyRelationship', 'sex', 'contactMethod']);
 
   req
     .asyncValidationErrors(true)

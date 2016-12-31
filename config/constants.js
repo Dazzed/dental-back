@@ -92,7 +92,7 @@ export const CONTACT_SUPPORT_EMAIL = 'support@cawasa.com';
 
 export const EMAIL_SUBJECTS = {
   client: {
-    activation_required: 'Activate Your Account',
+    welcome: 'Welcome to the Dental Marketplace!',
   },
   dentist: {
     activation_required: 'Activate Your Account',

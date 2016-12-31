@@ -25,6 +25,7 @@ const expressValidator = require('express-validator');
 const validators = require('./utils/express-validators');
 const mailer = require('express-mailer');
 const nunjucks = require('nunjucks');
+const aws = require('aws-sdk');
 
 const app = express();
 
@@ -37,7 +38,13 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(isDeveloment ? 'dev' : 'combined'));
 }
 
-var mailerOptions = { transportMethod: 'Stub' };
+aws.config.update({
+  secretAccessKey: process.env.S3_SECRET_KEY,
+  accessKeyId: process.env.S3_ACCESS_KEY,
+  region: process.env.S3_REGION,
+});
+
+let mailerOptions = { transportMethod: 'Stub' };
 
 if (process.env.NODE_ENV === 'production') {
   mailerOptions = {
@@ -60,7 +67,8 @@ nunjucks.configure('views', {
   express: app,
 });
 
-app.use(bodyParser.json({ type: '*/*' }));
+app.use(bodyParser.json({ limit: '4mb' }));
+app.use(bodyParser.urlencoded({ limit: '4mb', extended: true }));
 
 app.use(expressValidator({
   customValidators: {

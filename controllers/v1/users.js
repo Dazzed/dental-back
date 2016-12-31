@@ -2,6 +2,7 @@ import { Router } from 'express';
 import passport from 'passport';
 import isPlainObject from 'is-plain-object';
 import HTTPStatus from 'http-status';
+import aws from 'aws-sdk';
 import _ from 'lodash';
 
 import db from '../../models';
@@ -22,7 +23,6 @@ import {
 
 const router = new Router();
 
-
 /**
  * Fill req.locals.user with the requested used on url params and
  * call next middleware if allowed.
@@ -36,12 +36,17 @@ export function getUserFromParam(req, res, next) {
     return next();
   }
 
-  // TODO: Test if has subscription
-  if (req.user.get('type') === 'client') {
+  if (req.user.get('type') === 'client' && userId === 'me') {
     return next(new ForbiddenError());
   }
 
-  return db.User.getActiveUser(userId).then((user) => {
+  let accountOwner;
+
+  if (req.user.get('type') === 'client') {
+    accountOwner = req.user.get('id');
+  }
+
+  return db.User.getActiveUser(userId, accountOwner).then((user) => {
     if (!user) {
       return next(new NotFoundError());
     }
@@ -117,16 +122,72 @@ function updateUser(req, res, next) {
 
 
 function getCardInfo(req, res, next) {
+  const queries = [
+    db.Subscription.getPendingAmount(req.locals.user.get('id')),
+  ];
+
   if (req.locals.user.get('authorizeId') && req.locals.user.get('paymentId')) {
-    return getCreditCardInfo(
-      req.locals.user.get('authorizeId'),
-      req.locals.user.get('paymentId')
-    ).then(info => {
-      res.json({ data: info });
-    });
+    queries.push(
+      getCreditCardInfo(
+        req.locals.user.get('authorizeId'),
+        req.locals.user.get('paymentId')
+      ),
+    );
   }
 
-  return next(new NotFoundError());
+  Promise.all(queries).then(([{ data }, info]) => {
+    res.json({ data: { info, details: data } });
+  }).catch(next);
+}
+
+
+function signS3Upload(req, res, next) {
+  const s3 = new aws.S3();
+  const fileName = req.query['file-name'];
+  const fileType = req.query['file-type'];
+  const key = Date.now().toString();
+
+// const upload = multer({
+//   storage: multerS3({
+//     s3,
+//     bucket: process.env.S3_BUCKER || 'dentalmarket',
+//     contentType: multerS3.AUTO_CONTENT_TYPE,
+//     acl: 'public-read',
+//     key(req, file, cb) {
+//       cb(null, Date.now().toString());
+//     },
+//   }),
+// });
+
+  const s3Params = {
+    Bucket: process.env.S3_BUCKET,
+    Key: key,
+    Expires: 60,
+    ContentType: fileType,
+    ACL: 'public-read'
+  };
+
+  s3.getSignedUrl('putObject', s3Params, (err, data) => {
+    if (err) {
+      return next(err);
+    }
+
+    const location = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${key}`;
+    const avatar = {
+      location,
+      type: fileType,
+      originalName: fileName,
+    };
+
+    req.locals.user.update({ avatar });
+
+    const returnData = {
+      signedRequest: data,
+      avatar,
+    };
+
+    return res.json(returnData);
+  });
 }
 
 
@@ -144,6 +205,13 @@ router
     passport.authenticate('jwt', { session: false }),
     getUserFromParam,
     updateUser);
+
+router
+  .route('/:userId/sign-avatar')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    getUserFromParam,
+    signS3Upload);
 
 router
   .route('/:userId/credit-card')
