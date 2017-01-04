@@ -67,7 +67,8 @@ function getUser(req, res) {
 
 
 function deleteUser(req, res) {
-  req.locals.user.update({ isDeleted: true }).then(() => res.json({}));
+  let delEmail = "DELETED_"+req.locals.user.email;
+  req.locals.user.update({ email: delEmail, isDeleted: true }).then(() => res.json({}));
 }
 
 

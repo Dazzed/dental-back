@@ -238,7 +238,8 @@ function getMember(req, res) {
 
 
 function deleteMember(req, res) {
-  db.User.update({ isDeleted: true }, {
+  let delEmail = "DELETED_"+req.locals.member.email;
+  db.User.update({ email: delEmail, isDeleted: true }, {
     where: {
       id: req.locals.member.id,
     },
