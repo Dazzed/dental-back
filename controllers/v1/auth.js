@@ -112,6 +112,31 @@ function normalUserSignup(req, res, next) {
                 console.log(info);
               }
             });
+
+            db.DentistInfo.find({
+              attributes: ['membershipId', 'userId'],
+              where: { id: req.body.officeId },
+              include: [{
+                model: db.Membership,
+                as: 'membership',
+                attributes: ['id', 'price', 'monthly'],
+              }]
+            }).then((info) => {
+              if (info) {
+                const membership = info.membership.toJSON();
+                const today = moment();
+
+                db.Subscription.create({
+                  startAt: today,
+                  endAt: moment(today).add(1, 'months'),
+                  total: membership.price,
+                  monthly: membership.monthly,
+                  membershipId: membership.id,
+                  clientId: createdUser.id,
+                  dentistId: info.get('userId'),
+                });
+              }
+            });
           }
         });
       });
@@ -349,4 +374,3 @@ router
 
 
 export default router;
-
