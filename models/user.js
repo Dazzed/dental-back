@@ -10,7 +10,7 @@ import {
 } from '../config/constants';
 
 export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'salt',
-  'activationKey', 'resetPasswordKey', 'verified', 'createdAt', 'updatedAt',
+  'activationKey', 'resetPasswordKey', 'verified', 'updatedAt',
   'phone', 'address', 'isDeleted'];
 
 
