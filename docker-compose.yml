@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+    db:
+        image: postgres
+        environment:
+            POSTGRES_PASSWORD: dental
+            POSTGRES_USER: dental
+            POSTGRES_DB: dental
+        ports:
+            - "5432:5432"
+    backend:
+        build: ./
+        ports:
+            - "3090:3090"
+        links:
+            - db
+    frontend:
+        build: ../dentalhq-front-end
+        ports:
+            - "3000:3000"
