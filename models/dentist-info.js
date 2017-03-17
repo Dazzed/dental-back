@@ -49,12 +49,13 @@ export default function (sequelize, DataTypes) {
     tableName: 'dentistInfos',
     classMethods: {
       associate(models) {
-        DentistInfo.belongsToMany(models.Service, {
-          through: 'dentistInfoService',
+        // DentistInfo.belongsToMany(models.Service, {
+        DentistInfo.hasMany(models.Service, {
+          // through: 'dentistInfoService',
           foreignKey: 'dentistInfoId',
-          otherKey: 'serviceId',
+          // otherKey: 'serviceId',
           as: 'services',
-          timestamps: false,
+          // timestamps: false,
         });
 
         DentistInfo.belongsTo(models.Membership, {
@@ -81,4 +82,3 @@ export default function (sequelize, DataTypes) {
 
   return DentistInfo;
 }
-

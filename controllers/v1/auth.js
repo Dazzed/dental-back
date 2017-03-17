@@ -33,7 +33,7 @@ const router = new Router();
 
 // util methods
 
-function createDentistInfo(user) {
+function createDentistInfo(user, dentistInfo) {
   Promise.all([
     user.createMembership({
       name: 'default membership',
@@ -51,12 +51,14 @@ function createDentistInfo(user) {
       withDiscount: 0,
       price: 0,
       monthly: 0,
-    }),
+    })
   ]).then(([adult, child]) => {
-    user.createDentistInfo({
-      membershipId: adult.get('id'),
-      childMembershipId: child.get('id'),
-    }).then((info) => {
+    user.createDentistInfo(
+      Object.assign({
+        membershipId: adult.get('id'),
+        childMembershipId: child.get('id'),
+      }, dentistInfo)
+    ).then((info) => {
       DAYS.forEach(item => {
         info.createWorkingHour({ day: item });
       });
@@ -223,16 +225,20 @@ function completeNormalUserSignup(req, res, next) {
 
 
 function dentistUserSignup(req, res, next) {
+  const entireBody = req.body;
+  req.body = entireBody.user;
   req.checkBody(DENTIST_USER_REGISTRATION);
   req.checkBody('confirmPassword', 'Password do not match').equals(req.body.password);
   req.checkBody('confirmEmail', 'Email do not match').equals(req.body.email);
 
+  req.body = entireBody;
+
   req
     .asyncValidationErrors(true)
     .then(() => {
-      const user = _.omit(req.body, ['phone']);
+      const user = _.omit(req.body.user, ['phone']);
       user.type = 'dentist';
-      user.dentistSpecialtyId = req.body.specialtyId;
+      user.dentistSpecialtyId = req.body.user.specialtyId;
 
       return new Promise((resolve, reject) => {
         db.User.register(user, user.password, (registerError, createdUser) => {
@@ -240,7 +246,7 @@ function dentistUserSignup(req, res, next) {
             reject(registerError);
           } else {
             resolve(createdUser);
-            createDentistInfo(createdUser);
+            createDentistInfo(createdUser, req.body.officeInfo);
             res.mailer.send('auth/dentist/activation_required', {
               to: user.email,
               subject: EMAIL_SUBJECTS.client.activation_required,
@@ -261,7 +267,7 @@ function dentistUserSignup(req, res, next) {
     })
     .then((user) => (
       Promise.all([
-        user.createPhoneNumber({ number: req.body.phone }),
+        user.createPhoneNumber({ number: req.body.user.phone }),
         // This should be created so we can edit values
         user.createAddress({ value: '' }),
       ])

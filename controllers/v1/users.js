@@ -67,7 +67,7 @@ function getUser(req, res) {
 
 
 function deleteUser(req, res) {
-  let delEmail = "DELETED_"+req.locals.user.email;
+  const delEmail = `DELETED_${req.locals.user.email}`;
   req.locals.user.update({ email: delEmail, isDeleted: true }).then(() => res.json({}));
 }
 
@@ -132,7 +132,7 @@ function getCardInfo(req, res, next) {
       getCreditCardInfo(
         req.locals.user.get('authorizeId'),
         req.locals.user.get('paymentId')
-      ),
+      )
     );
   }
 

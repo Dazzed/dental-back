@@ -169,7 +169,7 @@ export const DENTIST_USER_REGISTRATION = {
   password: {
     notEmpty: true,
     matches: {
-      options: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\$\/\*!]{6,}$/]
+      options: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d$/*!]{6,}$/]
     },
     errorMessage: 'Password should have at least 6 characters, upper case, lower case and numbers.'
   },
