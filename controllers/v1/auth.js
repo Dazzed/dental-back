@@ -72,8 +72,10 @@ function createDentistInfo(user, req) {
       // });
     });
 
-    // pricing.forEach(item => {
-    // });
+    // create pricing records for the dentist.
+    pricing.forEach(item => {
+      adult.createItem(item);
+    });
 
     // ADULT_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
     //   adult.createItem({
