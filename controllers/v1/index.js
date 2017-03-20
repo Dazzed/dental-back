@@ -10,6 +10,7 @@ import messages from './messages';
 import dentists from './dentists';
 import userDentist from './user-dentist';
 import offices from './offices';
+import pricing from './pricing';
 
 // just one to one resources
 import dentistInfo from './dentist-info';
@@ -36,5 +37,6 @@ router.use('/members', members);
 router.use('/memberships', memberships);
 router.use('/services', services);
 router.use('/offices', offices);
+router.use('/pricing', pricing);
 
 export default router;

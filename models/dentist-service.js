@@ -1,16 +1,16 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
-  const DentistService = sequelize.define('DentistService', {
-    serviceId: {
-      type: DataTypes.NUMBER,
-      allowNull: false
-    },
-    dentistInfoId: {
-      type: DataTypes.NUMBER,
-      allowNull: false
-    }
+  const DentistService = sequelize.define('DentistInfoService', {
+    // serviceId: {
+    //   type: DataTypes.NUMBER,
+    //   allowNull: false
+    // },
+    // dentistInfoId: {
+    //   type: DataTypes.NUMBER,
+    //   allowNull: false
+    // }
   }, {
-    tableName: 'dentistServices',
+    tableName: 'dentistInfoService',
     classMethods: {
       associate(models) {
         DentistService.belongsTo(models.DentistInfo, {

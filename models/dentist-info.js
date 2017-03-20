@@ -49,7 +49,7 @@ export default function (sequelize, DataTypes) {
     tableName: 'dentistInfos',
     classMethods: {
       associate(models) {
-        DentistInfo.hasMany(models.DentistService, {
+        DentistInfo.hasMany(models.DentistInfoService, {
           // through: 'dentistInfoService',
           foreignKey: 'dentistInfoId',
           as: 'services'
