@@ -7,7 +7,7 @@ export default function (sequelize, DataTypes) {
   }, {
     tableName: 'services',
     classMethods: {
-      associate(models) {
+      associate() {
         // Service.belongsTo(models.DentistInfo, {
         //   foreignKey: 'dentistInfoId',
         //   as: 'dentistInfo',

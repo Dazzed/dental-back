@@ -33,7 +33,12 @@ const router = new Router();
 
 // util methods
 
-function createDentistInfo(user, dentistInfo) {
+function createDentistInfo(user, req) {
+  const dentistInfo = req.body.officeInfo;
+  const pricing = req.body.pricing;
+  const workingHours = req.body.workingHours;
+  const services = req.body.services;
+
   Promise.all([
     user.createMembership({
       name: 'default membership',
@@ -59,24 +64,30 @@ function createDentistInfo(user, dentistInfo) {
         childMembershipId: child.get('id'),
       }, dentistInfo)
     ).then((info) => {
-      DAYS.forEach(item => {
-        info.createWorkingHour({ day: item });
+      workingHours.forEach(item => {
+        info.createWorkingHour(item);
       });
+      // DAYS.forEach(item => {
+      //   info.createWorkingHour({ day: item });
+      // });
     });
 
-    ADULT_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
-      adult.createItem({
-        pricingCode: item.code,
-        price: 0,
-      });
-    });
+    // pricing.forEach(item => {
+    // });
 
-    CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
-      child.createItem({
-        pricingCode: item.code,
-        price: 0,
-      });
-    });
+    // ADULT_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
+    //   adult.createItem({
+    //     pricingCode: item.code,
+    //     price: 0,
+    //   });
+    // });
+    //
+    // CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
+    //   child.createItem({
+    //     pricingCode: item.code,
+    //     price: 0,
+    //   });
+    // });
   });
 }
 
@@ -246,7 +257,7 @@ function dentistUserSignup(req, res, next) {
             reject(registerError);
           } else {
             resolve(createdUser);
-            createDentistInfo(createdUser, req.body.officeInfo);
+            createDentistInfo(createdUser, req.body);
             res.mailer.send('auth/dentist/activation_required', {
               to: user.email,
               subject: EMAIL_SUBJECTS.client.activation_required,
