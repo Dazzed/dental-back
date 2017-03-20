@@ -22,9 +22,9 @@ import {
 
 import {
   EMAIL_SUBJECTS,
-  ADULT_MEMBERSHIP_ITEMS_DEFAULTS,
-  CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS,
-  DAYS,
+  // ADULT_MEMBERSHIP_ITEMS_DEFAULTS,
+  // CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS,
+  // DAYS,
 } from '../../config/constants';
 
 
@@ -35,9 +35,9 @@ const router = new Router();
 
 function createDentistInfo(user, req) {
   const dentistInfo = req.body.officeInfo;
-  const pricing = req.body.pricing;
-  const workingHours = req.body.workingHours;
-  const services = req.body.services;
+  const pricing = req.body.pricing || [];
+  const workingHours = req.body.workingHours || [];
+  const services = req.body.services || [];
 
   Promise.all([
     user.createMembership({
@@ -70,6 +70,11 @@ function createDentistInfo(user, req) {
       // DAYS.forEach(item => {
       //   info.createWorkingHour({ day: item });
       // });
+
+      // create services records for the dentist.
+      services.forEach(item => {
+        info.createService(item);
+      });
     });
 
     // create pricing records for the dentist.
