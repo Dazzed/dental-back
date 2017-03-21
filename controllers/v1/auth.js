@@ -22,7 +22,7 @@ import {
 
 import {
   EMAIL_SUBJECTS,
-  // ADULT_MEMBERSHIP_ITEMS_DEFAULTS,
+  ADULT_MEMBERSHIP_ITEMS_DEFAULTS,
   // CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS,
   // DAYS,
 } from '../../config/constants';
@@ -67,9 +67,6 @@ function createDentistInfo(user, req) {
       workingHours.forEach(item => {
         info.createWorkingHour(item);
       });
-      // DAYS.forEach(item => {
-      //   info.createWorkingHour({ day: item });
-      // });
 
       // create services records for the dentist.
       services.forEach(item => {
@@ -79,7 +76,10 @@ function createDentistInfo(user, req) {
 
     // create pricing records for the dentist.
     pricing.forEach(item => {
-      adult.createItem(item);
+      const found = ADULT_MEMBERSHIP_ITEMS_DEFAULTS[item.code];
+
+      if (found) adult.createItem(item);
+      else child.createItem(item);
     });
 
     // ADULT_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {

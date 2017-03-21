@@ -8,10 +8,6 @@ export default function (sequelize, DataTypes) {
     tableName: 'services',
     classMethods: {
       associate() {
-        // Service.belongsTo(models.DentistInfo, {
-        //   foreignKey: 'dentistInfoId',
-        //   as: 'dentistInfo',
-        // });
       }
     }
   });
