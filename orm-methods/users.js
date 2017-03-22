@@ -140,7 +140,8 @@ export const instance = {
 
   getMyDentist() {
     return db.User.find({
-      attributes: ['id', 'firstName', 'lastName', 'avatar'],
+      attributes: ['id', 'firstName', 'lastName', 'avatar', 'email'],
+      where: { id: this.get('id') },
       include: [{
       //   as: 'dentistSubscriptions',
       //   model: db.Subscription,
@@ -153,7 +154,7 @@ export const instance = {
         as: 'dentistInfo',
         model: db.DentistInfo,
         attributes: {
-          exclude: ['id', 'membershipId', 'userId', 'childMembershipId'],
+          exclude: ['membershipId', 'userId', 'childMembershipId'],
         },
         include: [{
           model: db.Membership,
