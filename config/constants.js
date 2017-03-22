@@ -52,7 +52,7 @@ export const PRICING_CODES = [
   { code: '0120' },
   { code: '0140' },
   { code: '0150' },
-  { coxe: '0220' },
+  { code: '0220' },
   { code: '0272' },
   { code: '0274' },
   { code: '0330' },
