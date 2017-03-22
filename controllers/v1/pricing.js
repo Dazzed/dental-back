@@ -2,8 +2,9 @@ import { Router } from 'express';
 // import passport from 'passport';
 
 import {
-  ADULT_MEMBERSHIP_ITEMS_DEFAULTS,
-  CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS,
+  // ADULT_MEMBERSHIP_ITEMS_DEFAULTS,
+  // CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS,
+  PRICING_CODES
 } from '../../config/constants';
 
 
@@ -11,12 +12,7 @@ const router = new Router({ mergeParams: true });
 
 
 function getPricingCodes(req, res) {
-  const pricingCodes =
-    ADULT_MEMBERSHIP_ITEMS_DEFAULTS.concat(
-      CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS
-    );
-
-  res.json({ data: pricingCodes });
+  res.json({ data: PRICING_CODES });
 }
 
 
