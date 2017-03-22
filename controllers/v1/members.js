@@ -14,8 +14,7 @@ import {
 
 import {
   BadRequestError,
-  NotFoundError,
-  ForbiddenError,
+  NotFoundError
 } from '../errors';
 
 
@@ -238,7 +237,7 @@ function getMember(req, res) {
 
 
 function deleteMember(req, res) {
-  let delEmail = "DELETED_"+req.locals.member.email;
+  const delEmail = `DELETED_${req.locals.member.email}`;
   db.User.update({ email: delEmail, isDeleted: true }, {
     where: {
       id: req.locals.member.id,

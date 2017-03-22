@@ -33,11 +33,11 @@ const router = new Router();
 
 // util methods
 
-function createDentistInfo(user, req) {
-  const dentistInfo = req.body.officeInfo;
-  const pricing = req.body.pricing || [];
-  const workingHours = req.body.workingHours || [];
-  const services = req.body.services || [];
+function createDentistInfo(user, body) {
+  const dentistInfo = body.officeInfo;
+  const pricing = body.pricing || [];
+  const workingHours = body.workingHours || [];
+  const services = body.services || [];
 
   Promise.all([
     user.createMembership({

@@ -1,5 +1,9 @@
 import db from '../models';
 
+import {
+  ForbiddenError,
+} from '../controllers/errors';
+
 
 export function checkUserDentistPermission(req, res, next) {
   const userId = req.params.userId;
@@ -12,7 +16,7 @@ export function checkUserDentistPermission(req, res, next) {
     return next(new ForbiddenError());
   }
 
-  // last try to see if subscription exists and are releated with
+  // last try to see if subscription exists and is related to
   // account holder.
   if (req.user.get('type') === 'dentist' && !canEdit) {
     return db.Subscription.getCurrentSubscription(userId)
@@ -29,4 +33,3 @@ export function checkUserDentistPermission(req, res, next) {
 
   return next();
 }
-
