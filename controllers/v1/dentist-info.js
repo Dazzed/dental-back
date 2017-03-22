@@ -225,7 +225,7 @@ function updateDentistInfo(req, res, next) {
 
       // update services
       for (let service in req.body.services) {  // eslint-disable-line
-        const id = parseInt(service.replace(/[^0-9\.]/g, ''), 10);
+        const id = parseInt(service.replace(/[^0-9.]/g, ''), 10);
         const shouldAdd = req.body.services[service];
 
         if (shouldAdd) {

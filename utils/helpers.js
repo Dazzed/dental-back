@@ -3,7 +3,7 @@ import changeFactory from 'change-js';
 const Change = changeFactory();
 
 
-export function updateTotalMembership(membership) {
+export default function updateTotalMembership(membership) {
   if (membership.items) {
     let total = new Change({ cents: 0 });
     membership.items.forEach(item => {
