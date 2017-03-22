@@ -142,14 +142,14 @@ export const instance = {
     return db.User.find({
       attributes: ['id', 'firstName', 'lastName', 'avatar'],
       include: [{
-        as: 'dentistSubscriptions',
-        model: db.Subscription,
-        where: { status: { $not: 'canceled' }, clientId: this.get('id') },
-        include: [{
-          attributes: ['name', 'default', 'monthly'],
-          model: db.Membership,
-        }]
-      }, {
+      //   as: 'dentistSubscriptions',
+      //   model: db.Subscription,
+      //   where: { status: { $not: 'canceled' }, clientId: this.get('id') },
+      //   include: [{
+      //     attributes: ['name', 'default', 'monthly'],
+      //     model: db.Membership,
+      //   }]
+      // }, {
         as: 'dentistInfo',
         model: db.DentistInfo,
         attributes: {
@@ -172,8 +172,9 @@ export const instance = {
       subquery: false,
       loggin: console.log,
     }).then(dentist => {
+      console.log(dentist);
       const parsed = dentist.toJSON();
-      parsed.subscription = parsed.dentistSubscriptions[0];
+      // parsed.subscription = parsed.dentistSubscriptions[0];
       delete parsed.dentistSubscriptions;
       return parsed;
     });
