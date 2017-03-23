@@ -150,6 +150,10 @@ export const instance = {
           model: db.Membership,
         }]
       }, {
+        model: db.Review,
+        as: 'dentistReviews',
+        attributes: ['rating']
+      }, {
         as: 'dentistInfo',
         model: db.DentistInfo,
         attributes: {
@@ -167,7 +171,19 @@ export const instance = {
           attributes: {
             exclude: ['isDeleted', 'default', 'userId'],
           },
-        }],
+        }, {
+          model: db.DentistInfoService,
+          as: 'services',
+          attributes: ['dentistInfoId', 'serviceId'],
+          include: [{
+            model: db.Service,
+            attributes: ['name'],
+            as: 'service'
+          }]
+        }, {
+          model: db.WorkingHours,
+          as: 'workingHours'
+        }]
       }],
       subquery: false,
       loggin: console.log,

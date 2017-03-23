@@ -70,10 +70,10 @@ function getDentistInfoFromParams(req, res, next) {
           exclude: ['membershipId'],
         },
       }],
-    }, {
+    }/*, {
       model: db.Service,
       as: 'services',
-    }],
+    }*/],
     order: [
       [
         { model: db.Membership, as: 'membership' },
@@ -245,9 +245,11 @@ function updateDentistInfo(req, res, next) {
 function getDentistInfo(req, res) {
   const json = req.locals.dentistInfo.toJSON();
 
-  json.services.forEach(item => {
-    delete item.dentistInfoService;
-  });
+  if (json.services) {
+    json.services.forEach(item => {
+      delete item.dentistInfoService;
+    });
+  }
 
   res.json({
     data: _.omit(json, ['membershipId']),
