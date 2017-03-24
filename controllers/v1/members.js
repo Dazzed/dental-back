@@ -180,7 +180,6 @@ function updateMember(req, res, next) {
           req.locals.member.subscription.total = membership.price;
           req.locals.member.subscription.monthly = membership.monthly;
           req.locals.member.subscription.membershipId = membership.id;
-          req.locals.member.membership = membership;
 
           return db.Subscription.update({
             total: membership.price,
@@ -234,8 +233,17 @@ function getMemberFromParam(req, res, next) {
 }
 
 
-function getMember(req, res) {
-  res.json({ data: req.locals.member });
+function getMember(req, res, next) {
+  db.Membership.find({
+    where: { id: req.locals.member.subscription.membershipId }
+  })
+  .then(membership => {
+    req.locals.member.membership = membership;
+    return res.json({ data: req.locals.member });
+  })
+  .catch(error => {
+    next(error);
+  });
 }
 
 
