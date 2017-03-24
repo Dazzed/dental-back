@@ -95,10 +95,12 @@ function addMember(req, res, next) {
         member.createPhoneNumber({
           number: req.body.phone,
         }),
+        membership
       ])
     )
-    .then(([subscription, phone]) => {
+    .then(([subscription, phone, membership]) => {
       const response = member.toJSON();
+      response.membership = membership.toJSON();
       response.subscription = subscription.toJSON();
       response.phone = phone.toJSON().number;
 
@@ -178,6 +180,7 @@ function updateMember(req, res, next) {
           req.locals.member.subscription.total = membership.price;
           req.locals.member.subscription.monthly = membership.monthly;
           req.locals.member.subscription.membershipId = membership.id;
+          req.locals.member.membership = membership;
 
           return db.Subscription.update({
             total: membership.price,
@@ -185,7 +188,7 @@ function updateMember(req, res, next) {
             membershipId: membership.id,
           }, {
             where: {
-              memberId: req.locals.member.get('id'),
+              clientId: req.locals.member.id,
               id: subscriptionId,
             }
           });
