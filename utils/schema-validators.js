@@ -217,9 +217,6 @@ export const MESSAGE = {
 
 
 export const REVIEW = {
-  title: {
-    notEmpty: true,
-  },
   review: {
     notEmpty: true,
   },

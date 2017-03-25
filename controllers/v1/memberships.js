@@ -81,7 +81,7 @@ function getMemberships(req, res, next) {
   }
 
   const query = {
-    attributtes: { exclude: ['isDeleted'] },
+    attributes: { exclude: ['isDeleted'] },
     where: {
       isDeleted: false,
     },

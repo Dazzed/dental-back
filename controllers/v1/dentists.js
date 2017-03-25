@@ -32,7 +32,7 @@ function addReview(req, res, next) {
   }
 
   db.Review.create({
-    title: req.body.title,
+    title: req.body.title || '',
     message: req.body.review,
     rating: req.body.rating,
     isAnonymous: req.body.isAnonymous,
@@ -121,4 +121,3 @@ router
     contactSupport);
 
 export default router;
-
