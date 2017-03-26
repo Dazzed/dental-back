@@ -21,7 +21,7 @@ export function checkUserDentistPermission(req, res, next) {
   if (req.user.get('type') === 'dentist' && !canEdit) {
     return db.Subscription.getCurrentSubscription(userId)
       .then(subscription => {
-        if (!subscription &&
+        if (subscription &&
           subscription.get('dentistId') !== req.user.get('id')) {
           return next(new ForbiddenError());
         }

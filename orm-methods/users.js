@@ -239,14 +239,16 @@ export const model = {
       }],
       subquery: false,
     }).then(member => {
-      const parsed = member.toJSON();
+      const parsed = member ? member.toJSON() : undefined;
 
-      parsed.subscription = parsed.clientSubscriptions[0];
-      delete parsed.clientSubscriptions;
+      if (member) {
+        parsed.subscription = parsed.clientSubscriptions[0];
+        delete parsed.clientSubscriptions;
 
-      parsed.phone = parsed.phoneNumbers[0] ?
-        parsed.phoneNumbers[0].number : undefined;
-      delete parsed.phoneNumbers;
+        parsed.phone = parsed.phoneNumbers[0] ?
+          parsed.phoneNumbers[0].number : undefined;
+        delete parsed.phoneNumbers;
+      }
 
       return parsed;
     });
