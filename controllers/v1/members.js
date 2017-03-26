@@ -234,11 +234,14 @@ function getMemberFromParam(req, res, next) {
 
 
 function getMember(req, res, next) {
+  const subscription = req.locals.member.subscription;
+  const membershipId = subscription ? subscription.membershipId : 0;
+
   db.Membership.find({
-    where: { id: req.locals.member.subscription.membershipId }
+    where: { id: membershipId }
   })
   .then(membership => {
-    req.locals.member.membership = membership;
+    if (membership) req.locals.member.membership = membership;
     return res.json({ data: req.locals.member });
   })
   .catch(error => {
@@ -249,6 +252,7 @@ function getMember(req, res, next) {
 
 function deleteMember(req, res) {
   const delEmail = `DELETED_${req.locals.member.email}`;
+
   db.User.update({ email: delEmail, isDeleted: true }, {
     where: {
       id: req.locals.member.id,
