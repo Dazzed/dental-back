@@ -17,7 +17,7 @@ import {
 import {
   NORMAL_USER_REGISTRATION,
   DENTIST_USER_REGISTRATION,
-  COMPLETE_NORMAL_USER_REGISTRATION,
+  PRICING_CODES
 } from '../../utils/schema-validators';
 
 import {
@@ -76,10 +76,10 @@ function createDentistInfo(user, body) {
 
     // create pricing records for the dentist.
     pricing.forEach(item => {
-      const found = ADULT_MEMBERSHIP_ITEMS_DEFAULTS[item.code];
+      const found = PRICING_CODES[item.code];
 
       if (found) adult.createItem(item);
-      else child.createItem(item);
+      // else child.createItem(item);
     });
 
     // ADULT_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
