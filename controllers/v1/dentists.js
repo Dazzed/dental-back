@@ -16,6 +16,7 @@ import {
 
 import {
   BadRequestError,
+  NotFoundError
 } from '../errors';
 
 
@@ -38,6 +39,57 @@ function addReview(req, res, next) {
     isAnonymous: req.body.isAnonymous,
     clientId: req.user.get('id'),
     dentistId: req.params.userId,
+  });
+
+  return res.json({});
+}
+
+
+function updateReview(req, res, next) {
+  req.checkBody(REVIEW);
+
+  const errors = req.validationErrors(true);
+
+  if (errors) {
+    return next(new BadRequestError(errors));
+  }
+
+  return db.Review.find({
+    where: {
+      id: req.params.reviewId,
+      clientId: req.user.get('id')
+    }
+  })
+  .then(review => {
+    if (!review) return next(new NotFoundError());
+
+    review.update({
+      title: req.body.title || '',
+      message: req.body.review,
+      rating: req.body.rating,
+      isAnonymous: req.body.isAnonymous
+    });
+
+    return res.json({});
+  })
+  .catch(errs => next(new BadRequestError(errs)));
+}
+
+
+function deleteReview(req, res, next) {
+  req.checkBody(REVIEW);
+
+  const errors = req.validationErrors(true);
+
+  if (errors) {
+    return next(new BadRequestError(errors));
+  }
+
+  db.Review.destroy({
+    where: {
+      id: req.params.reviewId,
+      clientId: req.user.get('id')
+    }
   });
 
   return res.json({});
@@ -107,6 +159,15 @@ router
   .post(
     passport.authenticate('jwt', { session: false }),
     addReview);
+
+router
+  .route('/review/:reviewId')
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    updateReview)
+  .delete(
+    passport.authenticate('jwt', { session: false }),
+    deleteReview);
 
 router
   .route('/invite_patient')
