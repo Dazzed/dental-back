@@ -27,7 +27,9 @@ function getDentist(req, res, next) {
 
       // average the ratings.
       data.rating = totalRating / data.dentistReviews.length;
-      delete data.dentistReviews;
+      data.dentistReviews
+        .filter(review => review.clientId === req.user.get('id'))
+        .forEach(review => delete review.clientId);
 
       res.json({ data });
     })

@@ -1,6 +1,10 @@
 import moment from 'moment';
 import db from '../models';
 
+const REVIEW_ATTRIBUTES =
+  ['id', 'title', 'message', 'rating',
+    'isAnonymous', 'clientId', 'createdAt', 'updatedAt'];
+
 
 export const instance = {
 
@@ -152,7 +156,7 @@ export const instance = {
       }, {
         model: db.Review,
         as: 'dentistReviews',
-        attributes: ['rating']
+        attributes: REVIEW_ATTRIBUTES
       }, {
         as: 'dentistInfo',
         model: db.DentistInfo,
