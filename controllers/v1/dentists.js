@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
+import moment from 'moment';
 
 import db from '../../models';
 
@@ -21,6 +22,14 @@ import {
 
 
 const router = new Router({ mergeParams: true });
+
+
+function getTimeWithTimezone() {
+  const split = new Date().toString().split(' ');
+  const timeZoneFormatted = `${split[split.length - 2]} ${split[split.length - 1]}`;
+
+  return `${moment().format('hh:mma')} ${timeZoneFormatted}`;
+}
 
 
 function addReview(req, res, next) {
@@ -139,6 +148,7 @@ function contactSupport(req, res, next) { // eslint-disable-line
     subject: EMAIL_SUBJECTS.contact_support,
     site: process.env.SITE,
     dentist: req.user,
+    time: getTimeWithTimezone(),
     message: req.body.message,
   }, (err, info) => {
     if (err) {

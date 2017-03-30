@@ -107,7 +107,7 @@ export const MEMBER_RELATIONSHIP_TYPES = {
 };
 
 
-export const CONTACT_SUPPORT_EMAIL = 'support@cawasa.com';
+export const CONTACT_SUPPORT_EMAIL = 'info@dentalhq.com';
 
 
 export const EMAIL_SUBJECTS = {
@@ -119,7 +119,7 @@ export const EMAIL_SUBJECTS = {
     invite_patient: 'Invitation to join',
   },
   activation_complete: 'Welcome to the Dental Marketplace!',
-  contact_support: 'Contact Support',
+  contact_support: 'A New DentalHQ.com Contact Form Message',
 };
 
 
