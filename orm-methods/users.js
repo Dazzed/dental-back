@@ -204,16 +204,17 @@ export const instance = {
       // add all the review ratings.
       const totalRating = _.sumBy(
         dentistReviews, review => review.rating);
-
       // average the ratings.
       parsed.rating = totalRating / dentistReviews.length;
-      dentistReviews
-        .filter(review => review.clientId === this.get('id'))
+      const reviews = dentistReviews
+        .filter(review => review.clientId === this.get('id'));
+
+      reviews
         .forEach(review => {
           delete review.clientId;
           delete review.dentistId;
         });
-      return parsed;
+      return reviews;
     });
   },
 
