@@ -59,7 +59,32 @@ export function getUserFromParam(req, res, next) {
 }
 
 
-function getUser(req, res) {
+function getUser(req, res, next) {
+  if (req.user.get('type') === 'dentist') {
+    return req.locals.user
+      .getDentistReviews()
+      .then(dentistReviews => {
+        // add all the review ratings.
+        const totalRating = _.sumBy(
+          dentistReviews, review => review.rating);
+
+        const user = req.locals.user.toJSON();
+        // average the ratings.
+        user.rating = totalRating / dentistReviews.length;
+        // dentistReviews
+        //   .forEach(review => {
+        //     delete review.clientId;
+        //     delete review.dentistId;
+        //   });
+        // user.reviews = dentistReviews;
+
+        return res.json({ data: user });
+      })
+      .catch(errors => {
+        next(new BadRequestError(errors));
+      });
+  }
+
   return res.json({
     data: req.locals.user.toJSON(),
   });

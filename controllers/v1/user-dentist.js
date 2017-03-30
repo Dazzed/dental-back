@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import passport from 'passport';
-import _ from 'lodash';
 import changeFactory from 'change-js';
 import isPlainObject from 'is-plain-object';
 import db from '../../models';
@@ -21,16 +20,6 @@ const router = new Router({ mergeParams: true });
 function getDentist(req, res, next) {
   req.user.getMyDentist()
     .then(data => {
-      // add all the review ratings.
-      const totalRating = _.sumBy(
-        data.dentistReviews, review => review.rating);
-
-      // average the ratings.
-      data.rating = totalRating / data.dentistReviews.length;
-      data.dentistReviews
-        .filter(review => review.clientId === req.user.get('id'))
-        .forEach(review => delete review.clientId);
-
       res.json({ data });
     })
     .catch(next);

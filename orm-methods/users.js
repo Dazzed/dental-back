@@ -1,12 +1,16 @@
 import moment from 'moment';
+import _ from 'lodash';
 import db from '../models';
-
-const REVIEW_ATTRIBUTES =
-  ['id', 'title', 'message', 'rating',
-    'isAnonymous', 'clientId', 'createdAt', 'updatedAt'];
 
 
 export const instance = {
+
+  getDentistReviews() {
+    return db.Review.findAll({
+      where: { dentistId: this.get('id') },
+      attributes: { exclude: ['clientId', 'dentistId'] }
+    });
+  },
 
   /**
    * Method that returs all clients and subscriptions
@@ -155,8 +159,7 @@ export const instance = {
         }]
       }, {
         model: db.Review,
-        as: 'dentistReviews',
-        attributes: REVIEW_ATTRIBUTES
+        as: 'dentistReviews'
       }, {
         as: 'dentistInfo',
         model: db.DentistInfo,
@@ -195,6 +198,21 @@ export const instance = {
       const parsed = dentist ? dentist.toJSON() : {};
       // parsed.subscription = parsed.dentistSubscriptions[0];
       delete parsed.dentistSubscriptions;
+
+      const dentistReviews = parsed.dentistReviews;
+
+      // add all the review ratings.
+      const totalRating = _.sumBy(
+        dentistReviews, review => review.rating);
+
+      // average the ratings.
+      parsed.rating = totalRating / dentistReviews.length;
+      dentistReviews
+        .filter(review => review.clientId === this.get('id'))
+        .forEach(review => {
+          delete review.clientId;
+          delete review.dentistId;
+        });
       return parsed;
     });
   },
