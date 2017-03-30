@@ -214,7 +214,8 @@ export const instance = {
           delete review.clientId;
           delete review.dentistId;
         });
-      return reviews;
+      parsed.dentistReviews = reviews;
+      return parsed;
     });
   },
 
