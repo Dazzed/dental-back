@@ -59,6 +59,26 @@ export function getUserFromParam(req, res, next) {
 }
 
 
+function verifyPasswordLocal(req, res, next) {
+  db.User.find({
+    where: { id: req.locals.user.get('id') }
+  })
+  .then(_user => {
+    const password = req.body.oldPassword || req.body.password;
+
+    _user.authenticate(password, (err, user) => {
+      if (err) return next(err);
+
+      if (!user) {
+        return next(new NotFoundError('Invalid password.'));
+      }
+      req.locals.passwordVerified = true;
+      return next();
+    });
+  });
+}
+
+
 function getUser(req, res, next) {
   if (req.user.get('type') === 'dentist') {
     return req.locals.user
@@ -126,12 +146,19 @@ function updateUser(req, res, next) {
       // NOTE: This should later removed to add and remove by others endpoints
       const phone = req.locals.user.get('phoneNumbers')[0];
       const address = req.locals.user.get('addresses')[0];
+      const password = req.body.oldPassword || req.body.password;
 
       phone.set('number', req.body.phone);
       address.set('value', req.body.address);
 
       return Promise.all([
         req.locals.user.update(body),
+        new Promise((resolve, reject) => {
+          req.locals.user.setPassword(password, (err) => {
+            if (err) return reject(err);
+            return resolve();
+          });
+        }),
         phone.save(),
         address.save(),
       ]);
@@ -222,22 +249,8 @@ function signS3Upload(req, res, next) {
 }
 
 
-function verifyPassword(req, res, next) {
-  // req.checkBody('password');
-  db.User.find({
-    where: { id: req.locals.user.get('id') }
-  })
-  .then(_user => {
-    _user.authenticate(req.body.oldPassword, (err, user) => {
-      if (err) return next(err);
-
-      if (!user) {
-        return next(new NotFoundError('Invalid password.'));
-      }
-      return res.json({});
-    });
-  })
-  .catch(next);
+function verifyPassword(req, res) {
+  res.json({ passwordVerified: req.locals.passwordVerified });
 }
 
 
@@ -254,6 +267,7 @@ router
   .put(
     passport.authenticate('jwt', { session: false }),
     getUserFromParam,
+    verifyPasswordLocal,
     updateUser);
 
 router
@@ -268,6 +282,7 @@ router
   .post(
     passport.authenticate('jwt', { session: false }),
     getUserFromParam,
+    verifyPasswordLocal,
     verifyPassword);
 
 router
