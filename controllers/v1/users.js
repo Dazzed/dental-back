@@ -78,14 +78,11 @@ function getUser(req, res, next) {
         //   });
         // user.reviews = dentistReviews;
 
+        delete user.memberships;
         return res.json({ data: user });
       })
-      .catch(errors => {
-        next(new BadRequestError(errors));
-      });
+      .catch(next);
   }
-
-  console.log('Loading Subscription...');
 
   return req.locals.user
     .getCurrentSubscription()
@@ -95,9 +92,7 @@ function getUser(req, res, next) {
 
       return res.json({ data: user });
     })
-    .catch(errors => {
-      next(new BadRequestError(errors));
-    });
+    .catch(next);
 }
 
 

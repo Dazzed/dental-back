@@ -122,6 +122,10 @@ export const instance = {
         isDeleted: false,
       },
       include: [{
+        attributes: ['name', 'default', 'monthly'],
+        model: db.Membership,
+        as: 'memberships'
+      }, {
         model: db.Subscription,
         as: 'clientSubscriptions',
         limit: 1,

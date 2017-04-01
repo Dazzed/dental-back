@@ -70,4 +70,3 @@ export default function (sequelize, DataTypes) {
 
   return Membership;
 }
-
