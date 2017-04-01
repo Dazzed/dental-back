@@ -8,7 +8,7 @@
     "test": "JWT_SECRET=test NODE_ENV=test mocha --compilers js:babel-register **/__tests__/*.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
     "prod": "cross-env NODE_ENV=production node index.js",
-    "postinstall": "./node_modules/sequelize-cli/bin/sequelize db:migrate"
+    "postinstall": "sequelize db:migrate"
   },
   "author": "",
   "license": "ISC",

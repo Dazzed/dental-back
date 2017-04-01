@@ -222,6 +222,25 @@ function signS3Upload(req, res, next) {
 }
 
 
+function verifyPassword(req, res, next) {
+  // req.checkBody('password');
+  db.User.find({
+    where: { id: req.locals.user.get('id') }
+  })
+  .then(_user => {
+    _user.authenticate(req.body.oldPassword, (err, user) => {
+      if (err) return next(err);
+
+      if (!user) {
+        return next(new NotFoundError('Invalid password.'));
+      }
+      return res.json({});
+    });
+  })
+  .catch(next);
+}
+
+
 router
   .route('/:userId')
   .get(
@@ -243,6 +262,13 @@ router
     passport.authenticate('jwt', { session: false }),
     getUserFromParam,
     signS3Upload);
+
+router
+  .route('/:userId/verify-password')
+  .post(
+    passport.authenticate('jwt', { session: false }),
+    getUserFromParam,
+    verifyPassword);
 
 router
   .route('/:userId/credit-card')
