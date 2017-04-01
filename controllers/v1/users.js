@@ -85,9 +85,19 @@ function getUser(req, res, next) {
       });
   }
 
-  return res.json({
-    data: req.locals.user.toJSON(),
-  });
+  console.log('Loading Subscription...');
+
+  return req.locals.user
+    .getCurrentSubscription()
+    .then(subscription => {
+      const user = req.locals.user.toJSON();
+      user.subscription = subscription;
+
+      return res.json({ data: user });
+    })
+    .catch(errors => {
+      next(new BadRequestError(errors));
+    });
 }
 
 
