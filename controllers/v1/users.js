@@ -124,11 +124,12 @@ function deleteUser(req, res) {
 
 // TODO: maybe later add avatar support?? or another endpoint
 function updateUser(req, res, next) {
-  const validator = Object.assign({}, req.locals.user.type === 'client' ?
-    NORMAL_USER_EDIT : DENTIST_USER_EDIT);
+  // const validator = Object.assign({}, req.locals.user.type === 'client' ?
+  //   NORMAL_USER_EDIT : DENTIST_USER_EDIT);
+  const validator = NORMAL_USER_EDIT;
 
-  if (req.locals.user.get('email') === req.body.email) {
-    delete validator.email.isDBUnique;
+  if (req.locals.user.get('newEmail') === req.body.email) {
+    delete validator.newEmail.isDBUnique;
   }
 
   if (req.locals.user.get('specialtyId') === req.body.specialtyId

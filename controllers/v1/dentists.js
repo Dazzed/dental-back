@@ -43,7 +43,7 @@ function addReview(req, res, next) {
 
   db.Review.create({
     title: req.body.title || '',
-    message: req.body.review,
+    message: req.body.message,
     rating: req.body.rating,
     isAnonymous: req.body.isAnonymous,
     clientId: req.user.get('id'),
@@ -74,7 +74,7 @@ function updateReview(req, res, next) {
 
     review.update({
       title: req.body.title || '',
-      message: req.body.review,
+      message: req.body.message,
       rating: req.body.rating,
       isAnonymous: req.body.isAnonymous
     });
@@ -85,15 +85,7 @@ function updateReview(req, res, next) {
 }
 
 
-function deleteReview(req, res, next) {
-  req.checkBody(REVIEW);
-
-  const errors = req.validationErrors(true);
-
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
+function deleteReview(req, res) {
   db.Review.destroy({
     where: {
       id: req.params.reviewId,

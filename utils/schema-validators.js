@@ -6,13 +6,17 @@ import {
 
 
 export const NORMAL_USER_EDIT = {
-  email: {
+  newEmail: {
     notEmpty: true,
     isEmail: true,
     isDBUnique: {
       options: ['User', 'email'],
       errorMessage: 'This email is in use.'
     }
+  },
+  confirmEmail: {
+    isEmail: true,
+    notEmpty: true,
   },
   firstName: {
     notEmpty: true,
@@ -49,6 +53,16 @@ export const NORMAL_USER_EDIT = {
       options: [Object.keys(PREFERRED_CONTACT_METHODS)],
     },
   },
+  newPassword: {
+    notEmpty: true,
+    matches: {
+      options: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d$/*!]{6,}$/]
+    },
+    errorMessage: 'Password should have at least 6 characters, upper case, lower case and numbers.'
+  },
+  confirmNewPassword: {
+    notEmpty: true,
+  }
 };
 
 
@@ -217,7 +231,7 @@ export const MESSAGE = {
 
 
 export const REVIEW = {
-  review: {
+  message: {
     notEmpty: true,
   },
 };
