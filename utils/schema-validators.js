@@ -66,6 +66,30 @@ export const NORMAL_USER_EDIT = {
 };
 
 
+export const PATIENT_EDIT = {
+  phone: {
+    notEmpty: true,
+  },
+  address: {
+    notEmpty: true,
+  },
+  city: {
+    notEmpty: true,
+  },
+  state: {
+    notEmpty: true,
+  },
+  zipCode: {
+    notEmpty: true,
+  },
+  contactMethod: {
+    isIn: {
+      options: [Object.keys(PREFERRED_CONTACT_METHODS)],
+    }
+  }
+};
+
+
 export const NORMAL_USER_REGISTRATION = {
   email: {
     notEmpty: true,

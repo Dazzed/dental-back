@@ -156,6 +156,43 @@ function contactSupport(req, res, next) { // eslint-disable-line
   });
 }
 
+
+function contactSupportNoAuth(req, res, next) { // eslint-disable-line
+  req.checkBody(
+    Object.assign(
+      CONTACT_SUPPORT,
+      { name: { notEmpty: true } }
+    )
+  );
+
+  const errors = req.validationErrors(true);
+
+  if (errors) {
+    return next(new BadRequestError(errors));
+  }
+
+  res.mailer.send('contact-support/index', {
+    to: CONTACT_SUPPORT_EMAIL, // process.env.CONTACT_SUPPORT_EMAIL ??
+    subject: EMAIL_SUBJECTS.contact_support,
+    site: process.env.SITE,
+    name: req.body.name,
+    time: getTimeWithTimezone(),
+    message: req.body.message,
+  }, (err, info) => {
+    if (err) {
+      console.log(err);
+      return next(new BadRequestError({}));
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(info);
+    }
+
+    return res.json({});
+  });
+}
+
+
 router
   .route('/review')
   .post(
@@ -179,8 +216,6 @@ router
 
 router
   .route('/contact_support')
-  .post(
-    passport.authenticate('jwt', { session: false }),
-    contactSupport);
+  .post(contactSupportNoAuth);
 
 export default router;

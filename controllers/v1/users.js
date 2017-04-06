@@ -11,7 +11,7 @@ import { getCreditCardInfo } from '../payments';
 
 import {
   NORMAL_USER_EDIT,
-  DENTIST_USER_EDIT,
+  PATIENT_EDIT
 } from '../../utils/schema-validators';
 
 import {
@@ -180,6 +180,54 @@ function updateUser(req, res, next) {
 }
 
 
+function updatePatient(req, res, next) {
+  req.checkBody(PATIENT_EDIT);
+
+  req
+    .asyncValidationErrors(true)
+    .then(() => {
+      const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
+
+      const mainUser = req.locals.user;
+
+      const phone = req.locals.user.get('phoneNumbers')[0];
+      const address = req.locals.user.get('addresses')[0];
+
+      const where = {};
+      where.id = req.params.patientId;
+
+      if (mainUser.get('id') !== parseInt(req.params.patientId, 0)) {
+        where.addedBy = mainUser.get('id');
+      }
+
+      return db.User.findOne({ where })
+      .then(patient => {
+        if (!patient) return next(new NotFoundError());
+
+        if (patient.get('id') === mainUser.get('id')) {
+          phone.set('number', req.body.phone);
+          address.set('value', req.body.address);
+        }
+
+        return Promise.all([
+          patient.update(body),
+          phone.save(),
+          address.save()
+        ]);
+      })
+      .then(() => res.json({}))
+      .catch(next);
+    })
+    .catch(errors => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
+      }
+
+      return next(errors);
+    });
+}
+
+
 function getCardInfo(req, res, next) {
   const queries = [
     db.Subscription.getPendingAmount(req.locals.user.get('id')),
@@ -270,6 +318,13 @@ router
     getUserFromParam,
     verifyPasswordLocal,
     updateUser);
+
+router
+  .route('/:userId/patients/:patientId')
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    getUserFromParam,
+    updatePatient);
 
 router
   .route('/:userId/sign-avatar')
