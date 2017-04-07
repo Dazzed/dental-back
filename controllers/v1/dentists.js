@@ -137,6 +137,7 @@ function contactSupport(req, res, next) { // eslint-disable-line
 
   res.mailer.send('contact-support/index', {
     to: CONTACT_SUPPORT_EMAIL, // process.env.CONTACT_SUPPORT_EMAIL ??
+    replyTo: req.user.get('email'),
     subject: EMAIL_SUBJECTS.contact_support,
     site: process.env.SITE,
     dentist: req.user,
@@ -161,7 +162,8 @@ function contactSupportNoAuth(req, res, next) { // eslint-disable-line
   req.checkBody(
     Object.assign(
       CONTACT_SUPPORT,
-      { name: { notEmpty: true } }
+      { name: { notEmpty: true } },
+      { email: { nonEmpty: true, isEmail: true } }
     )
   );
 
@@ -176,6 +178,7 @@ function contactSupportNoAuth(req, res, next) { // eslint-disable-line
     subject: EMAIL_SUBJECTS.contact_support,
     site: process.env.SITE,
     name: req.body.name,
+    email: req.body.email,
     time: getTimeWithTimezone(),
     message: req.body.message,
   }, (err, info) => {
