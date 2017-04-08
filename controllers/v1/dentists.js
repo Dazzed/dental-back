@@ -161,11 +161,10 @@ function contactSupport(req, res, next) { // eslint-disable-line
 
 function contactSupportNoAuth(req, res, next) { // eslint-disable-line
   req.checkBody(
-    Object.assign(
-      CONTACT_SUPPORT,
-      { name: { notEmpty: true } },
-      { email: { nonEmpty: true, isEmail: true } }
-    )
+    Object.assign({
+      name: { notEmpty: true },
+      email: { notEmpty: true, isEmail: true }
+    }, CONTACT_SUPPORT)
   );
 
   const errors = req.validationErrors(true);
