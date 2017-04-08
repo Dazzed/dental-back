@@ -24,3 +24,11 @@ export class NotFoundError extends Error {
     this.statusCode = HTTPStatus.NOT_FOUND;
   }
 }
+
+
+export class UnauthorizedError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = HTTPStatus.UNAUTHORIZED;
+  }
+}

@@ -11,13 +11,16 @@ import { getCreditCardInfo } from '../payments';
 
 import {
   NORMAL_USER_EDIT,
-  PATIENT_EDIT
+  PATIENT_EDIT,
+  NEW_EMAIL_VALIDATOR,
+  NEW_PASSWORD_VALIDATOR
 } from '../../utils/schema-validators';
 
 import {
   BadRequestError,
   NotFoundError,
   ForbiddenError,
+  UnauthorizedError
 } from '../errors';
 
 
@@ -60,17 +63,23 @@ export function getUserFromParam(req, res, next) {
 
 
 function verifyPasswordLocal(req, res, next) {
+  // req.checkBody({ oldPassword: { nonEmpty: true } });
+  // const errors = req.asyncValidationErrors(true)
+  //
+  // if (errors) {
+  // }
+
   db.User.find({
     where: { id: req.locals.user.get('id') }
   })
   .then(_user => {
-    const password = req.body.oldPassword || req.body.password;
+    const password = req.body.oldPassword;
 
     _user.authenticate(password, (err, user) => {
       if (err) return next(err);
 
       if (!user) {
-        return next(new NotFoundError('Invalid password.'));
+        return next(new UnauthorizedError('Incorrect password.'));
       }
       req.locals.passwordVerified = true;
       return next();
@@ -190,8 +199,8 @@ function updatePatient(req, res, next) {
 
       const mainUser = req.locals.user;
 
-      const phone = req.locals.user.get('phoneNumbers')[0];
-      const address = req.locals.user.get('addresses')[0];
+      const phone = mainUser.get('phoneNumbers')[0];
+      const address = mainUser.get('addresses')[0];
 
       const where = {};
       where.id = req.params.patientId;
@@ -215,6 +224,65 @@ function updatePatient(req, res, next) {
           address.save()
         ]);
       })
+      .then(() => res.json({}))
+      .catch(next);
+    })
+    .catch(errors => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
+      }
+
+      return next(errors);
+    });
+}
+
+
+function updateAuth(req, res, next) {
+  let validator = {};
+
+  if (req.body.newEmail) {
+    validator = NEW_EMAIL_VALIDATOR;
+
+    if (req.locals.user.get('email') === req.body.newEmail) {
+      delete validator.newEmail.isDBUnique;
+    }
+  }
+
+  if (req.body.newPassword) {
+    validator = NEW_PASSWORD_VALIDATOR;
+  }
+
+  req.checkBody(validator);
+
+  if (req.body.newEmail) {
+    req.checkBody('confirmNewEmail', 'Emails do not match').equals(req.body.newEmail);
+  }
+
+  if (req.body.newPassword) {
+    req.checkBody('confirmNewPassword', 'Passwords do not match')
+        .equals(req.body.newPassword);
+  }
+
+  req
+    .asyncValidationErrors(true)
+    .then(() => {
+      const where = { id: req.locals.user.get('id') };
+
+      return db.User.findOne({ where })
+      .then(patient => {
+        if (!patient) return next(new UnauthorizedError());
+        patient.set('email', req.body.newEmail);
+
+        return new Promise((resolve, reject) => {
+          if (!req.body.newPassword) return resolve();
+
+          return patient.setPassword(req.body.newPassword, (err, user) => {
+            if (err) return reject(err);
+            return resolve(user);
+          });
+        });
+      })
+      .then(patient => patient.save())
       .then(() => res.json({}))
       .catch(next);
     })
@@ -318,6 +386,14 @@ router
     getUserFromParam,
     verifyPasswordLocal,
     updateUser);
+
+router
+  .route('/:userId/change-auth')
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    getUserFromParam,
+    verifyPasswordLocal,
+    updateAuth);
 
 router
   .route('/:userId/patients/:patientId')

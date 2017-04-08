@@ -141,6 +141,7 @@ function contactSupport(req, res, next) { // eslint-disable-line
     subject: EMAIL_SUBJECTS.contact_support,
     site: process.env.SITE,
     dentist: req.user,
+    email: req.user.get('email'),
     time: getTimeWithTimezone(),
     message: req.body.message,
   }, (err, info) => {
@@ -175,6 +176,7 @@ function contactSupportNoAuth(req, res, next) { // eslint-disable-line
 
   res.mailer.send('contact-support/index', {
     to: CONTACT_SUPPORT_EMAIL, // process.env.CONTACT_SUPPORT_EMAIL ??
+    replyTo: req.body.email,
     subject: EMAIL_SUBJECTS.contact_support,
     site: process.env.SITE,
     name: req.body.name,

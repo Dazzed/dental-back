@@ -5,6 +5,37 @@ import {
 } from '../config/constants';
 
 
+export const NEW_EMAIL_VALIDATOR = {
+  newEmail: {
+    notEmpty: true,
+    isEmail: true,
+    isDBUnique: {
+      options: ['User', 'email'],
+      errorMessage: 'This email is in use.'
+    }
+  },
+  confirmNewEmail: {
+    isEmail: true,
+    notEmpty: true
+  }
+};
+
+
+export const NEW_PASSWORD_VALIDATOR = {
+  newPassword: {
+    notEmpty: true,
+    matches: {
+      options: [/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d$/*!]{6,}$/]
+    },
+    errorMessage: 'Password should have at least 6 '
+                  + 'characters, upper case, lower case and numbers.'
+  },
+  confirmNewPassword: {
+    notEmpty: true
+  }
+};
+
+
 export const NORMAL_USER_EDIT = {
   newEmail: {
     notEmpty: true,
