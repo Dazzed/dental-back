@@ -274,7 +274,7 @@ function updateAuth(req, res, next) {
         patient.set('email', req.body.newEmail);
 
         return new Promise((resolve, reject) => {
-          if (!req.body.newPassword) return resolve();
+          if (!req.body.newPassword) return resolve(patient);
 
           return patient.setPassword(req.body.newPassword, (err, user) => {
             if (err) return reject(err);
