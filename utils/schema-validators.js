@@ -199,16 +199,8 @@ export const MEMBER = {
     notEmpty: true,
     isDate: true,
   },
-  phone: {
-    notEmpty: true,
-  },
-  email: {
-    notEmpty: true,
-    isEmail: true,
-    isDBUnique: {
-      options: ['User', 'email'],
-      errorMessage: 'This email is in use.'
-    }
+  sex: {
+    notEmpty: true
   },
   familyRelationship: {
     notEmpty: true,

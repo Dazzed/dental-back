@@ -48,8 +48,8 @@ function addMember(req, res, next) {
   req
     .asyncValidationErrors(true)
     .then(() => {
-      data = _.pick(req.body, ['email', 'firstName', 'lastName',
-        'phone', 'birthDate', 'familyRelationship', 'sex', 'contactMethod']);
+      data = _.pick(req.body, ['firstName', 'lastName',
+        'birthDate', 'familyRelationship', 'sex', 'membershipType']);
 
       // if user is me update id.
       if (userId === 'me') {
@@ -92,17 +92,17 @@ function addMember(req, res, next) {
     .then(membership =>
       Promise.all([
         member.createSubscription(membership, dentistId),
-        member.createPhoneNumber({
-          number: req.body.phone,
-        }),
+        // member.createPhoneNumber({
+        //   number: req.body.phone,
+        // }),
         membership
       ])
     )
-    .then(([subscription, phone, membership]) => {
+    .then(([subscription, membership]) => {
       const response = member.toJSON();
       response.membership = membership.toJSON();
       response.subscription = subscription.toJSON();
-      response.phone = phone.toJSON().number;
+      // response.phone = phone.toJSON().number;
 
       res.status(HTTPStatus.CREATED);
       res.json({ data: _.omit(response, ['salt', 'hash', 'dentistSpecialtyId',
@@ -120,16 +120,16 @@ function addMember(req, res, next) {
 
 
 function updateMember(req, res, next) {
-  const memberValidator = Object.assign({}, MEMBER);
+  const memberValidator = MEMBER;
 
-  if (req.locals.member.email === req.body.email) {
-    delete memberValidator.email;
-  }
+  // if (req.locals.member.email === req.body.email) {
+  //   delete memberValidator.email;
+  // }
 
   req.checkBody(memberValidator);
 
-  const data = _.pick(req.body, ['email', 'firstName', 'lastName',
-    'birthDate', 'familyRelationship', 'sex', 'contactMethod']);
+  const data = _.pick(req.body, ['firstName', 'lastName',
+    'birthDate', 'familyRelationship', 'sex', 'membershipType']);
 
   req
     .asyncValidationErrors(true)
