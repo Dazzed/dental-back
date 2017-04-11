@@ -13,35 +13,34 @@
 
 <tr>
     <td class="content-block title">
-        <h2>[{{ name }} - {{ email }}] contacted you through the Contact Form on the [Dentist Learn More] page at [{{ time }}]. Here's what they said:</h2>
+        <h2>{{ name }} (<a href="mailto:{{ email }}">{{ email }}</a>) contacted you.</h2>
     </td>
 </tr>
 
 
 <tr>
-    <td class="content-block content" style="font-style:italic;white-space:pre-line;">
-      ----------
-      <br><br>
-      [Contact Form Message]
-      <br><br>
-      ----------
-      <br><br>
-
-      "{{ message }}"
-
-      <br><br>
-
-      P.S. This was an automated email sent by the DentalHQ webserver. You can reply if you really want to, but no one will be able to read it.
+    <td class="content-block content">
+        They submitted the Contact Form on the Dentist Learn More page at {{ time }}. Here's what they said:
     </td>
 </tr>
 
-<!-- <tr>
-    <td class="content-block" style="padding-bottom:0;">
-        <a href="" class="btn-primary btn-green" itemprop="url">
-            Reply
-        </a>
+
+<tr>
+    <td class="content-block content" style="font-style: italic; white-space: pre-line;">
+        --------------------
+        <br><br>
+        {{ message }}
+        <br><br>
+        --------------------
     </td>
-</tr> -->
+</tr>
+
+<tr>
+    <td class="content-block content">
+        P.S. This was an automated email sent by the DentalHQ webserver. You can reply if you really want to, but no one will be able to read it.
+    </td>
+</tr>
+
 
 </table>
 {% endblock %}

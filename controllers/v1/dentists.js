@@ -24,11 +24,12 @@ import {
 const router = new Router({ mergeParams: true });
 
 
-function getTimeWithTimezone() {
-  const split = new Date().toString().split(' ');
-  const timeZoneFormatted = `${split[split.length - 2]} ${split[split.length - 1]}`;
+function getDateTimeInPST() {
+  const now = moment();
+  const time = now.format("h:mm a");
+  const date = now.format("M/D/YY");
 
-  return `${moment().format('hh:mma')} ${timeZoneFormatted}`;
+  return `${time} on ${date}`;
 }
 
 
@@ -142,7 +143,7 @@ function contactSupport(req, res, next) { // eslint-disable-line
     site: process.env.SITE,
     dentist: req.user,
     email: req.user.get('email'),
-    time: getTimeWithTimezone(),
+    time: getDateTimeInPST(),
     message: req.body.message,
   }, (err, info) => {
     if (err) {
@@ -180,7 +181,7 @@ function contactSupportNoAuth(req, res, next) { // eslint-disable-line
     site: process.env.SITE,
     name: req.body.name,
     email: req.body.email,
-    time: getTimeWithTimezone(),
+    time: getDateTimeInPST(),
     message: req.body.message,
   }, (err, info) => {
     if (err) {
