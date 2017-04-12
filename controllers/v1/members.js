@@ -13,6 +13,10 @@ import {
 } from '../../utils/schema-validators';
 
 import {
+  generateRandomEmail
+} from '../../utils/helpers';
+
+import {
   BadRequestError,
   NotFoundError
 } from '../errors';
@@ -65,6 +69,7 @@ function addMember(req, res, next) {
 
       data.hash = 'NOT_SET';
       data.salt = 'NOT_SET';
+      data.email = generateRandomEmail();
 
       return db.User.create(data);
     })
@@ -131,13 +136,18 @@ function updateMember(req, res, next) {
   const data = _.pick(req.body, ['firstName', 'lastName',
     'birthDate', 'familyRelationship', 'sex', 'membershipType']);
 
+  let userId = req.params.userId;
+  if (userId === 'me') {
+    userId = req.user.get('id');
+  }
+
   req
     .asyncValidationErrors(true)
     .then(() => db.User.update(data, {
-      where: { addedBy: req.params.userId, id: req.params.memberId },
+      where: { addedBy: userId, id: req.params.memberId },
     }))
     .then(() => {
-      if (req.locals.member.phone !== req.body.phone) {
+      if (req.body.phone && req.locals.member.phone !== req.body.phone) {
         return db.Phone.update({ number: req.body.phone }, {
           where: { userId: req.params.memberId },
         });
@@ -198,7 +208,7 @@ function updateMember(req, res, next) {
     .then(() => {
       Object.assign(req.locals.member, data);
       req.locals.member.phone = req.body.phone;
-      next();
+      return next();
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {
@@ -227,9 +237,7 @@ function getMemberFromParam(req, res, next) {
 
     req.locals.member = member;
     return next();
-  }).catch((error) => {
-    next(error);
-  });
+  }).catch(error => next(error));
 }
 
 
@@ -244,9 +252,7 @@ function getMember(req, res, next) {
     if (membership) req.locals.member.membership = membership;
     return res.json({ data: req.locals.member });
   })
-  .catch(error => {
-    next(error);
-  });
+  .catch(error => next(error));
 }
 
 

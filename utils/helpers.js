@@ -24,3 +24,8 @@ export function updateTotalMembership(membership) {
     membership.monthly = membership.monthly.dollars();
   }
 }
+
+export function generateRandomEmail() {
+  const randomEmail = `${(Math.random() * 100)}${new Date().getTime()}`;
+  return `auto-${randomEmail}@dentalhq.com`;
+}
