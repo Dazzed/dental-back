@@ -1,3 +1,5 @@
+export const USER_ORIGIN_OPTIONS = ['external', 'internal'];
+
 // TODO: update with real data before go production
 export const ADULT_MEMBERSHIP_ITEMS_DEFAULTS = [{
   code: '1110',

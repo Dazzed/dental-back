@@ -26,8 +26,8 @@ const router = new Router({ mergeParams: true });
 
 function getDateTimeInPST() {
   const now = moment();
-  const time = now.format("h:mm a");
-  const date = now.format("M/D/YY");
+  const time = now.format('h:mm a');
+  const date = now.format('M/D/YY');
 
   return `${time} on ${date}`;
 }

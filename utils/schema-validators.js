@@ -2,6 +2,7 @@ import {
   SEX_TYPES,
   PREFERRED_CONTACT_METHODS,
   MEMBER_RELATIONSHIP_TYPES,
+  USER_ORIGIN_OPTIONS
 } from '../config/constants';
 
 
@@ -150,6 +151,12 @@ export const NORMAL_USER_REGISTRATION = {
     isEmail: true,
     notEmpty: true,
   },
+  origin: {
+    notEmpty: true,
+    isIn: {
+      options: USER_ORIGIN_OPTIONS,
+    },
+  }
 };
 
 

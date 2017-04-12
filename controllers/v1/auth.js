@@ -21,9 +21,7 @@ import {
 } from '../../utils/schema-validators';
 
 import {
-  EMAIL_SUBJECTS,
-  ADULT_MEMBERSHIP_ITEMS_DEFAULTS,
-  // CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS,
+  EMAIL_SUBJECTS
   // DAYS,
 } from '../../config/constants';
 
