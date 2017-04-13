@@ -7,6 +7,7 @@ import {
   PREFERRED_CONTACT_METHODS,
   USER_TYPES,
   MEMBER_RELATIONSHIP_TYPES,
+  USER_ORIGIN_OPTIONS
 } from '../config/constants';
 
 export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'salt',
@@ -113,6 +114,21 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.ENUM(Object.keys(MEMBER_RELATIONSHIP_TYPES)),
       allowNull: true,
     },
+    origin: {
+      type: new DataTypes.ENUM(USER_ORIGIN_OPTIONS),
+      allowNull: true,
+      validate: { notEmpty: true }
+    },
+    cancellationFee: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
+    reEnrollmentFee: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    }
   }, {
     tableName: 'users',
 

@@ -37,6 +37,20 @@ export const NEW_PASSWORD_VALIDATOR = {
 };
 
 
+export const WAIVE_CANCELLATION = {
+  cancellationFee: {
+    notEmpty: true,
+    errorMessage: 'You must set whether you want '
+                  + 'to charge cancellation fee for this patient.'
+  },
+  reEnrollmentFee: {
+    notEmpty: true,
+    errorMessage: 'You must set whether you want '
+                  + 'to charge re-enrollment fee for this patient.'
+  }
+};
+
+
 export const NORMAL_USER_EDIT = {
   newEmail: {
     notEmpty: true,

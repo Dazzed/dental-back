@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import passport from 'passport';
 import moment from 'moment';
+import isPlainObject from 'is-plain-object';
+import _ from 'lodash';
 
 import db from '../../models';
 
@@ -13,6 +15,7 @@ import {
   REVIEW,
   INVITE_PATIENT,
   CONTACT_SUPPORT,
+  WAIVE_CANCELLATION
 } from '../../utils/schema-validators';
 
 import {
@@ -198,6 +201,43 @@ function contactSupportNoAuth(req, res, next) { // eslint-disable-line
 }
 
 
+function waiveCancellationFee(req, res, next) {
+  req.checkBody(WAIVE_CANCELLATION);
+
+  req
+    .asyncValidationErrors(true)
+    .then(() => {
+      const userId = req.params.patientId;
+      return db.Subscription.findOne({
+        where: {
+          clientId: userId,
+          dentistId: req.user.get('id')
+        },
+        include: [{
+          model: db.User,
+          as: 'client'
+        }]
+      })
+      .then(subscription => {
+        if (!subscription || !subscription.client) throw new NotFoundError();
+        return subscription.get('client');
+      });
+    })
+    .then((user) => {
+      const body = _.pick(req.body, ['cancellationFee', 'reEnrollmentFee']);
+      return user.update(body);
+    })
+    .then((user) => res.json({ data: user.toJSON() }))
+    .catch((errors) => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
+      }
+
+      return next(errors);
+    });
+}
+
+
 router
   .route('/review')
   .post(
@@ -212,6 +252,12 @@ router
   .delete(
     passport.authenticate('jwt', { session: false }),
     deleteReview);
+
+router
+  .route('/patients/:patientId/waive-fees')
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    waiveCancellationFee);
 
 router
   .route('/invite_patient')

@@ -13,7 +13,7 @@ export const model = {
   getCurrentSubscription(userId) {
     return db.Subscription.find({
       where: {
-        clientId: userId,
+        clientId: userId
       },
       order: '"createdAt" DESC',
     });
@@ -71,4 +71,3 @@ export const model = {
     });
   }
 };
-
