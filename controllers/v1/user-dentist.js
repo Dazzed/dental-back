@@ -77,7 +77,7 @@ function chargeBill(req, res, next) {
           }, {
             where: { id: { $in: ids } },
           }).then(() => {
-            return res.json({ data: userIds });
+            res.json({ data: userIds });
           });
         }).catch(errors => {
           if (isPlainObject(errors.json)) {
@@ -91,7 +91,6 @@ function chargeBill(req, res, next) {
       }
     })
     .catch(next);
-
 }
 
 

@@ -4,6 +4,11 @@ import moment from 'moment';
 import isPlainObject from 'is-plain-object';
 import _ from 'lodash';
 
+import {
+  createCreditCard,
+  updateCreditCard
+} from '../payments';
+
 import db from '../../models';
 
 import {
@@ -201,33 +206,96 @@ function contactSupportNoAuth(req, res, next) { // eslint-disable-line
 }
 
 
+function getSubscribedPatient(req, res, next) {
+  db.Subscription.findOne({
+    where: {
+      clientId: req.params.patientId,
+      dentistId: req.user.get('id')
+    },
+    include: [{
+      model: db.User,
+      as: 'client'
+    }]
+  })
+  .then((subscription) => {
+    if (!subscription || !subscription.get('client')) throw new NotFoundError();
+    req.locals.client = subscription.get('client');
+    return next();
+  })
+  .catch(next);
+}
+
+
+function ensureCreditCard(req, res, next) {
+  const userId = req.locals.client.get('id');
+
+  db.User.find({
+    where: { id: userId },
+    attributes: ['authorizeId', 'id', 'email', 'paymentId'],
+    raw: true,
+  }).then((user) => {
+    if (!user.authorizeId) {
+      return createCreditCard(user, req.body.card)
+        .then(([authorizeId, paymentId]) => {
+          db.User.update({
+            authorizeId,
+            paymentId,
+          }, {
+            where: { id: userId }
+          });
+          user.authorizeId = authorizeId;
+          user.paymentId = paymentId;
+          return user;
+        });
+    } else if (req.body.card) {
+      return updateCreditCard(user.authorizeId, user.paymentId, req.body.card)
+        .then(() => user);
+    }
+    return user;
+  }).then((user) => {
+    req.locals.chargeTo = user;
+    return next();
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors.json)) {
+      return next(new BadRequestError(errors.json));
+    }
+
+    return next(errors);
+  });
+}
+
+
 function waiveCancellationFee(req, res, next) {
   req.checkBody(WAIVE_CANCELLATION);
 
   req
     .asyncValidationErrors(true)
     .then(() => {
-      const userId = req.params.patientId;
-      return db.Subscription.findOne({
-        where: {
-          clientId: userId,
-          dentistId: req.user.get('id')
-        },
-        include: [{
-          model: db.User,
-          as: 'client'
-        }]
-      })
-      .then(subscription => {
-        if (!subscription || !subscription.client) throw new NotFoundError();
-        return subscription.get('client');
-      });
-    })
-    .then((user) => {
       const body = _.pick(req.body, ['cancellationFee', 'reEnrollmentFee']);
-      return user.update(body);
+      return req.locals.client.update(body);
     })
     .then((user) => res.json({ data: user.toJSON() }))
+    .catch((errors) => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
+      }
+
+      return next(errors);
+    });
+}
+
+
+function updatePatientCard(req, res, next) {
+  req
+    .asyncValidationErrors(true)
+    .then(() => {
+      // updateCreditCard(req.locals.client.get('id'));
+      const client = req.locals.client;
+      delete client.authorizeId;
+      delete client.paymentId;
+      res.json({ data: client });
+    })
     .catch((errors) => {
       if (isPlainObject(errors)) {
         return next(new BadRequestError(errors));
@@ -257,7 +325,16 @@ router
   .route('/patients/:patientId/waive-fees')
   .put(
     passport.authenticate('jwt', { session: false }),
+    getSubscribedPatient,
     waiveCancellationFee);
+
+router
+  .route('/patients/:patientId/update-card')
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    getSubscribedPatient,
+    ensureCreditCard,
+    updatePatientCard);
 
 router
   .route('/invite_patient')

@@ -107,6 +107,7 @@ function normalUserSignup(req, res, next) {
     .asyncValidationErrors(true)
     .then(() => {
       const user = req.body;
+      user.origin = 'external';
       user.verified = true;
 
       return new Promise((resolve, reject) => {
