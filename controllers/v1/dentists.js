@@ -327,6 +327,25 @@ function updatePatientCard(req, res, next) {
 }
 
 
+function getDentistNoAuth(req, res, next) {
+  db.User.findOne({
+    attributes: ['id'],
+    where: {
+      id: req.params.userId,
+      type: 'dentist'
+    }
+  })
+  .then(user => {
+    if (user) return user.getFullDentist();
+    return null;
+  })
+  .then(user => {
+    res.json({ data: user.toJSON() || {} });
+  })
+  .catch(next);
+}
+
+
 router
   .route('/review')
   .post(
@@ -356,6 +375,10 @@ router
     getSubscribedPatient,
     ensureCreditCard,
     updatePatientCard);
+
+router
+  .route('/no-auth')
+  .get(getDentistNoAuth);
 
 router
   .route('/invite_patient')

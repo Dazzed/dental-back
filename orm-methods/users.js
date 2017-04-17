@@ -2,6 +2,9 @@ import moment from 'moment';
 import _ from 'lodash';
 import db from '../models';
 
+const userFieldsExcluded = ['hash', 'salt', 'activationKey',
+  'resetPasswordKey', 'verified'];
+
 
 export const instance = {
 
@@ -18,9 +21,6 @@ export const instance = {
    * This parses all clients and return data to be displayed.
    */
   getClients() {
-    const userFieldsExcluded = ['hash', 'salt', 'activationKey',
-      'resetPasswordKey', 'verified'];
-
     return db.User.findAll({
       attributes: { exclude: userFieldsExcluded },
       where: {
@@ -238,6 +238,51 @@ export const instance = {
       membershipId: membership.id,
       clientId: this.get('id'),
       dentistId,
+    });
+  },
+
+  getFullDentist() {
+    return db.User.find({
+      attributes: {
+        exclude: userFieldsExcluded
+      },
+      where: {
+        id: this.get('id'),
+        type: 'dentist'
+      },
+      include: [{
+        as: 'dentistInfo',
+        model: db.DentistInfo,
+        attributes: {
+          exclude: ['membershipId', 'userId', 'childMembershipId'],
+        },
+        include: [{
+          model: db.Membership,
+          as: 'membership',
+          attributes: {
+            exclude: ['isDeleted', 'default', 'userId'],
+          },
+        }, {
+          model: db.Membership,
+          as: 'childMembership',
+          attributes: {
+            exclude: ['isDeleted', 'default', 'userId'],
+          },
+        }, {
+          model: db.DentistInfoService,
+          as: 'services',
+          attributes: ['dentistInfoId', 'serviceId'],
+          include: [{
+            model: db.Service,
+            attributes: ['name'],
+            as: 'service'
+          }]
+        }, {
+          model: db.WorkingHours,
+          as: 'workingHours'
+        }]
+      }],
+      // raw: true
     });
   }
 };
