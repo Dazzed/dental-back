@@ -3,6 +3,8 @@ import passport from 'passport';
 import isPlainObject from 'is-plain-object';
 import HTTPStatus from 'http-status';
 import aws from 'aws-sdk';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
 import _ from 'lodash';
 
 import db from '../../models';
@@ -316,23 +318,32 @@ function getCardInfo(req, res, next) {
 }
 
 
-function signS3Upload(req, res, next) {
-  const s3 = new aws.S3();
-  const fileName = req.query['file-name'];
-  const fileType = req.query['file-type'];
-  const key = Date.now().toString();
+const s3 = new aws.S3();
+const upload = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.S3_BUCKET || 'dentalmarket',
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    acl: 'public-read',
+    metadata(_req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key(_req, file, cb) {
+      cb(null, Date.now().toString());
+    },
+  }),
+});
 
-// const upload = multer({
-//   storage: multerS3({
-//     s3,
-//     bucket: process.env.S3_BUCKER || 'dentalmarket',
-//     contentType: multerS3.AUTO_CONTENT_TYPE,
-//     acl: 'public-read',
-//     key(req, file, cb) {
-//       cb(null, Date.now().toString());
-//     },
-//   }),
-// });
+
+function signS3(req, res, next) {
+  res.send(`Successfully uploaded ${req.files.length} files!`);
+}
+
+
+function signS3Upload(req, res, next) {
+  const fileName = req.query.file_name;
+  const fileType = req.query.file_type;
+  const key = process.env.S3_ACCESS_KEY;
 
   const s3Params = {
     Bucket: process.env.S3_BUCKET,
@@ -346,6 +357,7 @@ function signS3Upload(req, res, next) {
     if (err) {
       return next(err);
     }
+    console.log(data);
 
     const location = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${key}`;
     const avatar = {
@@ -354,7 +366,7 @@ function signS3Upload(req, res, next) {
       originalName: fileName,
     };
 
-    req.locals.user.update({ avatar });
+    // req.locals.user.update({ avatar });
 
     const returnData = {
       signedRequest: data,
@@ -404,10 +416,12 @@ router
 
 router
   .route('/:userId/sign-avatar')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    getUserFromParam,
-    signS3Upload);
+  .post(
+    // passport.authenticate('jwt', { session: false }),
+    // getUserFromParam,
+    upload.array('photos', 3),
+    signS3);
+    // signS3Upload);
 
 router
   .route('/:userId/verify-password')

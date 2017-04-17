@@ -13,10 +13,6 @@ import {
 } from '../../utils/schema-validators';
 
 import {
-  generateRandomEmail
-} from '../../utils/helpers';
-
-import {
   BadRequestError,
   NotFoundError
 } from '../errors';
@@ -44,75 +40,24 @@ function getMembers(req, res, next) {
 function addMember(req, res, next) {
   req.checkBody(MEMBER);
 
-  const userId = req.params.userId;
-  let member;
-  let data;
-  let dentistId;
-
   req
     .asyncValidationErrors(true)
     .then(() => {
-      data = _.pick(req.body, ['firstName', 'lastName',
+      const data = _.pick(req.body, ['firstName', 'lastName',
         'birthDate', 'familyRelationship', 'sex', 'membershipType']);
 
+      return db.User.addMember(data, req.user);
+
       // if user is me update id.
-      if (userId === 'me') {
-        data.addedBy = req.user.get('id');
-      } else {
-        data.addedBy = userId;
-      }
-
-      // if userId is undefined set body param
-      if (userId === undefined) {
-        data.addedBy = req.body.userId;
-      }
-
-      data.hash = 'NOT_SET';
-      data.salt = 'NOT_SET';
-      data.email = generateRandomEmail();
-
-      return db.User.create(data);
+      // if (userId === 'me') {
+      //   data.addedBy = req.user.get('id');
+      // } else {
+      //   data.addedBy = userId;
+      // }
     })
-    .then(_member => {
-      member = _member;
-      return db.Subscription.find({
-        attributes: ['dentistId', 'id'],
-        where: { clientId: data.addedBy },
-        raw: true,
-      });
-    })
-    .then(subscription => db.DentistInfo.find({
-      attributes: ['membershipId', 'childMembershipId', 'userId'],
-      where: { userId: subscription.dentistId },
-      raw: true,
-    }))
-    .then(info => {
-      dentistId = info.userId;
-      const years = moment().diff(member.get('birthDate'), 'years', false);
-      if (years < 13) {
-        return db.Membership.find({ where: { id: info.childMembershipId } });
-      }
-      return db.Membership.find({ where: { id: info.membershipId } });
-    })
-    .then(membership =>
-      Promise.all([
-        member.createSubscription(membership, dentistId),
-        // member.createPhoneNumber({
-        //   number: req.body.phone,
-        // }),
-        membership
-      ])
-    )
-    .then(([subscription, membership]) => {
-      const response = member.toJSON();
-      response.membership = membership.toJSON();
-      response.subscription = subscription.toJSON();
-      // response.phone = phone.toJSON().number;
-
+    .then(response => {
       res.status(HTTPStatus.CREATED);
-      res.json({ data: _.omit(response, ['salt', 'hash', 'dentistSpecialtyId',
-        'authorizeId', 'isDeleted', 'paymentId', 'resetPasswordKey', 'verified'
-      ]) });
+      res.json({ data: response });
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {

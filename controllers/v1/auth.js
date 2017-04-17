@@ -107,7 +107,6 @@ function normalUserSignup(req, res, next) {
     .asyncValidationErrors(true)
     .then(() => {
       const user = req.body;
-      user.origin = 'external';
       user.verified = true;
 
       return new Promise((resolve, reject) => {
@@ -163,9 +162,21 @@ function normalUserSignup(req, res, next) {
     .then((user) => {
       const queries = [
         // This should be created so we can edit values
-        user.createPhoneNumber({ number: req.body.phone || '' }),
-        user.createAddress({ value: req.body.address || '' }),
       ];
+
+      if (req.body.phone) {
+        queries.push(user.createPhoneNumber({ number: req.body.phone || '' }));
+      }
+
+      if (req.body.address) {
+        queries.push(user.createAddress({ value: req.body.address || '' }));
+      }
+
+      if (req.body.members) {
+        req.body.members.forEach(member => {
+          queries.push(db.User.addMember(member, user));
+        });
+      }
 
       return Promise.all(queries);
     })

@@ -292,6 +292,12 @@ function waiveCancellationFee(req, res, next) {
 
 function updatePatientCard(req, res, next) {
   req.checkBody(PATIENT_CARD_UPDATE);
+  // req.checkBody([
+  //   'periodontalDiseaseWaiver',
+  //   'cancellationFeeWaiver',
+  //   'reEnrollmentFeeWaiver',
+  //   'termsAndConditions'
+  // ], 'Please accept all conditions').equals(true);
 
   req
     .asyncValidationErrors(true)

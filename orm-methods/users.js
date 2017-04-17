@@ -2,6 +2,10 @@ import moment from 'moment';
 import _ from 'lodash';
 import db from '../models';
 
+import {
+  generateRandomEmail
+} from '../utils/helpers';
+
 const userFieldsExcluded = ['hash', 'salt', 'activationKey',
   'resetPasswordKey', 'verified'];
 
@@ -107,9 +111,6 @@ export const instance = {
   },
 
   getMyMembers() {
-    const userFieldsExcluded = ['hash', 'salt', 'activationKey',
-      'resetPasswordKey', 'verified'];
-
     return db.User.findAll({
       attributes: { exclude: userFieldsExcluded },
       where: {
@@ -281,8 +282,7 @@ export const instance = {
           model: db.WorkingHours,
           as: 'workingHours'
         }]
-      }],
-      // raw: true
+      }]
     });
   }
 };
@@ -291,9 +291,6 @@ export const instance = {
 export const model = {
 
   getMyMember(addedBy, memberId) {
-    const userFieldsExcluded = ['hash', 'salt', 'activationKey',
-      'resetPasswordKey', 'verified'];
-
     return db.User.find({
       attributes: { exclude: userFieldsExcluded },
       where: {
@@ -327,4 +324,61 @@ export const model = {
     });
   },
 
+  addMember(data, user) {
+    console.log('HELLO');
+    let member;
+    let dentistId;
+
+    data.addedBy = user.get('id');
+    data.hash = 'NOT_SET';
+    data.salt = 'NOT_SET';
+    data.email = generateRandomEmail();
+
+    return new Promise((resolve, reject) => {
+      db.User.create(data)
+      .then(_member => {
+        member = _member;
+        return db.Subscription.find({
+          attributes: ['dentistId', 'id'],
+          where: { clientId: user.get('id') },
+          raw: true,
+        });
+      })
+      .then(subscription => db.DentistInfo.find({
+        attributes: ['membershipId', 'childMembershipId', 'userId'],
+        where: { userId: subscription.dentistId },
+        raw: true,
+      }))
+      .then(info => {
+        dentistId = info.userId;
+        const years = moment().diff(member.get('birthDate'), 'years', false);
+        if (years < 13) {
+          return db.Membership.find({ where: { id: info.childMembershipId } });
+        }
+        return db.Membership.find({ where: { id: info.membershipId } });
+      })
+      .then(membership =>
+        Promise.all([
+          member.createSubscription(membership, dentistId),
+          // member.createPhoneNumber({
+          //   number: req.body.phone,
+          // }),
+          membership
+        ])
+      )
+      .then(([subscription, membership]) => {
+        const response = member.toJSON();
+        response.membership = membership.toJSON();
+        response.subscription = subscription.toJSON();
+        // response.phone = phone.toJSON().number;
+
+        resolve(
+          _.omit(response, ['salt', 'hash', 'dentistSpecialtyId',
+            'authorizeId', 'isDeleted', 'paymentId', 'resetPasswordKey', 'verified'
+          ])
+        );
+      })
+      .catch(error => reject(error));
+    });
+  }
 };
