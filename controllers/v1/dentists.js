@@ -20,7 +20,8 @@ import {
   REVIEW,
   INVITE_PATIENT,
   CONTACT_SUPPORT,
-  WAIVE_CANCELLATION
+  WAIVE_CANCELLATION,
+  PATIENT_CARD_UPDATE
 } from '../../utils/schema-validators';
 
 import {
@@ -214,7 +215,10 @@ function getSubscribedPatient(req, res, next) {
     },
     include: [{
       model: db.User,
-      as: 'client'
+      as: 'client',
+      attributes: {
+        exclude: ['resetPasswordKey', 'salt', 'activationKey', 'verified']
+      }
     }]
   })
   .then((subscription) => {
@@ -287,14 +291,31 @@ function waiveCancellationFee(req, res, next) {
 
 
 function updatePatientCard(req, res, next) {
+  req.checkBody(PATIENT_CARD_UPDATE);
+
   req
     .asyncValidationErrors(true)
     .then(() => {
+      const body = _.pick(req.body, [
+        'periodontalDiseaseWaiver',
+        'cancellationFeeWaiver',
+        'reEnrollmentFeeWaiver',
+        'termsAndConditions'
+      ]);
+
+      if (!req.locals.client.get('waiverCreatedAt')) {
+        body.waiverCreatedAt = new Date();
+      }
+
+      return req.locals.client.update(body);
+    })
+    .then(() => {
+      const client = req.locals.client.toJSON();
       // updateCreditCard(req.locals.client.get('id'));
-      const client = req.locals.client;
       delete client.authorizeId;
       delete client.paymentId;
-      res.json({ data: client });
+
+      return res.json({ data: client });
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {

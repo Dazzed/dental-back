@@ -6,6 +6,14 @@ import {
 } from '../config/constants';
 
 
+export const PATIENT_CARD_UPDATE = {
+  periodontalDiseaseWaiver: { notEmpty: true },
+  cancellationFeeWaiver: { notEmpty: true },
+  reEnrollmentFeeWaiver: { notEmpty: true },
+  termsAndConditions: { notEmpty: true }
+};
+
+
 export const NEW_EMAIL_VALIDATOR = {
   newEmail: {
     notEmpty: true,
