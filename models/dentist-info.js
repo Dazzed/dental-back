@@ -45,6 +45,15 @@ export default function (sequelize, DataTypes) {
       allowNull: true,
       defaultValue: '',
     },
+    acceptsChildren: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
+    childStartingAge: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    }
   }, {
     tableName: 'dentistInfos',
     classMethods: {
