@@ -318,6 +318,10 @@ function getCardInfo(req, res, next) {
 }
 
 
+aws.config.update({
+  accessKeyId: process.env.S3_ACCESS_KEY_ID,
+  secretAccessKey: process.env.S3_ACCESS_KEY
+});
 const s3 = new aws.S3();
 const upload = multer({
   storage: multerS3({
@@ -329,53 +333,64 @@ const upload = multer({
       cb(null, { fieldName: file.fieldname });
     },
     key(_req, file, cb) {
-      cb(null, Date.now().toString());
+      cb(null, `${new Date().getTime()}.jpg`);
     },
   }),
 });
 
 
-function signS3(req, res, next) {
-  res.send(`Successfully uploaded ${req.files.length} files!`);
-}
-
-
-function signS3Upload(req, res, next) {
-  const fileName = req.query.file_name;
-  const fileType = req.query.file_type;
-  const key = process.env.S3_ACCESS_KEY;
-
-  const s3Params = {
-    Bucket: process.env.S3_BUCKET,
-    Key: key,
-    Expires: 60,
-    ContentType: fileType,
-    ACL: 'public-read'
-  };
-
-  s3.getSignedUrl('putObject', s3Params, (err, data) => {
-    if (err) {
-      return next(err);
-    }
-    console.log(data);
-
-    const location = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${key}`;
-    const avatar = {
-      location,
-      type: fileType,
-      originalName: fileName,
-    };
-
-    // req.locals.user.update({ avatar });
-
-    const returnData = {
-      signedRequest: data,
-      avatar,
-    };
-
-    return res.json(returnData);
+function createS3Bucket(req, res, next) {
+  s3.createBucket({ Bucket: process.env.S3_BUCKET }, (err) => {
+    if (err) next(err);
+    else next();
   });
 }
+
+
+function signS3Upload(req, res) {
+  const files = req.files.map(file => _.omit(file,
+    ['metadata', 'storageClass', 'acl', 'etag',
+      'bucket', 'fieldname', 'encoding', 'contentDisposition']));
+  res.json({ data: files });
+}
+
+
+// function signS3(req, res, next) {
+//   const fileName = req.query.file_name;
+//   const fileType = req.query.file_type;
+//   const key = process.env.S3_ACCESS_KEY;
+//
+//   const s3Params = {
+//     Bucket: process.env.S3_BUCKET,
+//     Key: key,
+//     Expires: 60,
+//     ContentType: fileType,
+//     ACL: 'public-read'
+//   };
+//
+//   s3.getSignedUrl('putObject', s3Params, (err, data) => {
+//     if (err) {
+//       return next(err);
+//     }
+//     console.log(data);
+//
+//     const location = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${key}`;
+//     const avatar = {
+//       location,
+//       type: fileType,
+//       originalName: fileName,
+//     };
+//
+//     // req.locals.user.update({ avatar });
+//
+//     const returnData = {
+//       signedRequest: data,
+//       avatar,
+//     };
+//
+//     return res.json(returnData);
+//   });
+// }
 
 
 function verifyPassword(req, res) {
@@ -415,13 +430,11 @@ router
     updatePatient);
 
 router
-  .route('/:userId/sign-avatar')
+  .route('/upload-photos')
   .post(
-    // passport.authenticate('jwt', { session: false }),
-    // getUserFromParam,
-    upload.array('photos', 3),
-    signS3);
-    // signS3Upload);
+    createS3Bucket,
+    upload.array('photos', 10),
+    signS3Upload);
 
 router
   .route('/:userId/verify-password')

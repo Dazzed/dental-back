@@ -161,6 +161,7 @@ function normalUserSignup(req, res, next) {
     })
     .then((user) => {
       const queries = [
+        user,
         // This should be created so we can edit values
       ];
 
@@ -180,10 +181,12 @@ function normalUserSignup(req, res, next) {
 
       return Promise.all(queries);
     })
-    .then(() => {
+    .then(([user]) => {
       res
         .status(HTTPStatus.CREATED)
-        .json({});
+        .json({ data: _.omit(user.toJSON(),
+          ['hash', 'salt', 'verified', 'authorizeId', 'paymentId',
+            'activationKey', 'resetPasswordKey']) });
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {
