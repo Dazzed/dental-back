@@ -176,7 +176,7 @@ export const NORMAL_USER_REGISTRATION = {
   origin: {
     notEmpty: true,
     isIn: {
-      options: USER_ORIGIN_OPTIONS,
+      options: [USER_ORIGIN_OPTIONS],
     },
   }
 };
