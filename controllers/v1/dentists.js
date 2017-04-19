@@ -5,8 +5,7 @@ import isPlainObject from 'is-plain-object';
 import _ from 'lodash';
 
 import {
-  createCreditCard,
-  updateCreditCard
+  ensureCreditCard
 } from '../payments';
 
 import db from '../../models';
@@ -230,43 +229,19 @@ function getSubscribedPatient(req, res, next) {
 }
 
 
-function ensureCreditCard(req, res, next) {
-  const userId = req.locals.client.get('id');
+function validateCreditCard(req, res, next) {
+  ensureCreditCard(req.locals.client, req.body.card)
+    .then(user => {
+      req.locals.chargeTo = user;
+      return next();
+    })
+    .catch((errors) => {
+      if (isPlainObject(errors.json)) {
+        return next(new BadRequestError(errors.json));
+      }
 
-  db.User.find({
-    where: { id: userId },
-    attributes: ['authorizeId', 'id', 'email', 'paymentId'],
-    raw: true,
-  }).then((user) => {
-    if (!user.authorizeId) {
-      return createCreditCard(user, req.body.card)
-        .then(([authorizeId, paymentId]) => {
-          db.User.update({
-            authorizeId,
-            paymentId,
-          }, {
-            where: { id: userId }
-          });
-          user.authorizeId = authorizeId;
-          user.paymentId = paymentId;
-          return user;
-        });
-    } else if (req.body.card) {
-      return updateCreditCard(user.authorizeId, user.paymentId, req.body.card)
-        .then(() => user);
-    }
-    return user;
-  }).then((user) => {
-    req.locals.chargeTo = user;
-    return next();
-  })
-  .catch((errors) => {
-    if (isPlainObject(errors.json)) {
-      return next(new BadRequestError(errors.json));
-    }
-
-    return next(errors);
-  });
+      return next(errors);
+    });
 }
 
 
@@ -379,7 +354,7 @@ router
   .put(
     passport.authenticate('jwt', { session: false }),
     getSubscribedPatient,
-    ensureCreditCard,
+    validateCreditCard,
     updatePatientCard);
 
 router

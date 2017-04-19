@@ -79,6 +79,11 @@ export default function (sequelize, DataTypes) {
           as: 'workingHours',
         });
 
+        DentistInfo.hasMany(models.DentistInfoPhotos, {
+          foreignKey: 'dentistInfoId',
+          as: 'officeImages',
+        });
+
         DentistInfo.belongsTo(models.User, {
           foreignKey: 'userId',
         });
