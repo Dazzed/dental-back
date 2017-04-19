@@ -1,4 +1,11 @@
 import { APIContracts, APIControllers, Constants } from 'authorizenet';
+import isPlainObject from 'is-plain-object';
+
+import db from '../models';
+import {
+  BadRequestError
+} from './errors';
+
 
 function getAuthentication() {
   const authentication = new APIContracts.MerchantAuthenticationType();
@@ -309,6 +316,45 @@ export function chargeAuthorize(profileId, paymentId, data) {
       } else {
         reject(new Error('No content'));
       }
+    });
+  });
+}
+
+
+export function ensureCreditCard(_user, card) {
+  return new Promise((resolve, reject) => {
+    db.User.find({
+      where: { id: _user.get('id') },
+      attributes: ['authorizeId', 'id', 'email', 'paymentId'],
+      raw: true,
+    })
+    .then((user) => {
+      if (!user.authorizeId) {
+        return createCreditCard(user, card)
+          .then(([authorizeId, paymentId]) => {
+            db.User.update({
+              authorizeId,
+              paymentId,
+            }, {
+              where: { id: _user.get('id') }
+            });
+            user.authorizeId = authorizeId;
+            user.paymentId = paymentId;
+            return user;
+          });
+      } else if (card) {
+        return updateCreditCard(user.authorizeId, user.paymentId, card)
+          .then(() => user);
+      }
+      return user;
+    })
+    .then((user) => resolve(user))
+    .catch((errors) => {
+      if (isPlainObject(errors.json)) {
+        return reject(new BadRequestError(errors.json));
+      }
+
+      return reject(errors);
     });
   });
 }

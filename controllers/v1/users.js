@@ -9,7 +9,10 @@ import _ from 'lodash';
 
 import db from '../../models';
 import { EXCLUDE_FIELDS_LIST } from '../../models/user';
-import { getCreditCardInfo } from '../payments';
+import {
+  getCreditCardInfo,
+  ensureCreditCard
+} from '../payments';
 
 import {
   NORMAL_USER_EDIT,
@@ -36,18 +39,19 @@ const router = new Router();
 export function getUserFromParam(req, res, next) {
   const userId = req.params.userId;
 
-  if (userId === 'me' || req.user.get('id') === parseInt(userId, 10)) {
+  if (userId === 'me' ||
+      (req.user && req.user.get('id') === parseInt(userId, 10))) {
     req.locals.user = req.user;
     return next();
   }
 
-  if (req.user.get('type') === 'client' && userId === 'me') {
+  if (req.user && req.user.get('type') === 'client' && userId === 'me') {
     return next(new ForbiddenError());
   }
 
   let accountOwner;
 
-  if (req.user.get('type') === 'client') {
+  if (req.user && req.user.get('type') === 'client') {
     accountOwner = req.user.get('id');
   }
 
@@ -398,6 +402,15 @@ function verifyPassword(req, res) {
 }
 
 
+function makePayment(req, res, next) {
+  ensureCreditCard(req.locals.user, req.body.card)
+    .then(user => res.json({
+      data: _.omit(user, ['authorizeId', 'paymentId'])
+    }))
+    .catch(error => next(error));
+}
+
+
 router
   .route('/:userId')
   .get(
@@ -450,6 +463,12 @@ router
     passport.authenticate('jwt', { session: false }),
     getUserFromParam,
     getCardInfo);
+
+router
+  .route('/:userId/payments')
+  .post(
+    getUserFromParam,
+    makePayment);
 
 
 export default router;

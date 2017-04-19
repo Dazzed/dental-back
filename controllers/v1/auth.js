@@ -5,6 +5,10 @@ import isPlainObject from 'is-plain-object';
 import passport from 'passport';
 import { Router } from 'express';
 import moment from 'moment';
+import {
+  createCreditCard,
+  updateCreditCard
+} from '../payments';
 
 import db from '../../models';
 
@@ -158,6 +162,25 @@ function normalUserSignup(req, res, next) {
           }
         });
       });
+    })
+    .then((user) => {
+      if (!user.authorizeId) {
+        return createCreditCard(user, req.body.card)
+          .then(([authorizeId, paymentId]) => {
+            db.User.update({
+              authorizeId,
+              paymentId,
+            }, {
+              where: { id: userId }
+            });
+            user.authorizeId = authorizeId;
+            user.paymentId = paymentId;
+            return user;
+          });
+      } else if (req.body.card) {
+        return updateCreditCard(user.authorizeId, user.paymentId, req.body.card)
+          .then(() => user);
+      }
     })
     .then((user) => {
       const queries = [
