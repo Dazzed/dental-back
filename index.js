@@ -29,6 +29,16 @@ const aws = require('aws-sdk');
 
 const app = express();
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', '*');
+      // 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, ' +
+      // 'Content-Length, Content-MD5, Content-Type, Date');
+  res.header('Access-Control-Allow-Credentials', true);
+  next();
+});
+
 // require models
 require('./models');
 require('csv-express');
@@ -39,8 +49,8 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 aws.config.update({
-  secretAccessKey: process.env.S3_SECRET_KEY,
-  accessKeyId: process.env.S3_ACCESS_KEY,
+  secretAccessKey: process.env.S3_ACCESS_KEY,
+  accessKeyId: process.env.S3_ACCESS_KEY_ID,
   region: process.env.S3_REGION,
 });
 
