@@ -2,9 +2,9 @@ import { Router } from 'express';
 import passport from 'passport';
 import isPlainObject from 'is-plain-object';
 import HTTPStatus from 'http-status';
-import aws from 'aws-sdk';
-import multer from 'multer';
-import multerS3 from 'multer-s3';
+//import aws from 'aws-sdk';
+//import multer from 'multer';
+//import multerS3 from 'multer-s3';
 import _ from 'lodash';
 
 import db from '../../models';
@@ -321,10 +321,11 @@ function getCardInfo(req, res, next) {
   }).catch(next);
 }
 
-
+/*
 aws.config.update({
   accessKeyId: process.env.S3_ACCESS_KEY_ID,
-  secretAccessKey: process.env.S3_ACCESS_KEY
+  secretAccessKey: process.env.S3_ACCESS_KEY,
+  region: process.env.S3_REGION,
 });
 const s3 = new aws.S3();
 const upload = multer({
@@ -341,22 +342,25 @@ const upload = multer({
     },
   }),
 });
+*/
 
-
+/*
 function createS3Bucket(req, res, next) {
   s3.createBucket({ Bucket: process.env.S3_BUCKET }, (err) => {
     if (err) next(err);
     else next();
   });
 }
+*/
 
-
+/*
 function signS3Upload(req, res) {
   const files = req.files.map(file => _.omit(file,
     ['metadata', 'storageClass', 'acl', 'etag',
       'bucket', 'fieldname', 'encoding', 'contentDisposition']));
   res.json({ data: files });
 }
+*/
 
 
 // function signS3(req, res, next) {
@@ -442,12 +446,14 @@ router
     getUserFromParam,
     updatePatient);
 
+/*
 router
   .route('/upload-photos')
   .post(
     createS3Bucket,
     upload.array('photos', 10),
     signS3Upload);
+*/
 
 router
   .route('/:userId/verify-password')

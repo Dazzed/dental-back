@@ -54,6 +54,15 @@ aws.config.update({
   region: process.env.S3_REGION,
 });
 
+app.use('/s3', require('react-s3-uploader/s3router')({
+  bucket: process.env.S3_BUCKET,
+  region: process.env.S3_REGION,
+  signatureVersion: 'v4',
+  headers: {'Access-Control-Allow-Origin': '*'},
+  ACL: 'private',
+  uniquePrefix: true,
+}));
+
 let mailerOptions = { transportMethod: 'Stub' };
 
 if (process.env.NODE_ENV === 'production') {
