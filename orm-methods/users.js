@@ -325,7 +325,6 @@ export const model = {
   },
 
   addMember(data, user) {
-    console.log('HELLO');
     let member;
     let dentistId;
 

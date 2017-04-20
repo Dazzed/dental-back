@@ -6,8 +6,8 @@ import passport from 'passport';
 import { Router } from 'express';
 import moment from 'moment';
 import {
-  createCreditCard,
-  updateCreditCard
+  ensureCreditCard,
+  chargeAuthorize
 } from '../payments';
 
 import db from '../../models';
@@ -107,80 +107,68 @@ function normalUserSignup(req, res, next) {
   req.checkBody('confirmPassword', 'Password do not match').equals(req.body.password);
   req.checkBody('confirmEmail', 'Email do not match').equals(req.body.email);
 
+  const data = req.body;
+
   req
     .asyncValidationErrors(true)
     .then(() => {
-      const user = req.body;
-      user.verified = true;
+      data.verified = true;
 
       return new Promise((resolve, reject) => {
-        db.User.register(user, user.password, (registerError, createdUser) => {
+        db.User.register(data, data.password, (registerError, createdUser) => {
           if (registerError) {
-            reject(registerError);
-          } else {
-            resolve(createdUser);
-
-            res.mailer.send('auth/client/welcome', {
-              to: user.email,
-              subject: EMAIL_SUBJECTS.client.welcome,
-              site: process.env.SITE,
-              user: createdUser,
-            }, (err, info) => {
-              if (err) {
-                console.log(err);
-              }
-
-              if (process.env.NODE_ENV === 'development') {
-                console.log(info);
-              }
-            });
-
-            db.DentistInfo.find({
-              attributes: ['membershipId', 'userId'],
-              where: { id: req.body.officeId },
-              include: [{
-                model: db.Membership,
-                as: 'membership',
-                attributes: ['id', 'price', 'monthly'],
-              }]
-            }).then((info) => {
-              if (info) {
-                const membership = info.membership.toJSON();
-                const today = moment();
-
-                db.Subscription.create({
-                  startAt: today,
-                  endAt: moment(today).add(1, 'months'),
-                  total: membership.price,
-                  monthly: membership.monthly,
-                  membershipId: membership.id,
-                  clientId: createdUser.id,
-                  dentistId: info.get('userId'),
-                });
-              }
-            });
+            return reject(registerError);
           }
+          return resolve(createdUser);
         });
       });
     })
-    .then((user) => {
-      if (!user.authorizeId) {
-        return createCreditCard(user, req.body.card)
-          .then(([authorizeId, paymentId]) => {
-            db.User.update({
-              authorizeId,
-              paymentId,
-            }, {
-              where: { id: userId }
-            });
-            user.authorizeId = authorizeId;
-            user.paymentId = paymentId;
-            return user;
+    .then((__user) => new Promise((resolve, reject) => {
+      if (data.card) {
+        return ensureCreditCard(__user, data.card)
+          .then(user => {
+            chargeAuthorize(user.authorizeId, user.paymentId, data)
+              .then(() => resolve(__user))
+              .catch(errors => {
+                db.User.destroy({ where: { id: __user.id } });
+                reject(errors);
+              });
+          })
+          .catch((errors) => {
+            // delete the user, account couldn't be charged successfully.
+            db.User.destroy({ where: { id: __user.id } });
+            reject(errors);
           });
-      } else if (req.body.card) {
-        return updateCreditCard(user.authorizeId, user.paymentId, req.body.card)
-          .then(() => user);
       }
+      return resolve(__user);
+    }))
+    .then((createdUser) => {
+      db.DentistInfo.find({
+        attributes: ['membershipId', 'userId'],
+        where: { id: data.officeId },
+        include: [{
+          model: db.Membership,
+          as: 'membership',
+          attributes: ['id', 'price', 'monthly'],
+        }]
+      })
+      .then((info) => {
+        if (info) {
+          const membership = info.membership.toJSON();
+          const today = moment();
+
+          db.Subscription.create({
+            startAt: today,
+            endAt: moment(today).add(1, 'months'),
+            total: membership.price,
+            monthly: membership.monthly,
+            membershipId: membership.id,
+            clientId: createdUser.id,
+            dentistId: info.get('userId'),
+          });
+        }
+      });
+      return createdUser;
     })
     .then((user) => {
       const queries = [
@@ -204,12 +192,30 @@ function normalUserSignup(req, res, next) {
 
       return Promise.all(queries);
     })
-    .then(([user]) => {
+    .then((user) => {
+      res.mailer.send('auth/client/welcome', {
+        to: req.body.email,
+        subject: EMAIL_SUBJECTS.client.welcome,
+        site: process.env.SITE,
+        user,
+      }, (err, info) => {
+        if (err) {
+          console.log(err);
+        }
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(info);
+        }
+      });
+
+      ['hash', 'salt', 'verified', 'authorizeId', 'paymentId',
+        'activationKey', 'resetPasswordKey'].forEach(key => {
+          delete user[key];
+        });
+
       res
         .status(HTTPStatus.CREATED)
-        .json({ data: _.omit(user.toJSON(),
-          ['hash', 'salt', 'verified', 'authorizeId', 'paymentId',
-            'activationKey', 'resetPasswordKey']) });
+        .json({ data: user });
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {

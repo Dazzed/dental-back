@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.1.4",
-    "authorizenet": "^1.0.0",
+    "authorizenet": "^1.0.2",
     "aws-sdk": "^2.7.13",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",

@@ -234,7 +234,7 @@ export function chargeAuthorize(profileId, paymentId, data) {
   data.members.forEach((member, index) => {
     const lineItem = new APIContracts.LineItemType();
     lineItem.setItemId(index);
-    lineItem.setName(member.fullName);
+    lineItem.setName(`${member.firstName} ${member.lastName}`);
     // lineItem.setDescription(member.fullName);
     lineItem.setQuantity('1');
     lineItem.setUnitPrice(member.monthly);

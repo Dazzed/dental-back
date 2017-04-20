@@ -58,8 +58,8 @@ app.use('/s3', require('react-s3-uploader/s3router')({
   bucket: process.env.S3_BUCKET,
   region: process.env.S3_REGION,
   signatureVersion: 'v4',
-  headers: {'Access-Control-Allow-Origin': '*'},
-  ACL: 'private',
+  headers: { 'Access-Control-Allow-Origin': '*' },
+  ACL: 'public-read',
   uniquePrefix: true,
 }));
 
