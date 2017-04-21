@@ -195,6 +195,10 @@ export const instance = {
         }, {
           model: db.WorkingHours,
           as: 'workingHours'
+        }, {
+          model: db.DentistInfoPhotos,
+          attributes: ['url'],
+          as: 'officePhotos'
         }]
       }],
       subquery: false,
@@ -281,6 +285,10 @@ export const instance = {
         }, {
           model: db.WorkingHours,
           as: 'workingHours'
+        }, {
+          model: db.DentistInfoPhotos,
+          attributes: ['url'],
+          as: 'officePhotos'
         }]
       }]
     });

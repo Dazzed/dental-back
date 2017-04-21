@@ -40,6 +40,7 @@ function createDentistInfo(user, body) {
   const pricing = body.pricing || [];
   const workingHours = body.workingHours || [];
   const services = body.services || [];
+  const officeImages = body.officeImages || [];
 
   Promise.all([
     user.createMembership({
@@ -59,7 +60,8 @@ function createDentistInfo(user, body) {
       price: 0,
       monthly: 0,
     })
-  ]).then(([adult, child]) => {
+  ])
+  .then(([adult, child]) => {
     user.createDentistInfo(
       Object.assign({
         membershipId: adult.get('id'),
@@ -74,6 +76,12 @@ function createDentistInfo(user, body) {
       services.forEach(item => {
         info.createService(item);
       });
+
+      officeImages.forEach(url => {
+        db.DentistInfoPhotos.create({
+          url, dentistInfoId: info.get('id')
+        });
+      });
     });
 
     // create pricing records for the dentist.
@@ -83,20 +91,6 @@ function createDentistInfo(user, body) {
       if (found) adult.createItem(item);
       // else child.createItem(item);
     });
-
-    // ADULT_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
-    //   adult.createItem({
-    //     pricingCode: item.code,
-    //     price: 0,
-    //   });
-    // });
-    //
-    // CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS.forEach(item => {
-    //   child.createItem({
-    //     pricingCode: item.code,
-    //     price: 0,
-    //   });
-    // });
   });
 }
 

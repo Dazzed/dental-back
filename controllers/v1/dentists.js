@@ -229,22 +229,6 @@ function getSubscribedPatient(req, res, next) {
 }
 
 
-function validateCreditCard(req, res, next) {
-  ensureCreditCard(req.locals.client, req.body.card)
-    .then(user => {
-      req.locals.chargeTo = user;
-      return next();
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors.json)) {
-        return next(new BadRequestError(errors.json));
-      }
-
-      return next(errors);
-    });
-}
-
-
 function waiveCancellationFee(req, res, next) {
   req.checkBody(WAIVE_CANCELLATION);
 
@@ -258,6 +242,22 @@ function waiveCancellationFee(req, res, next) {
     .catch((errors) => {
       if (isPlainObject(errors)) {
         return next(new BadRequestError(errors));
+      }
+
+      return next(errors);
+    });
+}
+
+
+function validateCreditCard(req, res, next) {
+  ensureCreditCard(req.locals.client, req.body.card)
+    .then(user => {
+      req.locals.chargeTo = user;
+      return next();
+    })
+    .catch((errors) => {
+      if (isPlainObject(errors.json)) {
+        return next(new BadRequestError(errors.json));
       }
 
       return next(errors);
@@ -321,7 +321,7 @@ function getDentistNoAuth(req, res, next) {
     return null;
   })
   .then(user => {
-    res.json({ data: user.toJSON() || {} });
+    res.json({ data: user ? user.toJSON() : {} || {} });
   })
   .catch(next);
 }

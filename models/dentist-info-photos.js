@@ -6,6 +6,7 @@ export default function (sequelize, DataTypes) {
     }
   }, {
     tableName: 'dentistInfoPhotos',
+    updatedAt: false,
     classMethods: {
       associate(models) {
         DentistInfoPhotos.belongsTo(models.DentistInfo, {
