@@ -198,7 +198,7 @@ export const instance = {
         }, {
           model: db.DentistInfoPhotos,
           attributes: ['url'],
-          as: 'officePhotos'
+          as: 'officeImages'
         }]
       }],
       subquery: false,
@@ -288,7 +288,7 @@ export const instance = {
         }, {
           model: db.DentistInfoPhotos,
           attributes: ['url'],
-          as: 'officePhotos'
+          as: 'officeImages'
         }]
       }]
     });
