@@ -81,7 +81,7 @@ export default function (sequelize, DataTypes) {
 
         DentistInfo.hasMany(models.DentistInfoPhotos, {
           foreignKey: 'dentistInfoId',
-          as: 'officeImages',
+          as: 'officePhotos',
         });
 
         DentistInfo.belongsTo(models.User, {
