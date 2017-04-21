@@ -40,7 +40,7 @@ function createDentistInfo(user, body) {
   const pricing = body.pricing || [];
   const workingHours = body.workingHours || [];
   const services = body.services || [];
-  const officeImages = body.officeImages || [];
+  const officeImages = dentistInfo.officeImages || [];
 
   Promise.all([
     user.createMembership({
