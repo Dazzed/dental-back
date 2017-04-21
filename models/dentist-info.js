@@ -53,6 +53,10 @@ export default function (sequelize, DataTypes) {
     childStartingAge: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    logo: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     tableName: 'dentistInfos',
