@@ -16,6 +16,11 @@ export default function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: 0,
     },
+    yearly: {
+      type: new DataTypes.DECIMAL(6, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
     withDiscount: {
       type: new DataTypes.DECIMAL(6, 2),
       defaultValue: 0,
@@ -47,6 +52,14 @@ export default function (sequelize, DataTypes) {
       defaultValue: false,
     },
     isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    adultYearlyFeeActivated: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    childYearlyFeeActivated: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },

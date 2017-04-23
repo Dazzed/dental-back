@@ -20,13 +20,12 @@ import {
 
 import {
   NORMAL_USER_REGISTRATION,
-  DENTIST_USER_REGISTRATION,
-  PRICING_CODES
+  DENTIST_USER_REGISTRATION
 } from '../../utils/schema-validators';
 
 import {
-  EMAIL_SUBJECTS
-  // DAYS,
+  EMAIL_SUBJECTS,
+  PRICING_CODES
 } from '../../config/constants';
 
 
@@ -37,7 +36,7 @@ const router = new Router();
 
 function createDentistInfo(user, body) {
   const dentistInfo = body.officeInfo;
-  const pricing = body.pricing || [];
+  const pricing = body.pricing || {};
   const workingHours = body.workingHours || [];
   const services = body.services || [];
   const officeImages = dentistInfo.officeImages || [];
@@ -49,7 +48,9 @@ function createDentistInfo(user, body) {
       isActive: true,
       price: 0,
       withDiscount: 0,
-      monthly: 0,
+      monthly: pricing.adultMonthlyFee,
+      yearly: pricing.adultYearlyFee,
+      adultYearlyFeeActivated: pricing.adultYearlyFeeActivated
     }),
 
     user.createMembership({
@@ -58,7 +59,9 @@ function createDentistInfo(user, body) {
       isActive: true,
       withDiscount: 0,
       price: 0,
-      monthly: 0,
+      monthly: pricing.childMonthlyFee,
+      yearly: pricing.childYearlyFee,
+      childYearlyFeeActivated: pricing.childYearlyFeeActivated
     })
   ])
   .then(([adult, child]) => {
@@ -72,9 +75,23 @@ function createDentistInfo(user, body) {
         info.createWorkingHour(item);
       });
 
-      // create services records for the dentist.
+      // create service records for the dentist.
       services.forEach(item => {
         info.createService(item);
+      });
+
+      // create pricing records for the dentist.
+      (pricing.codes || []).forEach(item => {
+        PRICING_CODES.forEach(elem => {
+          if (elem.code === item.code) {
+            db.MembershipItem.create({
+              pricingCode: item.code,
+              price: item.amount,
+              dentistInfoId: info.get('id')
+            })
+            .catch(e => console.log(e));
+          }
+        });
       });
 
       officeImages.forEach(url => {
@@ -82,14 +99,6 @@ function createDentistInfo(user, body) {
           url, dentistInfoId: info.get('id')
         });
       });
-    });
-
-    // create pricing records for the dentist.
-    pricing.forEach(item => {
-      const found = PRICING_CODES[item.code];
-
-      if (found) adult.createItem(item);
-      // else child.createItem(item);
     });
   });
 }

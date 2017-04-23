@@ -2,9 +2,9 @@ import { Router } from 'express';
 import passport from 'passport';
 import isPlainObject from 'is-plain-object';
 import HTTPStatus from 'http-status';
-//import aws from 'aws-sdk';
-//import multer from 'multer';
-//import multerS3 from 'multer-s3';
+// import aws from 'aws-sdk';
+// import multer from 'multer';
+// import multerS3 from 'multer-s3';
 import _ from 'lodash';
 
 import db from '../../models';

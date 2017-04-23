@@ -42,7 +42,6 @@ export default function (sequelize, DataTypes) {
     },
     zipCode: {
       type: DataTypes.STRING,
-      allowNull: true,
       defaultValue: '',
     },
     acceptsChildren: {
@@ -51,12 +50,10 @@ export default function (sequelize, DataTypes) {
       defaultValue: true
     },
     childStartingAge: {
-      type: DataTypes.INTEGER,
-      allowNull: true
+      type: DataTypes.INTEGER
     },
     logo: {
-      type: DataTypes.STRING,
-      allowNull: true
+      type: DataTypes.STRING
     }
   }, {
     tableName: 'dentistInfos',
@@ -70,26 +67,31 @@ export default function (sequelize, DataTypes) {
 
         DentistInfo.belongsTo(models.Membership, {
           foreignKey: 'membershipId',
-          as: 'membership',
+          as: 'membership'
         });
 
         DentistInfo.belongsTo(models.Membership, {
           foreignKey: 'childMembershipId',
-          as: 'childMembership',
+          as: 'childMembership'
         });
 
         DentistInfo.hasMany(models.WorkingHours, {
           foreignKey: 'dentistInfoId',
-          as: 'workingHours',
+          as: 'workingHours'
+        });
+
+        DentistInfo.hasMany(models.MembershipItem, {
+          foreignKey: 'dentistInfoId',
+          as: 'priceCodes'
         });
 
         DentistInfo.hasMany(models.DentistInfoPhotos, {
           foreignKey: 'dentistInfoId',
-          as: 'officeImages',
+          as: 'officeImages'
         });
 
         DentistInfo.belongsTo(models.User, {
-          foreignKey: 'userId',
+          foreignKey: 'userId'
         });
       }
     }

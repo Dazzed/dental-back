@@ -70,10 +70,11 @@ function getDentistInfoFromParams(req, res, next) {
           exclude: ['membershipId'],
         },
       }],
-    }/*, {
-      model: db.Service,
-      as: 'services',
-    }*/],
+    }, {
+      model: db.DentistInfoPhotos,
+      as: 'officeImages',
+      attributes: ['url']
+    }],
     order: [
       [
         { model: db.Membership, as: 'membership' },

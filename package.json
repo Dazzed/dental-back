@@ -10,6 +10,9 @@
     "prod": "cross-env NODE_ENV=production node index.js",
     "postinstall": "sequelize db:migrate"
   },
+  "engines": {
+    "node": "7.5.0"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {

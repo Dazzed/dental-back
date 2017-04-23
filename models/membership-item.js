@@ -13,7 +13,7 @@ export default function (sequelize, DataTypes) {
     tableName: 'membershipItems',
     classMethods: {
       associate(models) {
-        MembershipItem.belongsTo(models.Membership, {
+        MembershipItem.belongsTo(models.DentistInfo, {
           foreignKey: 'membershipId'
         });
       }

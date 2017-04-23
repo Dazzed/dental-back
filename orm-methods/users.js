@@ -197,8 +197,8 @@ export const instance = {
           as: 'workingHours'
         }, {
           model: db.DentistInfoPhotos,
-          attributes: ['url'],
-          as: 'officeImages'
+          as: 'officeImages',
+          attributes: ['url']
         }]
       }],
       subquery: false,
