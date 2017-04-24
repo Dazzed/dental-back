@@ -59,7 +59,7 @@ export function createCreditCard(user, card) {
   const ctrl =
     new APIControllers.CreateCustomerProfileController(createRequest.getJSON());
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.AUTHORIZE_ENV === 'production') {
     ctrl.setEnvironment(Constants.endpoint.production);
   }
 
@@ -127,7 +127,7 @@ export function updateCreditCard(profileId, paymentId, card) {
     updateRequest.getJSON()
   );
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.AUTHORIZE_ENV === 'production') {
     ctrl.setEnvironment(Constants.endpoint.production);
   }
 
@@ -262,7 +262,7 @@ export function chargeAuthorize(profileId, paymentId, data) {
     createRequest.getJSON()
   );
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.AUTHORIZE_ENV === 'production') {
     ctrl.setEnvironment(Constants.endpoint.production);
   }
 
@@ -372,7 +372,7 @@ export function getCreditCardInfo(profileId, paymentId) {
     getRequest.getJSON()
   );
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.AUTHORIZE_ENV === 'production') {
     ctrl.setEnvironment(Constants.endpoint.production);
   }
 
