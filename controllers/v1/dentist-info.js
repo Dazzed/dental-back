@@ -50,26 +50,26 @@ function getDentistInfoFromParams(req, res, next) {
       attributes: {
         exclude: ['isDeleted', 'default', 'userId'],
       },
-      include: [{
-        model: db.MembershipItem,
-        as: 'items',
-        attributes: {
-          exclude: ['membershipId'],
-        },
-      }],
+      // include: [{
+      //   model: db.MembershipItem,
+      //   as: 'items',
+      //   attributes: {
+      //     exclude: ['membershipId'],
+      //   },
+      // }],
     }, {
       model: db.Membership,
       as: 'childMembership',
       attributes: {
         exclude: ['isDeleted', 'default', 'userId'],
       },
-      include: [{
-        model: db.MembershipItem,
-        as: 'items',
-        attributes: {
-          exclude: ['membershipId'],
-        },
-      }],
+      // include: [{
+      //   model: db.MembershipItem,
+      //   as: 'items',
+      //   attributes: {
+      //     exclude: ['membershipId'],
+      //   },
+      // }],
     }, {
       model: db.DentistInfoPhotos,
       as: 'officeImages',
@@ -78,12 +78,12 @@ function getDentistInfoFromParams(req, res, next) {
     order: [
       [
         { model: db.Membership, as: 'membership' },
-        { model: db.MembershipItem, as: 'items' },
+        // { model: db.MembershipItem, as: 'items' },
         'id', 'asc'
       ],
       [
         { model: db.Membership, as: 'childMembership' },
-        { model: db.MembershipItem, as: 'items' },
+        // { model: db.MembershipItem, as: 'items' },
         'id', 'asc'
       ]
     ]

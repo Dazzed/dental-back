@@ -73,10 +73,10 @@ export default function (sequelize, DataTypes) {
     classMethods: {
       associate(models) {
         Membership.belongsTo(models.User, { foreignKey: 'userId' });
-        Membership.hasMany(models.MembershipItem, {
-          foreignKey: 'membershipId',
-          as: 'items',
-        });
+        // Membership.hasMany(models.MembershipItem, {
+        //   foreignKey: 'membershipId',
+        //   as: 'items',
+        // });
       }
     }
   });
