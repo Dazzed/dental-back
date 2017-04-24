@@ -175,9 +175,9 @@ export function validateCreditCard(profileId, paymentId, cvc) {
     request.getJSON()
   );
 
-  if (process.env.NODE_ENV === 'production') {
-    ctrl.setEnvironment(Constants.endpoint.production);
-  }
+  // if (process.env.NODE_ENV === 'production') {
+  //   ctrl.setEnvironment(Constants.endpoint.production);
+  // }
 
   return new Promise((resolve, reject) => {
     ctrl.execute(() => {
