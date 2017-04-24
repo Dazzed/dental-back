@@ -47,7 +47,8 @@ function createDentistInfo(user, body) {
       default: true,
       isActive: true,
       price: 0,
-      withDiscount: 0,
+      withDiscount: pricing.treatmentDiscount,
+      discount: pricing.treatmentDiscount,
       monthly: pricing.adultMonthlyFee,
       yearly: pricing.adultYearlyFee,
       adultYearlyFeeActivated: pricing.adultYearlyFeeActivated
@@ -57,8 +58,9 @@ function createDentistInfo(user, body) {
       name: 'default child membership',
       default: true,
       isActive: true,
-      withDiscount: 0,
       price: 0,
+      withDiscount: pricing.treatmentDiscount,
+      discount: pricing.treatmentDiscount,
       monthly: pricing.childMonthlyFee,
       yearly: pricing.childYearlyFee,
       childYearlyFeeActivated: pricing.childYearlyFeeActivated
