@@ -296,6 +296,8 @@ function dentistUserSignup(req, res, next) {
 
   req.body = entireBody;
 
+  console.log(entireBody);
+
   req
     .asyncValidationErrors(true)
     .then(() => {
