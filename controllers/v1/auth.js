@@ -79,7 +79,8 @@ function createDentistInfo(user, body) {
 
       // create service records for the dentist.
       services.forEach(item => {
-        info.createService(item);
+        info.createService(item)
+          .catch(e => console.log(e));
       });
 
       // create pricing records for the dentist.
