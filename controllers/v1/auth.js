@@ -40,6 +40,7 @@ function createDentistInfo(user, body) {
   const workingHours = body.workingHours || [];
   const services = body.services || [];
   const officeImages = dentistInfo.officeImages || [];
+  console.log(officeImages);
 
   Promise.all([
     user.createMembership({
@@ -78,10 +79,10 @@ function createDentistInfo(user, body) {
       });
 
       // create service records for the dentist.
-      services.forEach(item => {
-        info.createService(item)
-          .catch(e => console.log(e));
-      });
+      // services.forEach(item => {
+      //   info.createService(item)
+      //     .catch(e => console.log(e));
+      // });
 
       // create pricing records for the dentist.
       (pricing.codes || []).forEach(item => {
@@ -98,6 +99,7 @@ function createDentistInfo(user, body) {
       });
 
       officeImages.forEach(url => {
+        console.log(url);
         db.DentistInfoPhotos.create({
           url, dentistInfoId: info.get('id')
         });
@@ -299,7 +301,7 @@ function dentistUserSignup(req, res, next) {
 
   req.body = entireBody;
 
-  console.log(entireBody);
+  // console.log(entireBody);
 
   req
     .asyncValidationErrors(true)
