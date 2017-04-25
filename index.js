@@ -12,7 +12,7 @@ if (fs.existsSync(path.join(rootDir, '.env'))) {
   require('dotenv').load();  // eslint-disable-line global-require
 }
 
-const isDeveloment = process.env.NODE_ENV !== 'production';
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 
 // Main starting point of the application
@@ -47,7 +47,7 @@ require('csv-express');
 
 // App Setup
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan(isDeveloment ? 'dev' : 'combined'));
+  app.use(morgan(isDevelopment ? 'dev' : 'combined'));
 }
 
 aws.config.update({
