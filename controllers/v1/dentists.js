@@ -1,4 +1,4 @@
-/* eslint consistent-return:0 */
+/* eslint consistent-return:0, no-else-return: 0 */
 import { Router } from 'express';
 import passport from 'passport';
 import moment from 'moment';
@@ -18,7 +18,6 @@ import db from '../../models';
 import {
   CONTACT_SUPPORT_EMAIL,
   EMAIL_SUBJECTS,
-  USER_TYPES,
 } from '../../config/constants';
 
 import {
@@ -105,26 +104,50 @@ function updateDentist(req, res, next) {
 
   req
   .asyncValidationErrors(true)
-  .then(() => {
-    const body = _.pick(req.body, Object.keys(UPDATE_DENTIST));
+  .then(() => (
+    new Promise((resolve, reject) => {
+      const body = _.pick(req.body, [
+        'firstName',
+        'middleName',
+        'lastName',
+        'email',
+      ]);
 
-    if (req.params.userId) {
-      // Find the dentist and update them
-      db.User.update(body, {
-        where: { id: req.params.userId },
-        returning: true
-      })
-      .then(resp => {
-        if (resp) {
-          res.json({ data: resp.pop() });
-        } else {
-          next(new BadRequestError('No dentist was found!'));
-        }
-      })
-      .catch(err => next(new BadRequestError(err)));
-    } else {
-      return next(new BadRequestError('No user ID was provided!'));
-    }
+      if (req.params.userId) {
+        // Find the dentist and update them
+        resolve(
+          db.User.update(body, {
+            where: { id: req.params.userId }
+          })
+        );
+      } else {
+        reject(next(new BadRequestError('No user ID was provided!')));
+      }
+    })
+  ))
+  .then(resp => (
+    new Promise(resolve => {
+      // Update phone number if provided
+      if (resp && req.params.phoneId && req.body.phoneNumber) {
+        resolve(
+          db.Phone.update({
+            number: req.body.phoneNumber
+          }, {
+            where: {
+              id: req.params.phoneId,
+              userId: req.params.userId,
+            }
+          })
+        );
+      } else {
+        resolve();
+      }
+    })
+  ))
+  .then(() => {
+    fetchDentist(req.params.userId)
+    .then(dentist => res.json({ data: dentist }))
+    .catch(err => next(new BadRequestError(err)));
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
@@ -421,7 +444,7 @@ function getDentistNoAuth(req, res, next) {
 }
 
 router
-  .route('/:userId?')
+  .route('/:userId?/:phoneId?')
   .get(
     passport.authenticate('jwt', { session: false }),
     adminRequired,
