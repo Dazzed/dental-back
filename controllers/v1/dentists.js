@@ -1,3 +1,4 @@
+/* eslint consistent-return:0 */
 import { Router } from 'express';
 import passport from 'passport';
 import moment from 'moment';
@@ -25,7 +26,8 @@ import {
   INVITE_PATIENT,
   CONTACT_SUPPORT,
   WAIVE_CANCELLATION,
-  PATIENT_CARD_UPDATE
+  PATIENT_CARD_UPDATE,
+  UPDATE_DENTIST,
 } from '../../utils/schema-validators';
 
 import {
@@ -45,6 +47,14 @@ function getDateTimeInPST() {
   return `${time} on ${date}`;
 }
 
+/**
+ * Prepares a promise for fetching a dentist's information
+ *
+ * @param {object} req - the express request object
+ * @param {object} res - the express response object
+ * @param {function} next - the next web action to be triggered
+ * @return {Promise<Dentist>}
+ */
 function fetchDentist(userId) {
   return new Promise((resolve, reject) => {
     db.User.getActiveUser(userId)
@@ -53,11 +63,18 @@ function fetchDentist(userId) {
   });
 }
 
+/**
+ * Obtains the details of one or several dentists
+ *
+ * @param {object} req - the express request object
+ * @param {object} res - the express response object
+ * @param {function} next - the next web action to be triggered
+ */
 function listDentists(req, res, next) {
   if (req.params.userId) {
     // Fetch specific dentist info
     fetchDentist(req.params.userId)
-    .then(dentist => res.json(dentist))
+    .then(dentist => res.json({ data: dentist }))
     .catch(err => next(new BadRequestError(err)));
   } else {
     // Get all dentist info
@@ -69,11 +86,53 @@ function listDentists(req, res, next) {
     })
     .then(users => {
       Promise.all(users.map(u => fetchDentist(u.id)))
-      .then(dentists => res.json(dentists))
+      .then(dentists => res.json({ data: dentists }))
       .catch(err => next(new BadRequestError(err)));
     })
     .catch(err => next(new BadRequestError(err)));
   }
+}
+
+/**
+ * Updates a single dentist user
+ *
+ * @param {object} req - the express request object
+ * @param {object} res - the express response object
+ * @param {function} next - the next web action to be triggered
+ */
+function updateDentist(req, res, next) {
+  req.checkBody(UPDATE_DENTIST);
+
+  req
+  .asyncValidationErrors(true)
+  .then(() => {
+    const body = _.pick(req.body, Object.keys(UPDATE_DENTIST));
+
+    if (req.params.userId) {
+      // Find the dentist and update them
+      db.User.update(body, {
+        where: { id: req.params.userId },
+        returning: true
+      })
+      .then(resp => {
+        if (resp) {
+          res.json({ data: resp.pop() });
+        } else {
+          next(new BadRequestError('No dentist was found!'));
+        }
+      })
+      .catch(err => next(new BadRequestError(err)));
+    } else {
+      return next(new BadRequestError('No user ID was provided!'));
+    }
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      return next(new BadRequestError(errors));
+    }
+
+    return next(errors);
+  });
 }
 
 function addReview(req, res, next) {
@@ -366,7 +425,11 @@ router
   .get(
     passport.authenticate('jwt', { session: false }),
     adminRequired,
-    listDentists);
+    listDentists)
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    adminRequired,
+    updateDentist);
 
 router
   .route('/:userId/review')

@@ -323,3 +323,10 @@ export const CONTACT_SUPPORT = {
     notEmpty: true,
   }
 };
+
+export const UPDATE_DENTIST = {
+  firstName: true,
+  middleName: true,
+  lastName: true,
+  email: true,
+};
