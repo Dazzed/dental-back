@@ -13,6 +13,7 @@ import db from '../../models';
 import {
   CONTACT_SUPPORT_EMAIL,
   EMAIL_SUBJECTS,
+  USER_TYPES,
 } from '../../config/constants';
 
 import {
@@ -40,6 +41,36 @@ function getDateTimeInPST() {
   return `${time} on ${date}`;
 }
 
+function fetchDentist(userId) {
+  return new Promise((resolve, reject) => {
+    db.User.getActiveUser(userId)
+    .then(resolve)
+    .catch(reject);
+  });
+}
+
+function listDentists(req, res, next) {
+  if (req.params.userId) {
+    // Fetch specific dentist info
+    fetchDentist(req.params.userId)
+    .then(dentist => res.json(dentist))
+    .catch(err => next(new BadRequestError(err)));
+  } else {
+    // Get all dentist info
+    db.User.findAll({
+      where: {
+        type: 'dentist'
+      },
+      attributes: ['id'],
+    })
+    .then(users => {
+      Promise.all(users.map(u => fetchDentist(u.id)))
+      .then(dentists => res.json(dentists))
+      .catch(err => next(new BadRequestError(err)));
+    })
+    .catch(err => next(new BadRequestError(err)));
+  }
+}
 
 function addReview(req, res, next) {
   req.checkBody(REVIEW);
@@ -326,15 +357,20 @@ function getDentistNoAuth(req, res, next) {
   .catch(next);
 }
 
+router
+  .route('/:userId?')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    listDentists);
 
 router
-  .route('/review')
+  .route('/:userId/review')
   .post(
     passport.authenticate('jwt', { session: false }),
     addReview);
 
 router
-  .route('/review/:reviewId')
+  .route('/:userId/review/:reviewId')
   .put(
     passport.authenticate('jwt', { session: false }),
     updateReview)
@@ -343,14 +379,14 @@ router
     deleteReview);
 
 router
-  .route('/patients/:patientId/waive-fees')
+  .route('/:userId/patients/:patientId/waive-fees')
   .put(
     passport.authenticate('jwt', { session: false }),
     getSubscribedPatient,
     waiveCancellationFee);
 
 router
-  .route('/patients/:patientId/update-card')
+  .route('/:userId/patients/:patientId/update-card')
   .put(
     passport.authenticate('jwt', { session: false }),
     getSubscribedPatient,
@@ -358,17 +394,17 @@ router
     updatePatientCard);
 
 router
-  .route('/no-auth')
+  .route('/:userId/no-auth')
   .get(getDentistNoAuth);
 
 router
-  .route('/invite_patient')
+  .route('/:userId/invite_patient')
   .post(
     passport.authenticate('jwt', { session: false }),
     invitePatient);
 
 router
-  .route('/contact_support')
+  .route('/:userId/contact_support')
   .post(contactSupportNoAuth);
 
 export default router;

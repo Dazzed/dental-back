@@ -24,7 +24,7 @@ router.use('/users/:userId/members', members);
 router.use('/users/:userId/memberships', memberships);
 router.use('/users/:userId/messages', messages);
 router.use('/users/:userId', userDentist);
-router.use('/dentists/:userId', dentists);
+router.use('/dentists', dentists);
 
 // just one to one resources
 router.use('/users/:userId/dentist-info', dentistInfo);
