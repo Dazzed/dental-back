@@ -449,4 +449,11 @@ router
   .get(activate);
 
 
-export default router;
+module.exports = {
+  auth: router,
+  login,
+  logout: (req, res) => res.end(),
+  signup: normalUserSignup,
+  dentistUserSignup,
+  activate
+};
