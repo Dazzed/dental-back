@@ -329,5 +329,7 @@ export const UPDATE_DENTIST = {
   middleName: true,
   lastName: true,
   email: true,
-  phone: true,
+  phoneNumber: {
+    optional: true
+  },
 };
