@@ -8,6 +8,10 @@ import {
   ensureCreditCard
 } from '../payments';
 
+import {
+  adminRequired,
+} from '../middlewares';
+
 import db from '../../models';
 
 import {
@@ -361,6 +365,7 @@ router
   .route('/:userId?')
   .get(
     passport.authenticate('jwt', { session: false }),
+    adminRequired,
     listDentists);
 
 router
