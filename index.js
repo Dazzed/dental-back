@@ -26,6 +26,8 @@ const validators = require('./utils/express-validators');
 const mailer = require('express-mailer');
 const nunjucks = require('nunjucks');
 const aws = require('aws-sdk');
+const swaggerTools = require('swagger-tools');
+const swaggerDoc = require('./config/swagger')(process.env.API_URL);
 
 const app = express();
 
@@ -98,12 +100,41 @@ app.use(expressValidator({
 
 router(app);
 
-if (require.main === module) {
+// Swagger
+const options = {
+  controllers: ['./controllers/v1'],
+  useStubs: (process.env.NODE_ENV === 'development')
+};
+
+if (process.env.NODE_ENV === 'development') {
+  const port = process.env.PORT || 3090;
+
+  // Initialize the Swagger middleware
+  swaggerTools.initializeMiddleware(swaggerDoc, (middleware) => {
+    // Interpret Swagger resources and attach metadata to request - must
+    // be first in swagger-tools middleware chain
+    app.use(middleware.swaggerMetadata());
+
+    // Validate Swagger requests
+    app.use(middleware.swaggerValidator());
+
+    // Route validated requests to appropriate controller
+    app.use(middleware.swaggerRouter(options));
+
+    // Serve the Swagger documents and Swagger UI
+    app.use(middleware.swaggerUi());
+
+    // Start the server
+    http.createServer(app).listen(port, () => {
+      console.log('Server listening on: ', port);
+    });
+  });
+} else {
   // Server Setup
   const port = process.env.PORT || 3090;
   const server = http.createServer(app);
   server.listen(port);
   console.log('Server listening on: ', port);
-} else {
-  module.exports = app;
 }
+
+module.exports = app;
