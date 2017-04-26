@@ -23,7 +23,7 @@ module.exports = (host) => ({
             in: 'body',
             description: 'the users credentials',
             required: true,
-            schema: { $ref: '#/definitions/LoginSchema' }
+            schema: { $ref: '#/definitions/LoginRequest' }
           }
         ],
         produces: ['application/json'],
@@ -62,7 +62,7 @@ module.exports = (host) => ({
   },
   definitions: {
     // #region LOGIN
-    LoginSchema: {
+    LoginRequest: {
       type: 'object',
       required: [
         'email',
