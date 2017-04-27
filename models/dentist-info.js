@@ -91,7 +91,8 @@ export default function (sequelize, DataTypes) {
         });
 
         DentistInfo.belongsTo(models.User, {
-          foreignKey: 'userId'
+          foreignKey: 'userId',
+          as: 'user'
         });
       }
     }
