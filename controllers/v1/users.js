@@ -419,8 +419,6 @@ function makePayment(req, res, next) {
         .catch(errors => next(new BadRequestError(errors)));
     })
     .catch(errors => next(new BadRequestError(errors)));
-  ensureCreditCard(req.locals.user, req.body.card)
-    .catch(error => next(error));
 }
 
 
