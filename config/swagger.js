@@ -70,7 +70,7 @@ module.exports = (host) => ({
       ],
       properties: {
         errors: { type: 'string' },
-        meta: { type: 'object', $ref: '#/definitions/ErrorMetaResponse' }
+        meta: { $ref: '#/definitions/ErrorMetaResponse' }
       }
     },
     ErrorMetaResponse: {
