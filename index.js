@@ -27,7 +27,13 @@ const mailer = require('express-mailer');
 const nunjucks = require('nunjucks');
 const aws = require('aws-sdk');
 const swaggerTools = require('swagger-tools');
-const swaggerDoc = require('./config/swagger')(process.env.API_URL);
+const swaggerConfig = require('./config/swagger');
+
+let swaggerDoc;
+
+if (process.env.NODE_ENV === 'development') {
+  swaggerDoc = swaggerConfig(process.env.API_URL);
+}
 
 const app = express();
 
@@ -106,7 +112,7 @@ const options = {
   useStubs: (process.env.NODE_ENV === 'development')
 };
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' && swaggerDoc) {
   const port = process.env.PORT || 3090;
 
   // Initialize the Swagger middleware
@@ -133,8 +139,9 @@ if (process.env.NODE_ENV === 'development') {
   // Server Setup
   const port = process.env.PORT || 3090;
   const server = http.createServer(app);
-  server.listen(port);
-  console.log('Server listening on: ', port);
+  server.listen(port, () => {
+    console.log('Server listening on: ', port);
+  });
 }
 
 module.exports = app;

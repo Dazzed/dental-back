@@ -240,6 +240,7 @@ export const instance = {
       endAt: today.add(1, 'months'),
       total: membership.price,
       monthly: membership.monthly,
+      status: 'active',
       membershipId: membership.id,
       clientId: this.get('id'),
       dentistId,
@@ -333,12 +334,13 @@ export const model = {
   },
 
   addMember(data, user) {
+    const membership = data.subscription;
     let member;
-    let dentistId;
 
     data.addedBy = user.get('id');
     data.hash = 'NOT_SET';
     data.salt = 'NOT_SET';
+    data.type = 'client';
     data.email = generateRandomEmail();
 
     return new Promise((resolve, reject) => {
@@ -348,36 +350,16 @@ export const model = {
         return db.Subscription.find({
           attributes: ['dentistId', 'id'],
           where: { clientId: user.get('id') },
-          raw: true,
+          raw: true
         });
       })
-      .then(subscription => db.DentistInfo.find({
-        attributes: ['membershipId', 'childMembershipId', 'userId'],
-        where: { userId: subscription.dentistId },
-        raw: true,
-      }))
-      .then(info => {
-        dentistId = info.userId;
-        const years = moment().diff(member.get('birthDate'), 'years', false);
-        if (years < 13) {
-          return db.Membership.find({ where: { id: info.childMembershipId } });
-        }
-        return db.Membership.find({ where: { id: info.membershipId } });
-      })
-      .then(membership =>
-        Promise.all([
-          member.createSubscription(membership, dentistId),
-          // member.createPhoneNumber({
-          //   number: req.body.phone,
-          // }),
-          membership
-        ])
+      .then(subscription =>
+        member.createSubscription(membership, subscription.dentistId)
       )
-      .then(([subscription, membership]) => {
+      .then(subscription => {
         const response = member.toJSON();
-        response.membership = membership.toJSON();
+        response.membership = membership;
         response.subscription = subscription.toJSON();
-        // response.phone = phone.toJSON().number;
 
         resolve(
           _.omit(response, ['salt', 'hash', 'dentistSpecialtyId',

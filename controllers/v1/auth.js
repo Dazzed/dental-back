@@ -153,28 +153,24 @@ function normalUserSignup(req, res, next) {
     .then((createdUser) => {
       db.DentistInfo.find({
         attributes: ['membershipId', 'userId'],
-        where: { id: data.officeId },
-        include: [{
-          model: db.Membership,
-          as: 'membership',
-          attributes: ['id', 'price', 'monthly'],
-        }]
+        where: { id: data.officeId }
       })
       .then((info) => {
-        if (info) {
-          const membership = info.membership.toJSON();
-          const today = moment();
+        const membership = data.subscription;
+        const today = moment();
 
-          db.Subscription.create({
-            startAt: today,
-            endAt: moment(today).add(1, 'months'),
-            total: membership.price,
-            monthly: membership.monthly,
-            membershipId: membership.id,
-            clientId: createdUser.id,
-            dentistId: info.get('userId'),
-          });
-        }
+        db.Subscription.create({
+          startAt: today,
+          endAt: moment(today).add(1, 'months'),
+          total: membership.monthly,
+                  // ((req.body.members && req.body.members.length !== 0)
+                  // ? req.body.members.length : 1),
+          monthly: membership.monthly,
+          status: 'active',
+          membershipId: membership.id,
+          clientId: createdUser.id,
+          dentistId: info.get('userId'),
+        });
       });
       return createdUser;
     })
@@ -200,7 +196,7 @@ function normalUserSignup(req, res, next) {
 
       return Promise.all(queries);
     })
-    .then((user) => {
+    .then(([user]) => {
       res.mailer.send('auth/client/welcome', {
         to: req.body.email,
         subject: EMAIL_SUBJECTS.client.welcome,
@@ -216,14 +212,12 @@ function normalUserSignup(req, res, next) {
         }
       });
 
-      ['hash', 'salt', 'verified', 'authorizeId', 'paymentId',
-        'activationKey', 'resetPasswordKey'].forEach(key => {
-          delete user[key];
-        });
+      const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
+        'paymentId', 'activationKey', 'resetPasswordKey'];
 
       res
         .status(HTTPStatus.CREATED)
-        .json({ data: user });
+        .json({ data: _.omit(user, excludedKeys) });
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {
