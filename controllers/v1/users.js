@@ -11,7 +11,8 @@ import db from '../../models';
 import { EXCLUDE_FIELDS_LIST } from '../../models/user';
 import {
   getCreditCardInfo,
-  ensureCreditCard
+  ensureCreditCard,
+  chargeAuthorize
 } from '../payments';
 
 import {
@@ -408,9 +409,17 @@ function verifyPassword(req, res) {
 
 function makePayment(req, res, next) {
   ensureCreditCard(req.locals.user, req.body.card)
-    .then(user => res.json({
-      data: _.omit(user, ['authorizeId', 'paymentId'])
-    }))
+    .then(user => {
+      chargeAuthorize(user.authorizeId, user.paymentId, req.body)
+        .then(() => {
+          res.json({
+            data: _.omit(user, ['authorizeId', 'paymentId'])
+          });
+        })
+        .catch(errors => next(new BadRequestError(errors)));
+    })
+    .catch(errors => next(new BadRequestError(errors)));
+  ensureCreditCard(req.locals.user, req.body.card)
     .catch(error => next(error));
 }
 

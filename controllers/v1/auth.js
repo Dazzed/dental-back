@@ -213,11 +213,11 @@ function normalUserSignup(req, res, next) {
       });
 
       const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
-        'paymentId', 'activationKey', 'resetPasswordKey'];
+        'paymentId', 'activationKey', 'resetPasswordKey', 'isDeleted'];
 
       res
         .status(HTTPStatus.CREATED)
-        .json({ data: _.omit(user, excludedKeys) });
+        .json({ data: [_.omit(user, excludedKeys)] });
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {
@@ -227,63 +227,6 @@ function normalUserSignup(req, res, next) {
       return next(errors);
     });
 }
-
-
-// function completeNormalUserSignup(req, res, next) {
-//   req.checkBody(COMPLETE_NORMAL_USER_REGISTRATION);
-//
-//   req
-//     .asyncValidationErrors(true)
-//     .then(() => {
-//       const data = _.pick(req.body, [
-//         'city', 'state', 'zipCode', 'birthDate', 'sex', 'payingMember',
-//         'contactMethod',
-//       ]);
-//
-//       req.user.update(data);
-//       req.user.phoneNumbers[0].update({ number: req.body.phone });
-//       req.user.addresses[0].update({ value: req.body.address });
-//
-//       if (req.body.address2) {
-//         req.user.createAddress({ value: req.body.address2 });
-//       }
-//
-//       return db.DentistInfo.find({
-//         attributes: ['membershipId', 'userId'],
-//         where: { id: req.body.officeId },
-//         include: [{
-//           model: db.Membership,
-//           as: 'membership',
-//           attributes: ['id', 'price', 'monthly'],
-//         }]
-//       }).then((info) => {
-//         if (info) {
-//           const membership = info.membership.toJSON();
-//           const today = moment();
-//
-//           db.Subscription.create({
-//             startAt: today,
-//             endAt: moment(today).add(1, 'months'),
-//             total: membership.price,
-//             monthly: membership.monthly,
-//             membershipId: membership.id,
-//             clientId: req.user.get('id'),
-//             dentistId: info.get('userId'),
-//           });
-//         }
-//       });
-//     })
-//     .then(() => {
-//       res.json({});
-//     })
-//     .catch((errors) => {
-//       if (isPlainObject(errors)) {
-//         return next(new BadRequestError(errors));
-//       }
-//
-//       return next(errors);
-//     });
-// }
 
 
 function dentistUserSignup(req, res, next) {
