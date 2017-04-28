@@ -238,7 +238,9 @@ export const instance = {
     return db.Subscription.create({
       startAt: today,
       endAt: today.add(1, 'months'),
-      total: membership.price,
+      total: (membership.adultYearlyFeeActivated
+        || membership.childYearlyFeeActivated)
+        ? membership.yearly : membership.monthly,
       monthly: membership.monthly,
       status: 'active',
       membershipId: membership.id,

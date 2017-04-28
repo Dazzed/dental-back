@@ -231,26 +231,31 @@ export function chargeAuthorize(profileId, paymentId, data) {
 
   const lineItemList = [];
 
-  data.members.forEach((member, index) => {
+  (data.members || []).forEach((member, index) => {
     const lineItem = new APIContracts.LineItemType();
     lineItem.setItemId(index);
-    lineItem.setName(`${member.firstName} ${member.lastName}`);
+    lineItem.setName(member.fullName);
     // lineItem.setDescription(member.fullName);
     lineItem.setQuantity('1');
     lineItem.setUnitPrice(member.monthly);
     lineItemList.push(lineItem);
   });
+  console.log(data);
 
-  const lineItems = new APIContracts.ArrayOfLineItem();
-  lineItems.setLineItem(lineItemList);
 
   const transactionRequestType = new APIContracts.TransactionRequestType();
   transactionRequestType.setTransactionType(
     APIContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
   transactionRequestType.setProfile(profileToCharge);
+  console.log(`Total: ${data.total}`);
   transactionRequestType.setAmount(data.total);
-  transactionRequestType.setLineItems(lineItems);
+
+  if ((data.members || []).length !== 0) {
+    const lineItems = new APIContracts.ArrayOfLineItem();
+    lineItems.setLineItem(lineItemList);
+    transactionRequestType.setLineItems(lineItems);
+  }
   transactionRequestType.setOrder(orderDetails);
   transactionRequestType.setTransactionSettings(transactionSettings);
 

@@ -162,9 +162,9 @@ function normalUserSignup(req, res, next) {
         db.Subscription.create({
           startAt: today,
           endAt: moment(today).add(1, 'months'),
-          total: membership.monthly,
-                  // ((req.body.members && req.body.members.length !== 0)
-                  // ? req.body.members.length : 1),
+          total: (membership.adultYearlyFeeActivated
+            || membership.childYearlyFeeActivated)
+            ? membership.yearly : membership.monthly,
           monthly: membership.monthly,
           status: 'active',
           membershipId: membership.id,
