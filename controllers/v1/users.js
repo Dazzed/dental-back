@@ -408,19 +408,25 @@ function verifyPassword(req, res) {
 
 function makePayment(req, res, next) {
   ensureCreditCard(req.locals.user, req.body.card)
-    .then(user => {
-      db.Subscription.getPendingAmount(user.id)
-        .then(data => {
-          chargeAuthorize(user.authorizeId, user.paymentId, data)
-            .then(() => {
-              res.json({
-                data: _.omit(user, ['authorizeId', 'paymentId'])
-              });
-            })
-            .catch(errors => next(errors));
+  .then(user => {
+    db.Subscription.getPendingAmount(user.id).then(data => {
+      if (data.total !== 0) {
+        chargeAuthorize(user.authorizeId, user.paymentId, data)
+        .then(() => {
+          // TODO: keep transaction log and implement webhook with Authorize.
+          res.json({
+            data: _.omit(user, ['authorizeId', 'paymentId'])
+          });
+        })
+        .catch(errors => next(errors));
+      } else {
+        res.json({
+          data: _.omit(user, ['authorizeId', 'paymentId'])
         });
-    })
-    .catch(errors => next(errors));
+      }
+    });
+  })
+  .catch(errors => next(errors));
 }
 
 

@@ -240,7 +240,6 @@ export function chargeAuthorize(profileId, paymentId, data) {
     lineItem.setUnitPrice(member.monthly);
     lineItemList.push(lineItem);
   });
-  console.log(data);
 
 
   const transactionRequestType = new APIContracts.TransactionRequestType();
@@ -248,7 +247,6 @@ export function chargeAuthorize(profileId, paymentId, data) {
     APIContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
   transactionRequestType.setProfile(profileToCharge);
-  console.log(`Total: ${data.total}`);
   transactionRequestType.setAmount(data.total);
 
   if ((data.members || []).length !== 0) {
