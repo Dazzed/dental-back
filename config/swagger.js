@@ -1,5 +1,6 @@
 import auth from './swagger/auth';
 import user from './swagger/user';
+import dentist from './swagger/dentist';
 
 module.exports = (host) => ({
   swagger: '2.0',
@@ -14,13 +15,18 @@ module.exports = (host) => ({
   produces: ['application/json'],
   paths: Object.assign({},
     auth.paths,
+    dentist.paths,
     user.paths,
     {
       '/swagger': {}
     }
   ),
+  parameters: Object.assign({},
+    dentist.parameters
+  ),
   definitions: Object.assign({},
     auth.definitions,
+    dentist.definitions,
     user.definitions,
     {
       ErrorResponse: {
