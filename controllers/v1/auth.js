@@ -129,25 +129,25 @@ function normalUserSignup(req, res, next) {
         });
       });
     })
-    .then((__user) => new Promise((resolve, reject) => {
-      if (data.card) {
-        return ensureCreditCard(__user, data.card)
-          .then(user => {
-            chargeAuthorize(user.authorizeId, user.paymentId, data)
-              .then(() => resolve(__user))
-              .catch(errors => {
-                db.User.destroy({ where: { id: __user.id } });
-                reject(errors);
-              });
-          })
-          .catch((errors) => {
-            // delete the user, account couldn't be charged successfully.
-            db.User.destroy({ where: { id: __user.id } });
-            reject(errors);
-          });
-      }
-      return resolve(__user);
-    }))
+    // .then((__user) => new Promise((resolve, reject) => {
+    //   if (data.card) {
+    //     return ensureCreditCard(__user, data.card)
+    //       .then(user => {
+    //         chargeAuthorize(user.authorizeId, user.paymentId, data)
+    //           .then(() => resolve(__user))
+    //           .catch(errors => {
+    //             db.User.destroy({ where: { id: __user.id } });
+    //             reject(errors);
+    //           });
+    //       })
+    //       .catch((errors) => {
+    //         // delete the user, account couldn't be charged successfully.
+    //         db.User.destroy({ where: { id: __user.id } });
+    //         reject(errors);
+    //       });
+    //   }
+    //   return resolve(__user);
+    // }))
     .then((createdUser) => {
       db.DentistInfo.find({
         attributes: ['membershipId', 'userId'],
