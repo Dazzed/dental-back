@@ -45,6 +45,12 @@ function getDentistInfoFromParams(req, res, next) {
       attributes: { exclude: ['dentistInfoId'] },
       orderBy: 'createdAt DESC',
     }, {
+      model: db.MembershipItem,
+      as: 'pricing',
+      attributes: {
+        exclude: ['dentistInfoId']
+      }
+    }, {
       model: db.Membership,
       as: 'membership',
       attributes: {
@@ -70,6 +76,16 @@ function getDentistInfoFromParams(req, res, next) {
       //     exclude: ['membershipId'],
       //   },
       // }],
+    }, {
+      model: db.DentistInfoService,
+      as: 'services',
+      attributes: {
+        exclude: ['serviceId', 'dentistInfoId']
+      },
+      include: [{
+        model: db.Service,
+        as: 'service'
+      }]
     }, {
       model: db.DentistInfoPhotos,
       as: 'officeImages',
@@ -151,7 +167,6 @@ function updateDentistInfo(req, res, next) {
       queries.push(info.update({
         officeName: req.body.officeName,
         url: req.body.url,
-        email: req.body.email,
         phone: req.body.phone,
         message: req.body.message,
         address: req.body.address,
@@ -166,7 +181,7 @@ function updateDentistInfo(req, res, next) {
           price: item.price,
         }, {
           where: {
-            membershipId: info.get('membershipId'),
+            dentistInfoId: info.get('id'),
             pricingCode: item.pricingCode,
           },
         }));
@@ -244,16 +259,18 @@ function updateDentistInfo(req, res, next) {
 
 
 function getDentistInfo(req, res) {
-  const json = req.locals.dentistInfo.toJSON();
+  const dentistInfo = req.locals.dentistInfo.toJSON();
 
-  if (json.services) {
-    json.services.forEach(item => {
-      delete item.dentistInfoService;
-    });
-  }
+  // if (json.services) {
+  //   json.services.forEach(item => {
+  //     delete item.dentistInfoService;
+  //   });
+  // }
+  const user = _.omit(req.user.toJSON(), ['authorizeId', 'paymentId']);
+  user.dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId']);
 
   res.json({
-    data: _.omit(json, ['membershipId']),
+    data: user
   });
 }
 

@@ -241,6 +241,7 @@ export const instance = {
       total: (membership.adultYearlyFeeActivated
         || membership.childYearlyFeeActivated)
         ? membership.yearly : membership.monthly,
+      yearly: membership.yearly,
       monthly: membership.monthly,
       status: 'active',
       membershipId: membership.id,
