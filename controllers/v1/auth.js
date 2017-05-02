@@ -40,7 +40,6 @@ function createDentistInfo(user, body) {
   const workingHours = body.workingHours || [];
   const services = body.services || [];
   const officeImages = dentistInfo.officeImages || [];
-  console.log(officeImages);
 
   Promise.all([
     user.createMembership({
@@ -99,7 +98,6 @@ function createDentistInfo(user, body) {
       });
 
       officeImages.forEach(url => {
-        console.log(url);
         db.DentistInfoPhotos.create({
           url, dentistInfoId: info.get('id')
         });

@@ -84,7 +84,8 @@ function getDentistInfoFromParams(req, res, next) {
       },
       include: [{
         model: db.Service,
-        as: 'service'
+        as: 'service',
+        raw: true
       }]
     }, {
       model: db.DentistInfoPhotos,
@@ -268,6 +269,7 @@ function getDentistInfo(req, res) {
   // }
   const user = _.omit(req.user.toJSON(), ['authorizeId', 'paymentId']);
   user.dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId']);
+  user.dentistInfo.services = user.dentistInfo.services.map(item => item.service);
 
   res.json({
     data: user
