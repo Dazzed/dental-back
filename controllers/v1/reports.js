@@ -80,6 +80,16 @@ function getGeneralReport(req, res) {
           'utf8'
         );
 
+        // TODO: MISSING VALUES
+
+        /**
+         * Total Gross Revenue
+         * Refunds
+         * Membership Fee per User
+         * Penalties per User - ???
+         * Refunds per User - ???
+         */
+
         const reportData = {
           title: `${office.officeName} -- General Report`,
           date: `${Moment.months(new Moment().month())} ${new Moment().format('YYYY')}`,
