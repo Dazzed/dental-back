@@ -345,10 +345,11 @@ export function ensureCreditCard(_user, card) {
             user.paymentId = paymentId;
             return user;
           });
-      } else if (card) {
-        return updateCreditCard(user.authorizeId, user.paymentId, card)
-          .then(() => user);
       }
+      // else if (card) {
+      //   return updateCreditCard(user.authorizeId, user.paymentId, card)
+      //     .then(() => user);
+      // }
       return user;
     })
     .then((user) => resolve(user))
