@@ -83,6 +83,92 @@
         }
       }
     },
+    "/api/v1/accounts/admin/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "Attempts to login as user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "email",
+                "password"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "the email of the user account"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "the password of the user account"
+                }
+              },
+              "description": "The login body request",
+              "example": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful login",
+            "schema": {
+              "required": [
+                "token",
+                "type"
+              ],
+              "type": "object",
+              "description": "the login success response",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "the signed JSON web api token"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "the user access level"
+                }
+              },
+              "example": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+            },
+            "examples": {
+              "application/json": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+            }
+          },
+          "403": {
+            "description": "User account does not have the right access",
+            "schema": {
+              "required": [
+                "token",
+                "type"
+              ],
+              "type": "object",
+              "description": "the HTTP response if the request was recognized as forbidden",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "the JWT sign auth token"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "the user type (Should be admin only)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/accounts/signup": {
       "post": {
         "tags": [
