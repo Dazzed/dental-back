@@ -353,12 +353,36 @@ function login(req, res, next) {
   })(req, res, next);
 }
 
+/**
+ * Attempts to login as an administrator
+ *
+ * @param {Object} req - the express request object
+ * @param {Object} res - the express response object
+ * @param {Function} next - call to begin the next phase of the filter chain
+ */
+function adminLogin(req, res, next) {
+  passport.authenticate('local', { session: false }, (err, user, info) => {
+    if (err) return next(err);
+    if (!user) return next(new BadRequestError(null, info.message));
+    if (user.isDeleted) return next(new NotFoundError());
+    if (!user.verified) return next(new ForbiddenError('Account was not activated.'));
+    if (user.type !== 'admin') return next(new ForbiddenError('User account is not an admin'));
+
+    res.status(HTTPStatus.CREATED);
+    const response = _.pick(user.toJSON(), ['type']);
+    response.token = jwt.sign({ id: user.get('id') }, process.env.JWT_SECRET);
+    return res.json(response);
+  })(req, res, next);
+}
 
 // Bind with routes
 router
   .route('/login')
   .post(login);
 
+router
+  .route('/admin/login')
+  .post(adminLogin);
 
 router
   .route('/logout')

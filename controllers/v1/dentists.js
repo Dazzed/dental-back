@@ -1,3 +1,4 @@
+/* eslint consistent-return:0, no-else-return: 0 */
 import { Router } from 'express';
 import passport from 'passport';
 import moment from 'moment';
@@ -17,8 +18,7 @@ import db from '../../models';
 import {
   CONTACT_SUPPORT_EMAIL,
   EDIT_USER_BY_ADMIN,
-  EMAIL_SUBJECTS,
-  // USER_TYPES,
+  EMAIL_SUBJECTS
 } from '../../config/constants';
 
 import {
@@ -26,7 +26,8 @@ import {
   INVITE_PATIENT,
   CONTACT_SUPPORT,
   WAIVE_CANCELLATION,
-  PATIENT_CARD_UPDATE
+  PATIENT_CARD_UPDATE,
+  UPDATE_DENTIST,
 } from '../../utils/schema-validators';
 
 import {
@@ -46,6 +47,14 @@ function getDateTimeInPST() {
   return `${time} on ${date}`;
 }
 
+/**
+ * Prepares a promise for fetching a dentist's information
+ *
+ * @param {object} req - the express request object
+ * @param {object} res - the express response object
+ * @param {function} next - the next web action to be triggered
+ * @return {Promise<Dentist>}
+ */
 function fetchDentist(userId) {
   return new Promise((resolve, reject) => {
     db.User.getFullDentist(userId)
@@ -54,11 +63,18 @@ function fetchDentist(userId) {
   });
 }
 
+/**
+ * Obtains the details of one or several dentists
+ *
+ * @param {object} req - the express request object
+ * @param {object} res - the express response object
+ * @param {function} next - the next web action to be triggered
+ */
 function listDentists(req, res, next) {
   if (req.params.userId) {
     // Fetch specific dentist info
     fetchDentist(req.params.userId)
-    .then(dentist => res.json(dentist))
+    .then(dentist => res.json({ data: dentist }))
     .catch(err => next(new BadRequestError(err)));
   } else {
     // Get all dentist info
@@ -70,11 +86,77 @@ function listDentists(req, res, next) {
     })
     .then(users => {
       Promise.all(users.map(u => fetchDentist(u.id)))
-      .then(dentists => res.json(dentists))
+      .then(dentists => res.json({ data: dentists }))
       .catch(err => next(new BadRequestError(err)));
     })
     .catch(err => next(new BadRequestError(err)));
   }
+}
+
+/**
+ * Updates a single dentist user
+ *
+ * @param {object} req - the express request object
+ * @param {object} res - the express response object
+ * @param {function} next - the next web action to be triggered
+ */
+function updateDentist(req, res, next) {
+  req.checkBody(UPDATE_DENTIST);
+
+  req
+  .asyncValidationErrors(true)
+  .then(() => (
+    new Promise((resolve, reject) => {
+      const body = _.pick(req.body, [
+        'firstName',
+        'middleName',
+        'lastName',
+        'email',
+      ]);
+
+      if (req.params.userId) {
+        // Find the dentist and update them
+        resolve(
+          db.User.update(body, {
+            where: { id: req.params.userId }
+          })
+        );
+      } else {
+        reject(next(new BadRequestError('No user ID was provided!')));
+      }
+    })
+  ))
+  .then(resp => (
+    new Promise(resolve => {
+      // Update phone number if provided
+      if (resp && req.params.phoneId && req.body.phoneNumber) {
+        resolve(
+          db.Phone.update({
+            number: req.body.phoneNumber
+          }, {
+            where: {
+              id: req.params.phoneId,
+              userId: req.params.userId,
+            }
+          })
+        );
+      } else {
+        resolve();
+      }
+    })
+  ))
+  .then(() => {
+    fetchDentist(req.params.userId)
+    .then(dentist => res.json({ data: dentist }))
+    .catch(err => next(new BadRequestError(err)));
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      return next(new BadRequestError(errors));
+    }
+
+    return next(errors);
+  });
 }
 
 function addReview(req, res, next) {
@@ -390,7 +472,7 @@ function getDentistNoAuth(req, res, next) {
 }
 
 router
-  .route('/:userId?')
+  .route('/:userId?/:phoneId?')
   .get(
     passport.authenticate('jwt', { session: false }),
     adminRequired,
@@ -398,8 +480,7 @@ router
   .put(
     passport.authenticate('jwt', { session: false }),
     adminRequired,
-    updateDentist
-  );
+    updateDentist);
 
 router
   .route('/:userId/review')
