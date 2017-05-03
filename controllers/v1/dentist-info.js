@@ -163,71 +163,80 @@ function updateDentistInfo(req, res, next) {
     .find(query)
     .then((info) => {
       const queries = [];
+      const officeInfo = req.body.officeInfo;
+      const pricing = req.body.pricing;
+      const membership = req.body.membership;
+      const childMembership = req.body.childMembership;
+      const workingHours = req.body.workingHours;
+      const services = req.body.services;
 
-      // update info it self
+      // update info itself.
       queries.push(info.update({
-        officeName: req.body.officeName,
-        url: req.body.url,
-        phone: req.body.phone,
-        message: req.body.message,
-        address: req.body.address,
-        city: req.body.city,
-        state: req.body.state,
-        zipCode: req.body.zipCode,
+        officeName: officeInfo.officeName,
+        url: officeInfo.url,
+        phone: officeInfo.phone,
+        message: officeInfo.message,
+        address: officeInfo.address,
+        city: officeInfo.city,
+        state: officeInfo.state,
+        zipCode: officeInfo.zipCode,
+        logo: officeInfo.logo,
+        acceptsChildren: officeInfo.acceptsChildren,
+        childStartingAge: officeInfo.childStartingAge
       }));
 
-      // update membership items
-      req.body.membership.items.forEach(item => {
+      // update pricing codes.
+      pricing.codes.forEach(item => {
         queries.push(db.MembershipItem.update({
-          price: item.price,
+          price: item.amount,
         }, {
           where: {
             dentistInfoId: info.get('id'),
-            pricingCode: item.pricingCode,
+            pricingCode: item.code,
           },
         }));
       });
 
       updateTotalMembership(req.body.membership);
 
-      // update membership
+      // update adult membership.
       queries.push(db.Membership.update({
-        recommendedFee: req.body.membership.recommendedFee,
-        activationCode: req.body.membership.activationCode,
-        discount: req.body.membership.discount,
-        price: req.body.membership.price,
-        withDiscount: req.body.membership.withDiscount,
-        monthly: req.body.membership.monthly,
+        recommendedFee: membership.recommendedFee,
+        activationCode: membership.activationCode,
+        discount: membership.discount,
+        price: membership.price,
+        withDiscount: membership.withDiscount,
+        monthly: membership.monthly,
       }, { where: { id: info.get('membershipId') } }));
 
 
-      // update child membership items
-      req.body.childMembership.items.forEach(item => {
-        queries.push(db.MembershipItem.update({
-          price: item.price,
-        }, {
-          where: {
-            membershipId: info.get('childMembershipId'),
-            pricingCode: item.pricingCode,
-          },
-        }));
-      });
+      // // update child membership items
+      // childMembership.items.forEach(item => {
+      //   queries.push(db.MembershipItem.update({
+      //     price: item.amount,
+      //   }, {
+      //     where: {
+      //       membershipId: info.get('childMembershipId'),
+      //       pricingCode: item.pricingCode,
+      //     },
+      //   }));
+      // });
 
       updateTotalMembership(req.body.childMembership);
 
-      // update membership
+      // update child membership.
       queries.push(db.Membership.update({
-        recommendedFee: req.body.childMembership.recommendedFee,
-        activationCode: req.body.childMembership.activationCode,
-        discount: req.body.childMembership.discount,
-        price: req.body.childMembership.price,
-        withDiscount: req.body.childMembership.withDiscount,
-        monthly: req.body.childMembership.monthly,
+        recommendedFee: childMembership.recommendedFee,
+        activationCode: childMembership.activationCode,
+        discount: childMembership.discount,
+        price: childMembership.price,
+        withDiscount: childMembership.withDiscount,
+        monthly: childMembership.monthly,
       }, { where: { id: info.get('childMembershipId') } }));
 
 
       // update working hours
-      req.body.workingHours.forEach(workingHour => {
+      workingHours.forEach(workingHour => {
         queries.push(db.WorkingHours.update({
           isOpen: workingHour.isOpen,
           startAt: workingHour.startAt,
@@ -241,9 +250,9 @@ function updateDentistInfo(req, res, next) {
       });
 
       // update services
-      for (let service in req.body.services) {  // eslint-disable-line
+      for (let service in services) {  // eslint-disable-line
         const id = parseInt(service.replace(/[^0-9.]/g, ''), 10);
-        const shouldAdd = req.body.services[service];
+        const shouldAdd = services[service];
 
         if (shouldAdd) {
           queries.push(info.addService(id));
