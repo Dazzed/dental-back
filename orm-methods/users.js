@@ -250,13 +250,13 @@ export const instance = {
     });
   },
 
-  getFullDentist() {
+  getFullDentist(id = this.get('id')) {
     return db.User.find({
       attributes: {
         exclude: userFieldsExcluded
       },
       where: {
-        id: this.get('id'),
+        id,
         type: 'dentist'
       },
       include: [{
