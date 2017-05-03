@@ -1,13 +1,13 @@
 import { Router } from 'express';
 
-import auth from './auth';
+import { auth } from './auth';
 import users from './users';
 import memberships from './memberships';
 import members from './members';
 import services from './services';
 import dentistSpecialties from './dentist-specialties';
 import messages from './messages';
-import dentists from './dentists';
+import { dentists } from './dentists';
 import userDentist from './user-dentist';
 import offices from './offices';
 import pricing from './pricing';

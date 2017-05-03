@@ -196,3 +196,11 @@ export const US_STATES = {
   WI: 'Wisconsin',
   WY: 'Wyoming',
 };
+
+export const EDIT_USER_BY_ADMIN = [
+  'firstName',
+  'middleName',
+  'lastName',
+  'email',
+  'phoneNumber'
+];

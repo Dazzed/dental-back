@@ -16,6 +16,11 @@ export default function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: 0,
     },
+    yearly: {
+      type: new DataTypes.DECIMAL(6, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
     withDiscount: {
       type: new DataTypes.DECIMAL(6, 2),
       defaultValue: 0,
@@ -50,6 +55,14 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    adultYearlyFeeActivated: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    childYearlyFeeActivated: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   }, {
     tableName: 'memberships',
     hooks: {
@@ -60,10 +73,10 @@ export default function (sequelize, DataTypes) {
     classMethods: {
       associate(models) {
         Membership.belongsTo(models.User, { foreignKey: 'userId' });
-        Membership.hasMany(models.MembershipItem, {
-          foreignKey: 'membershipId',
-          as: 'items',
-        });
+        // Membership.hasMany(models.MembershipItem, {
+        //   foreignKey: 'membershipId',
+        //   as: 'items',
+        // });
       }
     }
   });

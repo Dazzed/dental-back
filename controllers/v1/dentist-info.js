@@ -45,44 +45,62 @@ function getDentistInfoFromParams(req, res, next) {
       attributes: { exclude: ['dentistInfoId'] },
       orderBy: 'createdAt DESC',
     }, {
+      model: db.MembershipItem,
+      as: 'pricing',
+      attributes: {
+        exclude: ['dentistInfoId']
+      }
+    }, {
       model: db.Membership,
       as: 'membership',
       attributes: {
         exclude: ['isDeleted', 'default', 'userId'],
       },
-      include: [{
-        model: db.MembershipItem,
-        as: 'items',
-        attributes: {
-          exclude: ['membershipId'],
-        },
-      }],
+      // include: [{
+      //   model: db.MembershipItem,
+      //   as: 'items',
+      //   attributes: {
+      //     exclude: ['membershipId'],
+      //   },
+      // }],
     }, {
       model: db.Membership,
       as: 'childMembership',
       attributes: {
         exclude: ['isDeleted', 'default', 'userId'],
       },
-      include: [{
-        model: db.MembershipItem,
-        as: 'items',
-        attributes: {
-          exclude: ['membershipId'],
-        },
-      }],
-    }/*, {
-      model: db.Service,
+      // include: [{
+      //   model: db.MembershipItem,
+      //   as: 'items',
+      //   attributes: {
+      //     exclude: ['membershipId'],
+      //   },
+      // }],
+    }, {
+      model: db.DentistInfoService,
       as: 'services',
-    }*/],
+      attributes: {
+        exclude: ['serviceId', 'dentistInfoId']
+      },
+      include: [{
+        model: db.Service,
+        as: 'service',
+        raw: true
+      }]
+    }, {
+      model: db.DentistInfoPhotos,
+      as: 'officeImages',
+      attributes: ['url']
+    }],
     order: [
       [
         { model: db.Membership, as: 'membership' },
-        { model: db.MembershipItem, as: 'items' },
+        // { model: db.MembershipItem, as: 'items' },
         'id', 'asc'
       ],
       [
         { model: db.Membership, as: 'childMembership' },
-        { model: db.MembershipItem, as: 'items' },
+        // { model: db.MembershipItem, as: 'items' },
         'id', 'asc'
       ]
     ]
@@ -150,7 +168,6 @@ function updateDentistInfo(req, res, next) {
       queries.push(info.update({
         officeName: req.body.officeName,
         url: req.body.url,
-        email: req.body.email,
         phone: req.body.phone,
         message: req.body.message,
         address: req.body.address,
@@ -165,7 +182,7 @@ function updateDentistInfo(req, res, next) {
           price: item.price,
         }, {
           where: {
-            membershipId: info.get('membershipId'),
+            dentistInfoId: info.get('id'),
             pricingCode: item.pricingCode,
           },
         }));
@@ -243,16 +260,19 @@ function updateDentistInfo(req, res, next) {
 
 
 function getDentistInfo(req, res) {
-  const json = req.locals.dentistInfo.toJSON();
+  const dentistInfo = req.locals.dentistInfo.toJSON();
 
-  if (json.services) {
-    json.services.forEach(item => {
-      delete item.dentistInfoService;
-    });
-  }
+  // if (json.services) {
+  //   json.services.forEach(item => {
+  //     delete item.dentistInfoService;
+  //   });
+  // }
+  const user = _.omit(req.user.toJSON(), ['authorizeId', 'paymentId']);
+  user.dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId']);
+  user.dentistInfo.services = user.dentistInfo.services.map(item => item.service);
 
   res.json({
-    data: _.omit(json, ['membershipId']),
+    data: user
   });
 }
 

@@ -17,7 +17,8 @@ import db from '../../models';
 
 import {
   CONTACT_SUPPORT_EMAIL,
-  EMAIL_SUBJECTS,
+  EDIT_USER_BY_ADMIN,
+  EMAIL_SUBJECTS
 } from '../../config/constants';
 
 import {
@@ -56,7 +57,7 @@ function getDateTimeInPST() {
  */
 function fetchDentist(userId) {
   return new Promise((resolve, reject) => {
-    db.User.getActiveUser(userId)
+    db.User.getFullDentist(userId)
     .then(resolve)
     .catch(reject);
   });
@@ -424,6 +425,33 @@ function updatePatientCard(req, res, next) {
     });
 }
 
+function updateDentist(req, res, next) {
+  if (req.params.userId) {
+    // Update the dentist account but only with allowed fields
+    (new Promise((resolve, reject) => {
+      const body = _.pick(req.body, EDIT_USER_BY_ADMIN);
+      if (req.body.phoneNumber !== undefined) {
+        // Update the users phone number as well
+        db.Phone.update({ number: req.body.phoneNumber }, {
+          where: { userId: req.params.userId },
+        })
+        .then(() => resolve(body))
+        .catch(reject);
+      } else {
+        resolve(body);
+      }
+    })).then((body = {}) => {
+      // Update the user account
+      db.User.update(body, {
+        where: { id: req.params.userId },
+      })
+      .then(() => res.json({ data: { success: true } }))
+      .catch(err => next(new BadRequestError(err)));
+    }).catch(() => next(new BadRequestError('Failed to update the user')));
+  } else {
+    next(new BadRequestError('Requested user does not exist'));
+  }
+}
 
 function getDentistNoAuth(req, res, next) {
   db.User.findOne({
@@ -498,4 +526,8 @@ router
   .route('/:userId/contact_support')
   .post(contactSupportNoAuth);
 
-export default router;
+module.exports = {
+  dentists: router,
+  listDentists,
+  updateDentist,
+};

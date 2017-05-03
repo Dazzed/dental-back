@@ -14,6 +14,11 @@ export default function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: 0,
     },
+    yearly: {
+      type: new DataTypes.DECIMAL(6, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
     startAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -62,4 +67,3 @@ export default function (sequelize, DataTypes) {
 
   return Subscription;
 }
-

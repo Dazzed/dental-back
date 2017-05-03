@@ -5,10 +5,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "JWT_SECRET=test NODE_ENV=test mocha --compilers js:babel-register **/__tests__/*.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
     "prod": "cross-env NODE_ENV=production node index.js",
     "postinstall": "sequelize db:migrate"
+  },
+  "engines": {
+    "node": "7.5.0"
   },
   "author": "",
   "license": "ISC",
@@ -54,6 +58,7 @@
     "sequelize": "^3.23.6",
     "sequelize-cli": "^2.5.1",
     "stripe": "^4.12.0",
+    "swagger-tools": "^0.10.1",
     "validator": "^5.5.0"
   },
   "devDependencies": {

@@ -119,7 +119,6 @@ export const NORMAL_USER_EDIT = {
   }
 };
 
-
 export const PATIENT_EDIT = {
   phone: {
     notEmpty: true,

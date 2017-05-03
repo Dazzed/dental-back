@@ -2,16 +2,17 @@ import { Router } from 'express';
 import passport from 'passport';
 import isPlainObject from 'is-plain-object';
 import HTTPStatus from 'http-status';
-//import aws from 'aws-sdk';
-//import multer from 'multer';
-//import multerS3 from 'multer-s3';
+// import aws from 'aws-sdk';
+// import multer from 'multer';
+// import multerS3 from 'multer-s3';
 import _ from 'lodash';
 
 import db from '../../models';
 import { EXCLUDE_FIELDS_LIST } from '../../models/user';
 import {
   getCreditCardInfo,
-  ensureCreditCard
+  ensureCreditCard,
+  chargeAuthorize
 } from '../payments';
 
 import {
@@ -321,46 +322,45 @@ function getCardInfo(req, res, next) {
   }).catch(next);
 }
 
-/*
-aws.config.update({
-  accessKeyId: process.env.S3_ACCESS_KEY_ID,
-  secretAccessKey: process.env.S3_ACCESS_KEY,
-  region: process.env.S3_REGION,
-});
-const s3 = new aws.S3();
-const upload = multer({
-  storage: multerS3({
-    s3,
-    bucket: process.env.S3_BUCKET || 'dentalmarket',
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    acl: 'public-read',
-    metadata(_req, file, cb) {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key(_req, file, cb) {
-      cb(null, `${new Date().getTime()}.jpg`);
-    },
-  }),
-});
-*/
+// const aws = require('aws-sdk');
+// const multer = require('multer');
+// const multerS3 = require('multer-s3');
+//
+// aws.config.update({
+//   accessKeyId: process.env.S3_ACCESS_KEY_ID,
+//   secretAccessKey: process.env.S3_ACCESS_KEY,
+//   region: process.env.S3_REGION,
+// });
+// const s3 = new aws.S3();
+// const upload = multer({
+//   storage: multerS3({
+//     s3,
+//     bucket: process.env.S3_BUCKET || 'dentalmarket',
+//     contentType: multerS3.AUTO_CONTENT_TYPE,
+//     acl: 'public-read',
+//     metadata(_req, file, cb) {
+//       cb(null, { fieldName: file.fieldname });
+//     },
+//     key(_req, file, cb) {
+//       cb(null, `${new Date().getTime()}.jpg`);
+//     },
+//   }),
+// });
 
-/*
-function createS3Bucket(req, res, next) {
-  s3.createBucket({ Bucket: process.env.S3_BUCKET }, (err) => {
-    if (err) next(err);
-    else next();
-  });
-}
-*/
 
-/*
-function signS3Upload(req, res) {
-  const files = req.files.map(file => _.omit(file,
-    ['metadata', 'storageClass', 'acl', 'etag',
-      'bucket', 'fieldname', 'encoding', 'contentDisposition']));
-  res.json({ data: files });
-}
-*/
+// function createS3Bucket(req, res, next) {
+//   s3.createBucket({ Bucket: process.env.S3_BUCKET }, (err) => {
+//     if (err) next(err);
+//     else next();
+//   });
+// }
+//
+// function signS3Upload(req, res) {
+//   const files = req.files.map(file => _.omit(file,
+//     ['metadata', 'storageClass', 'acl', 'etag',
+//       'bucket', 'fieldname', 'encoding', 'contentDisposition']));
+//   res.json({ data: files });
+// }
 
 
 // function signS3(req, res, next) {
@@ -408,10 +408,25 @@ function verifyPassword(req, res) {
 
 function makePayment(req, res, next) {
   ensureCreditCard(req.locals.user, req.body.card)
-    .then(user => res.json({
-      data: _.omit(user, ['authorizeId', 'paymentId'])
-    }))
-    .catch(error => next(error));
+  .then(user => {
+    db.Subscription.getPendingAmount(user.id).then(data => {
+      if (data.total !== 0) {
+        chargeAuthorize(user.authorizeId, user.paymentId, data)
+        .then(() => {
+          // TODO: keep transaction log and implement webhook with Authorize.
+          res.json({
+            data: _.omit(user, ['authorizeId', 'paymentId'])
+          });
+        })
+        .catch(errors => next(errors));
+      } else {
+        res.json({
+          data: _.omit(user, ['authorizeId', 'paymentId'])
+        });
+      }
+    });
+  })
+  .catch(errors => next(errors));
 }
 
 
@@ -446,14 +461,12 @@ router
     getUserFromParam,
     updatePatient);
 
-/*
-router
-  .route('/upload-photos')
-  .post(
-    createS3Bucket,
-    upload.array('photos', 10),
-    signS3Upload);
-*/
+// router
+//   .route('/upload-photos')
+//   .post(
+//     createS3Bucket,
+//     upload.array('photos', 10),
+//     signS3Upload);
 
 router
   .route('/:userId/verify-password')
