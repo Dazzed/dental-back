@@ -1,0 +1,505 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "The complete API documentation of the DentalHQ API",
+    "version": "1.0.0",
+    "title": "DentalHQ",
+    "termsOfService": "```\n@Copyright 2017 DentalHQ\n```",
+    "contact": {}
+  },
+  "host": "localhost:3090",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/accounts/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "Attempts to login as user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "email",
+                "password"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "the email of the user account"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "the password of the user account"
+                }
+              },
+              "description": "The login body request",
+              "example": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful login",
+            "schema": {
+              "required": [
+                "token",
+                "type"
+              ],
+              "type": "object",
+              "description": "the login success response",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "the signed JSON web api token"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "the user access level"
+                }
+              },
+              "example": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+            },
+            "examples": {
+              "application/json": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/admin/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "Attempts to login as user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "email",
+                "password"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "the email of the user account"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "the password of the user account"
+                }
+              },
+              "description": "The login body request",
+              "example": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful login",
+            "schema": {
+              "required": [
+                "token",
+                "type"
+              ],
+              "type": "object",
+              "description": "the login success response",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "the signed JSON web api token"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "the user access level"
+                }
+              },
+              "example": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+            },
+            "examples": {
+              "application/json": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+            }
+          },
+          "403": {
+            "description": "User account does not have the right access",
+            "schema": {
+              "required": [
+                "token",
+                "type"
+              ],
+              "type": "object",
+              "description": "the HTTP response if the request was recognized as forbidden",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "the JWT sign auth token"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "the user type (Should be admin only)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/signup": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Register a new user",
+        "consumes": [],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "confirmEmail",
+                "confirmPassword",
+                "email",
+                "firstName",
+                "lastName",
+                "origin",
+                "password"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "the email of the new user"
+                },
+                "firstName": {
+                  "type": "string",
+                  "description": "the first name of the user"
+                },
+                "lastName": {
+                  "type": "string",
+                  "description": "the last name of the user"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "the password of the new user"
+                },
+                "confirmPassword": {
+                  "type": "string",
+                  "description": "confirmation of the user's password"
+                },
+                "confirmEmail": {
+                  "type": "string",
+                  "description": "confirmation of the user's email"
+                },
+                "origin": {
+                  "type": "string",
+                  "description": "health network coverage of the user",
+                  "enum": [
+                    "external",
+                    "internal"
+                  ]
+                }
+              },
+              "description": "The initial user object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful in creating a new user account",
+            "schema": {
+              "required": [
+                "data"
+              ],
+              "type": "object",
+              "properties": {
+                "data": {
+                  "$ref": "#/definitions/Dentist"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Dentist": {
+      "type": "object",
+      "required": [
+        "acceptsChildren",
+        "address",
+        "childMembership",
+        "childMembershipId",
+        "city",
+        "createdAt",
+        "email",
+        "id",
+        "logo",
+        "membership",
+        "message",
+        "officeImages",
+        "officeName",
+        "phone",
+        "state",
+        "updatedAt",
+        "url",
+        "workingHours",
+        "zipCode"
+      ],
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "the unique id of the user"
+        },
+        "officeName": {
+          "type": "string",
+          "description": "the dentist office name"
+        },
+        "url": {
+          "type": "string",
+          "description": "the url of the office"
+        },
+        "email": {
+          "type": "string",
+          "description": "the email of the office"
+        },
+        "phone": {
+          "type": "string",
+          "description": "the phone number for the office"
+        },
+        "message": {
+          "type": "string",
+          "description": "the office message"
+        },
+        "address": {
+          "type": "string",
+          "description": "address of the office"
+        },
+        "city": {
+          "type": "string",
+          "description": "city of the office"
+        },
+        "state": {
+          "type": "string",
+          "description": "state of the office"
+        },
+        "zipCode": {
+          "type": "string",
+          "description": "zip-code for the office"
+        },
+        "acceptsChildren": {
+          "type": "boolean",
+          "description": "true if the office accepts children as members"
+        },
+        "childStartingAge": {
+          "type": "number",
+          "description": "the starting age for child members if accepted"
+        },
+        "logo": {
+          "type": "string",
+          "description": "AWS S3 URL for the dentist office logo"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "when the office record was first created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "last time the office record was updated"
+        },
+        "childMembershipId": {
+          "type": "number",
+          "description": "the child membership ID"
+        },
+        "workingHours": {
+          "type": "array",
+          "description": "the hours of the week for when the office is open",
+          "items": {
+            "$ref": "#/definitions/Work Hours"
+          }
+        },
+        "membership": {
+          "$ref": "#/definitions/Membership"
+        },
+        "childMembership": {
+          "$ref": "#/definitions/Membership"
+        },
+        "officeImages": {
+          "type": "array",
+          "description": "collection of image URLs from AWS S3 bucket",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "The DentalHQ user object"
+    },
+    "Work Hours": {
+      "type": "object",
+      "required": [
+        "createdAt",
+        "day",
+        "endAt",
+        "id",
+        "isOpen",
+        "startAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "unique identifier"
+        },
+        "day": {
+          "type": "string",
+          "description": "day of the week",
+          "enum": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ]
+        },
+        "isOpen": {
+          "type": "boolean",
+          "description": "true if the office is open on the day"
+        },
+        "startAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time office opens"
+        },
+        "endAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time office closes"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time when the record was first created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time when the record was last updated"
+        }
+      }
+    },
+    "Membership": {
+      "type": "object",
+      "required": [
+        "activationCode",
+        "adultYearlyFeeActivated",
+        "childYearlyFeeActivated",
+        "createdAt",
+        "description",
+        "discount",
+        "id",
+        "isActive",
+        "monthly",
+        "name",
+        "price",
+        "recommendFee",
+        "updatedAt",
+        "withDiscount",
+        "yearly"
+      ],
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "unique identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "display name of the membership"
+        },
+        "price": {
+          "type": "string",
+          "description": "price of the membership"
+        },
+        "monthly": {
+          "type": "string",
+          "description": "the monthly cost"
+        },
+        "yearly": {
+          "type": "string",
+          "description": "the annual cost"
+        },
+        "withDiscount": {
+          "type": "string",
+          "description": "the cost altered with discount pricing"
+        },
+        "description": {
+          "type": "string",
+          "description": "a brief summary of the membership"
+        },
+        "activationCode": {
+          "type": "string",
+          "description": "the membership activation code"
+        },
+        "discount": {
+          "type": "number",
+          "description": "the discount"
+        },
+        "recommendFee": {
+          "type": "boolean",
+          "description": "true if recommendation fee is valid"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "true if membership is valid"
+        },
+        "adultYearlyFeeActivated": {
+          "type": "boolean",
+          "description": "true if the adult yearly fee is to be used"
+        },
+        "childYearlyFeeActivated": {
+          "type": "boolean",
+          "description": "true if the child yearly fee is to be used"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the recorded start of the membership"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the last time the membership record was updated"
+        }
+      }
+    }
+  }
+}

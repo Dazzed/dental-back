@@ -119,7 +119,6 @@ export const NORMAL_USER_EDIT = {
   }
 };
 
-
 export const PATIENT_EDIT = {
   phone: {
     notEmpty: true,
@@ -322,4 +321,14 @@ export const CONTACT_SUPPORT = {
   message: {
     notEmpty: true,
   }
+};
+
+export const UPDATE_DENTIST = {
+  firstName: true,
+  middleName: true,
+  lastName: true,
+  email: true,
+  phoneNumber: {
+    optional: true
+  },
 };

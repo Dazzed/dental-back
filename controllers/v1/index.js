@@ -7,7 +7,7 @@ import members from './members';
 import services from './services';
 import dentistSpecialties from './dentist-specialties';
 import messages from './messages';
-import dentists from './dentists';
+import { dentists } from './dentists';
 import userDentist from './user-dentist';
 import offices from './offices';
 import pricing from './pricing';

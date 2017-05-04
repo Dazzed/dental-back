@@ -82,7 +82,7 @@ export default function (sequelize, DataTypes) {
 
         DentistInfo.hasMany(models.MembershipItem, {
           foreignKey: 'dentistInfoId',
-          as: 'priceCodes'
+          as: 'pricing'
         });
 
         DentistInfo.hasMany(models.DentistInfoPhotos, {

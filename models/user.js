@@ -12,7 +12,7 @@ import {
 
 export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'salt',
   'activationKey', 'resetPasswordKey', 'verified', 'updatedAt',
-  'phone', 'address', 'isDeleted'];
+  'phone', 'address', 'isDeleted', 'authorizeId', 'paymentId'];
 
 
 export default function (sequelize, DataTypes) {

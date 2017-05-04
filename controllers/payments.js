@@ -231,18 +231,16 @@ export function chargeAuthorize(profileId, paymentId, data) {
 
   const lineItemList = [];
 
-  data.members.forEach((member, index) => {
+  (data.members || []).forEach((member, index) => {
     const lineItem = new APIContracts.LineItemType();
     lineItem.setItemId(index);
-    lineItem.setName(`${member.firstName} ${member.lastName}`);
+    lineItem.setName(member.fullName);
     // lineItem.setDescription(member.fullName);
     lineItem.setQuantity('1');
     lineItem.setUnitPrice(member.monthly);
     lineItemList.push(lineItem);
   });
 
-  const lineItems = new APIContracts.ArrayOfLineItem();
-  lineItems.setLineItem(lineItemList);
 
   const transactionRequestType = new APIContracts.TransactionRequestType();
   transactionRequestType.setTransactionType(
@@ -250,7 +248,12 @@ export function chargeAuthorize(profileId, paymentId, data) {
   );
   transactionRequestType.setProfile(profileToCharge);
   transactionRequestType.setAmount(data.total);
-  transactionRequestType.setLineItems(lineItems);
+
+  if ((data.members || []).length !== 0) {
+    const lineItems = new APIContracts.ArrayOfLineItem();
+    lineItems.setLineItem(lineItemList);
+    transactionRequestType.setLineItems(lineItems);
+  }
   transactionRequestType.setOrder(orderDetails);
   transactionRequestType.setTransactionSettings(transactionSettings);
 
@@ -342,10 +345,11 @@ export function ensureCreditCard(_user, card) {
             user.paymentId = paymentId;
             return user;
           });
-      } else if (card) {
-        return updateCreditCard(user.authorizeId, user.paymentId, card)
-          .then(() => user);
       }
+      // else if (card) {
+      //   return updateCreditCard(user.authorizeId, user.paymentId, card)
+      //     .then(() => user);
+      // }
       return user;
     })
     .then((user) => resolve(user))

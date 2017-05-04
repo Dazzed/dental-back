@@ -40,7 +40,6 @@ function createDentistInfo(user, body) {
   const workingHours = body.workingHours || [];
   const services = body.services || [];
   const officeImages = dentistInfo.officeImages || [];
-  console.log(officeImages);
 
   Promise.all([
     user.createMembership({
@@ -99,7 +98,6 @@ function createDentistInfo(user, body) {
       });
 
       officeImages.forEach(url => {
-        console.log(url);
         db.DentistInfoPhotos.create({
           url, dentistInfoId: info.get('id')
         });
@@ -131,50 +129,47 @@ function normalUserSignup(req, res, next) {
         });
       });
     })
-    .then((__user) => new Promise((resolve, reject) => {
-      if (data.card) {
-        return ensureCreditCard(__user, data.card)
-          .then(user => {
-            chargeAuthorize(user.authorizeId, user.paymentId, data)
-              .then(() => resolve(__user))
-              .catch(errors => {
-                db.User.destroy({ where: { id: __user.id } });
-                reject(errors);
-              });
-          })
-          .catch((errors) => {
-            // delete the user, account couldn't be charged successfully.
-            db.User.destroy({ where: { id: __user.id } });
-            reject(errors);
-          });
-      }
-      return resolve(__user);
-    }))
+    // .then((__user) => new Promise((resolve, reject) => {
+    //   if (data.card) {
+    //     return ensureCreditCard(__user, data.card)
+    //       .then(user => {
+    //         chargeAuthorize(user.authorizeId, user.paymentId, data)
+    //           .then(() => resolve(__user))
+    //           .catch(errors => {
+    //             db.User.destroy({ where: { id: __user.id } });
+    //             reject(errors);
+    //           });
+    //       })
+    //       .catch((errors) => {
+    //         // delete the user, account couldn't be charged successfully.
+    //         db.User.destroy({ where: { id: __user.id } });
+    //         reject(errors);
+    //       });
+    //   }
+    //   return resolve(__user);
+    // }))
     .then((createdUser) => {
       db.DentistInfo.find({
         attributes: ['membershipId', 'userId'],
-        where: { id: data.officeId },
-        include: [{
-          model: db.Membership,
-          as: 'membership',
-          attributes: ['id', 'price', 'monthly'],
-        }]
+        where: { id: data.officeId }
       })
       .then((info) => {
-        if (info) {
-          const membership = info.membership.toJSON();
-          const today = moment();
+        const membership = data.subscription;
+        const today = moment();
 
-          db.Subscription.create({
-            startAt: today,
-            endAt: moment(today).add(1, 'months'),
-            total: membership.price,
-            monthly: membership.monthly,
-            membershipId: membership.id,
-            clientId: createdUser.id,
-            dentistId: info.get('userId'),
-          });
-        }
+        db.Subscription.create({
+          startAt: today,
+          endAt: moment(today).add(1, 'months'),
+          total: (membership.adultYearlyFeeActivated
+            || membership.childYearlyFeeActivated)
+            ? membership.yearly : membership.monthly,
+          yearly: membership.yearly,
+          monthly: membership.monthly,
+          status: 'active',
+          membershipId: membership.id,
+          clientId: createdUser.id,
+          dentistId: info.get('userId'),
+        });
       });
       return createdUser;
     })
@@ -200,7 +195,7 @@ function normalUserSignup(req, res, next) {
 
       return Promise.all(queries);
     })
-    .then((user) => {
+    .then(([user]) => {
       res.mailer.send('auth/client/welcome', {
         to: req.body.email,
         subject: EMAIL_SUBJECTS.client.welcome,
@@ -216,14 +211,12 @@ function normalUserSignup(req, res, next) {
         }
       });
 
-      ['hash', 'salt', 'verified', 'authorizeId', 'paymentId',
-        'activationKey', 'resetPasswordKey'].forEach(key => {
-          delete user[key];
-        });
+      const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
+        'paymentId', 'activationKey', 'resetPasswordKey', 'isDeleted'];
 
       res
         .status(HTTPStatus.CREATED)
-        .json({ data: user });
+        .json({ data: [_.omit(user, excludedKeys)] });
     })
     .catch((errors) => {
       if (isPlainObject(errors)) {
@@ -233,63 +226,6 @@ function normalUserSignup(req, res, next) {
       return next(errors);
     });
 }
-
-
-// function completeNormalUserSignup(req, res, next) {
-//   req.checkBody(COMPLETE_NORMAL_USER_REGISTRATION);
-//
-//   req
-//     .asyncValidationErrors(true)
-//     .then(() => {
-//       const data = _.pick(req.body, [
-//         'city', 'state', 'zipCode', 'birthDate', 'sex', 'payingMember',
-//         'contactMethod',
-//       ]);
-//
-//       req.user.update(data);
-//       req.user.phoneNumbers[0].update({ number: req.body.phone });
-//       req.user.addresses[0].update({ value: req.body.address });
-//
-//       if (req.body.address2) {
-//         req.user.createAddress({ value: req.body.address2 });
-//       }
-//
-//       return db.DentistInfo.find({
-//         attributes: ['membershipId', 'userId'],
-//         where: { id: req.body.officeId },
-//         include: [{
-//           model: db.Membership,
-//           as: 'membership',
-//           attributes: ['id', 'price', 'monthly'],
-//         }]
-//       }).then((info) => {
-//         if (info) {
-//           const membership = info.membership.toJSON();
-//           const today = moment();
-//
-//           db.Subscription.create({
-//             startAt: today,
-//             endAt: moment(today).add(1, 'months'),
-//             total: membership.price,
-//             monthly: membership.monthly,
-//             membershipId: membership.id,
-//             clientId: req.user.get('id'),
-//             dentistId: info.get('userId'),
-//           });
-//         }
-//       });
-//     })
-//     .then(() => {
-//       res.json({});
-//     })
-//     .catch((errors) => {
-//       if (isPlainObject(errors)) {
-//         return next(new BadRequestError(errors));
-//       }
-//
-//       return next(errors);
-//     });
-// }
 
 
 function dentistUserSignup(req, res, next) {
@@ -417,12 +353,36 @@ function login(req, res, next) {
   })(req, res, next);
 }
 
+/**
+ * Attempts to login as an administrator
+ *
+ * @param {Object} req - the express request object
+ * @param {Object} res - the express response object
+ * @param {Function} next - call to begin the next phase of the filter chain
+ */
+function adminLogin(req, res, next) {
+  passport.authenticate('local', { session: false }, (err, user, info) => {
+    if (err) return next(err);
+    if (!user) return next(new BadRequestError(null, info.message));
+    if (user.isDeleted) return next(new NotFoundError());
+    if (!user.verified) return next(new ForbiddenError('Account was not activated.'));
+    if (user.type !== 'admin') return next(new ForbiddenError('User account is not an admin'));
+
+    res.status(HTTPStatus.CREATED);
+    const response = _.pick(user.toJSON(), ['type']);
+    response.token = jwt.sign({ id: user.get('id') }, process.env.JWT_SECRET);
+    return res.json(response);
+  })(req, res, next);
+}
 
 // Bind with routes
 router
   .route('/login')
   .post(login);
 
+router
+  .route('/admin/login')
+  .post(adminLogin);
 
 router
   .route('/logout')
