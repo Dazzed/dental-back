@@ -4,10 +4,10 @@ const Change = changeFactory();
 
 
 export function updateTotalMembership(membership) {
-  if (membership.items) {
+  if (membership.codes) {
     let total = new Change({ cents: 0 });
-    membership.items.forEach(item => {
-      total = total.add(new Change({ dollars: item.price }));
+    membership.codes.forEach(item => {
+      total = total.add(new Change({ dollars: item.amount }));
     });
 
     let withDiscount = total;
