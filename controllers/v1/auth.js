@@ -70,7 +70,7 @@ function createDentistInfo(user, body) {
     user.createDentistInfo(
       Object.assign({
         membershipId: adult.get('id'),
-        childMembershipId: child.get('id'),
+        childMembershipId: child.get('id')
       }, dentistInfo)
     ).then((info) => {
       workingHours.forEach(item => {
