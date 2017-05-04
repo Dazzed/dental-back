@@ -260,20 +260,22 @@ function updateDentistInfo(req, res, next) {
 
 
 function getDentistInfo(req, res) {
-  const dentistInfo = req.locals.dentistInfo.toJSON();
+  let dentistInfo = req.locals.dentistInfo.toJSON();
+  dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId']);
+  dentistInfo.services = dentistInfo.services.map(item => item.service);
 
-  // if (json.services) {
-  //   json.services.forEach(item => {
-  //     delete item.dentistInfoService;
-  //   });
-  // }
-  const user = _.omit(req.user.toJSON(), ['authorizeId', 'paymentId']);
-  user.dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId']);
-  user.dentistInfo.services = user.dentistInfo.services.map(item => item.service);
+  if (req.user.get('type') === 'dentist') {
+    res.json({
+      data: dentistInfo
+    });
+  } else {
+    const user = _.omit(req.user.toJSON(), ['authorizeId', 'paymentId']);
+    user.dentistInfo = dentistInfo;
 
-  res.json({
-    data: user
-  });
+    res.json({
+      data: user
+    });
+  }
 }
 
 

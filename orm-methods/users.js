@@ -7,7 +7,7 @@ import {
 } from '../utils/helpers';
 
 const userFieldsExcluded = ['hash', 'salt', 'activationKey',
-  'resetPasswordKey', 'verified'];
+  'resetPasswordKey', 'verified', 'authorizeId', 'paymentId'];
 
 
 export const instance = {
