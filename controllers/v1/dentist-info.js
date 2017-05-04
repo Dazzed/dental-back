@@ -147,6 +147,10 @@ function updateDentistInfo(req, res, next) {
 
   const query = {
     where: {},
+    include: [{
+      model: db.DentistInfoPhotos,
+      as: 'officeImages'
+    }]
   };
 
   if (req.params.dentistInfoId) {
@@ -164,6 +168,7 @@ function updateDentistInfo(req, res, next) {
     .then((info) => {
       const queries = [];
       const officeInfo = req.body.officeInfo;
+      const officeImages = officeInfo.officeImages;
       const pricing = req.body.pricing;
       const membership = req.body.membership;
       const childMembership = req.body.childMembership;
@@ -182,82 +187,115 @@ function updateDentistInfo(req, res, next) {
         zipCode: officeInfo.zipCode,
         logo: officeInfo.logo,
         acceptsChildren: officeInfo.acceptsChildren,
-        childStartingAge: officeInfo.childStartingAge
+        childStartingAge: officeInfo.childStartingAge,
+        marketplaceOptIn: officeInfo.marketplaceOptIn
       }));
 
-      // update pricing codes.
-      pricing.codes.forEach(item => {
-        queries.push(db.MembershipItem.update({
-          price: item.amount,
-        }, {
-          where: {
-            dentistInfoId: info.get('id'),
-            pricingCode: item.code,
-          },
-        }));
-      });
+      if (pricing) {
+        // update pricing codes.
+        pricing.codes.forEach(item => {
+          queries.push(db.MembershipItem.update({
+            price: item.amount,
+          }, {
+            where: {
+              dentistInfoId: info.get('id'),
+              pricingCode: item.code,
+            },
+          }).then(obj => {
+            if (obj[0] === 0) {
+              return db.MembershipItem.create({
+                pricingCode: item.code,
+                price: item.amount,
+                dentistInfoId: info.get('id')
+              });
+            }
+            return obj;
+          }));
+        });
+      }
 
-      updateTotalMembership(req.body.membership);
+      if (membership) {
+        updateTotalMembership(membership);
 
-      // update adult membership.
-      queries.push(db.Membership.update({
-        recommendedFee: membership.recommendedFee,
-        activationCode: membership.activationCode,
-        discount: membership.discount,
-        price: membership.price,
-        withDiscount: membership.withDiscount,
-        monthly: membership.monthly,
-      }, { where: { id: info.get('membershipId') } }));
+        // update adult membership.
+        queries.push(db.Membership.update({
+          recommendedFee: membership.recommendedFee,
+          activationCode: membership.activationCode,
+          discount: membership.discount,
+          price: membership.price,
+          withDiscount: membership.withDiscount,
+          monthly: membership.monthly,
+        }, { where: { id: info.get('membershipId') } }));
+      }
+
+      if (childMembership) {
+        // // update child membership items
+        // childMembership.items.forEach(item => {
+        //   queries.push(db.MembershipItem.update({
+        //     price: item.amount,
+        //   }, {
+        //     where: {
+        //       membershipId: info.get('childMembershipId'),
+        //       pricingCode: item.pricingCode,
+        //     },
+        //   }));
+        // });
+
+        updateTotalMembership(childMembership);
+
+        // update child membership.
+        queries.push(db.Membership.update({
+          recommendedFee: childMembership.recommendedFee,
+          activationCode: childMembership.activationCode,
+          discount: childMembership.discount,
+          price: childMembership.price,
+          withDiscount: childMembership.withDiscount,
+          monthly: childMembership.monthly,
+        }, { where: { id: info.get('childMembershipId') } }));
+      }
 
 
-      // // update child membership items
-      // childMembership.items.forEach(item => {
-      //   queries.push(db.MembershipItem.update({
-      //     price: item.amount,
-      //   }, {
-      //     where: {
-      //       membershipId: info.get('childMembershipId'),
-      //       pricingCode: item.pricingCode,
-      //     },
-      //   }));
-      // });
+      if (workingHours) {
+        // update working hours
+        workingHours.forEach(workingHour => {
+          queries.push(db.WorkingHours.update({
+            isOpen: workingHour.isOpen,
+            startAt: workingHour.startAt,
+            endAt: workingHour.endAt,
+          }, {
+            where: {
+              dentistInfoId: info.get('id'),
+              day: workingHour.day,
+            },
+          }));
+        });
+      }
 
-      updateTotalMembership(req.body.childMembership);
+      if (services) {
+        // update services.
+        for (let service in services) {  // eslint-disable-line
+          const id = parseInt(service.replace(/[^0-9.]/g, ''), 10);
+          const shouldAdd = services[service];
 
-      // update child membership.
-      queries.push(db.Membership.update({
-        recommendedFee: childMembership.recommendedFee,
-        activationCode: childMembership.activationCode,
-        discount: childMembership.discount,
-        price: childMembership.price,
-        withDiscount: childMembership.withDiscount,
-        monthly: childMembership.monthly,
-      }, { where: { id: info.get('childMembershipId') } }));
+          if (shouldAdd) {
+            queries.push(info.addService(id));
+          } else {
+            queries.push(info.removeService(id));
+          }
+        }
+      }
 
+      if (officeImages) {
+        const existingImages = info.get('officeImages');
 
-      // update working hours
-      workingHours.forEach(workingHour => {
-        queries.push(db.WorkingHours.update({
-          isOpen: workingHour.isOpen,
-          startAt: workingHour.startAt,
-          endAt: workingHour.endAt,
-        }, {
-          where: {
-            dentistInfoId: info.get('id'),
-            day: workingHour.day,
-          },
-        }));
-      });
-
-      // update services
-      for (let service in services) {  // eslint-disable-line
-        const id = parseInt(service.replace(/[^0-9.]/g, ''), 10);
-        const shouldAdd = services[service];
-
-        if (shouldAdd) {
-          queries.push(info.addService(id));
-        } else {
-          queries.push(info.removeService(id));
+        // update office images.
+        for (const item in officeImages) {
+          if (!existingImages.find(image => image.url === officeImages[item])) {
+            db.DentistInfoPhotos.create({
+              url: officeImages[item],
+              dentistInfoId: info.get('id')
+            });
+          }
         }
       }
 
@@ -293,7 +331,10 @@ router
   .get(
     passport.authenticate('jwt', { session: false }),
     getDentistInfoFromParams,
-    getDentistInfo)
+    getDentistInfo);
+
+router
+  .route('/:dentistInfoId?')
   .post(
     passport.authenticate('jwt', { session: false }),
     updateDentistInfo,

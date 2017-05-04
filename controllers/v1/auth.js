@@ -91,8 +91,7 @@ function createDentistInfo(user, body) {
               pricingCode: item.code,
               price: item.amount,
               dentistInfoId: info.get('id')
-            })
-            .catch(e => console.log(e));
+            });
           }
         });
       });
