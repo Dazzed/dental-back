@@ -11,18 +11,13 @@ import pdf from 'html-pdf';
 import nunjucks from 'nunjucks';
 import passport from 'passport';
 
+import db from '../../models';
 import {
   instance as UserInstance,
 } from '../../orm-methods/users.js';
 
 import {
-  // PRICING_CODES
-} from '../../config/constants';
-import db from '../../models';
-
-import {
   BadRequestError,
-  NotFoundError,
   ForbiddenError
 } from '../errors';
 
@@ -117,63 +112,6 @@ function getGeneralReport(req, res) {
       res.json(new ForbiddenError('Requested Dentist Office does not access or user does not have appropriate access'));
     }
   }).catch(err => res.json(new BadRequestError(err)));
-
-  // UserInstance.getFullDentist(9).then(dentist => {
-  //   if (dentist) {
-  //     // Get members
-  //     db.Subscription.findAll({
-  //       where: { dentistId: dentist.id },
-  //       include: [{
-  //         model: db.User,
-  //         as: 'client',
-  //       }, {
-  //         model: db.Membership,
-  //         as: 'membership',
-  //       }],
-  //     }).then(members => {
-  //       // Prepare the members model
-  //       members = members.map(m => {
-  //         m = m.toJSON();
-  //         // Determine if they are new to the dentist's office
-  //         m.isNew = (new Moment(m.startAt).isAfter(new Moment().subtract(30).days()));
-  //         // Determine if the member should be treated as a child or adult
-  //         m.isAdult = (dentist.dentistInfo.acceptsChildren && (m.client.familyRelationship === 'daughter' || m.client.familyRelationship === 'son'));
-  //         return m;
-  //       });
-
-  //       const totalNewMembers = members.reduce((sum, m) => (m.isNew ? sum++ : sum), 0);
-  //       const totalNewExternal = members.filter(m => m.isNew && m.client.origin === 'external').length;
-  //       const totalNewInternal = members.filter(m => m.isNew && m.client.origin === 'internal').length;
-
-  //       const generalTemplate = fs.readFileSync(
-  //         path.resolve(`${__dirname}/../../views/reports/general-report.html`),
-  //         'utf8'
-  //       );
-
-  //       // TODO: Continue to prepare the necessary information
-  //       const report = nunjucks.renderString(generalTemplate, {
-  //         title: `${dentist.dentistInfo.officeName} -- General Report`,
-  //         date: `${Moment.months(new Moment().month())} ${new Moment().format('YYYY')}`,
-  //         dentist,
-  //         members,
-  //         totalNewMembers,
-  //         totalNewExternal,
-  //         totalNewInternal,
-  //       });
-
-  //       // pdf.create(report, { format: 'Letter' }).toBuffer((err, resp) => {
-  //       //   if (err) { res.json(new BadRequestError(err)); }
-  //       //   res.writeHead(200, { 'Content-Type': 'application/pdf' });
-  //       //   res.write(resp);
-  //       //   res.end();
-  //       // });
-
-  //       res.json({ dentist, members });
-  //     });
-  //   } else {
-  //     res.json(new ForbiddenError());
-  //   }
-  // });
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -181,10 +119,6 @@ function getGeneralReport(req, res) {
 
 const router = new Router({ mergeParams: true });
 
-router
-  .route('/dentist/:officeId/general')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    getGeneralReport);
+router.route('/dentist/:officeId/general').get(passport.authenticate('jwt', { session: false }), getGeneralReport);
 
 export default router;
