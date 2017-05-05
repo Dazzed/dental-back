@@ -37,12 +37,16 @@ function getGeneralReport(req, res) {
   db.DentistInfo.find({
     where: { id: req.params.officeId },
     include: [
-      { model: db.User, as: 'user' }
+      { model: db.User, as: 'user' },
+      { model: db.Membership, as: 'childMembership' },
+      { model: db.Membership, as: 'membership' }
     ]
   }).then(office => {
     if (!office) {
       res.json(new ForbiddenError('Requested Dentist Office does not access or user does not have appropriate access'));
     }
+
+    console.log(req.user.id, office.user.id);
 
     // Validate the current user has the proper authorization to see this report
     if (req.user.id === office.user.id) {
@@ -67,8 +71,60 @@ function getGeneralReport(req, res) {
         });
 
         const totalNewMembers = members.reduce((sum, m) => (m.isNew ? sum++ : sum), 0);
+        const totalExternal = members.filter(m => m.client.origin === 'external').length;
         const totalNewExternal = members.filter(m => m.isNew && m.client.origin === 'external').length;
+        const totalInternal = members.filter(m => m.client.origin === 'internal').length;
         const totalNewInternal = members.filter(m => m.isNew && m.client.origin === 'internal').length;
+
+        const memberRecords = [];
+
+        // Calculate gross revenue and prepare member records
+        const grossRevenue = members.reduce((sum, m) => {
+          const row = {
+            member: m,
+            maturity: 'Adult',
+            fee: 0,
+            penalties: 0,
+            refunds: 0,
+            net: 0,
+          };
+
+          if (office.acceptsChildren && m.membership.childYearlyFeeActivated) {
+            // Child pricing
+            row.fee = parseInt(office.childMembership.monthly, 10);
+            row.maturity = 'Child';
+          } else {
+            // Adult pricing
+            row.fee = parseInt(office.membership.monthly, 10);
+            row.maturity = 'Adult';
+          }
+
+          row.net = ((row.fee + row.penalties) - row.refunds) * 0.11;
+          memberRecords.push(row);
+          return (sum + row.fee);
+        }, 0);
+
+        // Nest records by family owners
+        const parentMemberRecords = memberRecords.reduce((recs, m) => {
+          if (isNaN(parseInt(m.member.client.addedBy, 10))) {
+            m.family = [];
+            recs[m.member.client.id] = m;
+          }
+          return recs;
+        }, {});
+
+        // Nest child records of family owners
+        memberRecords.filter(m => isNaN(parseInt(m.member.client.addedBy, 10))).forEach(m => {
+          const parent = parentMemberRecords[m.member.client.addedBy];
+          if (parent !== undefined) {
+            parentMemberRecords[m.member.client.addedBy].family.push(m);
+          }
+        });
+
+        // TODO: calculate refunds
+        const refunds = 0;
+        const managementFee = ((grossRevenue + refunds) * 0.11);
+        const netPayment = (grossRevenue - managementFee);
 
         const generalTemplate = fs.readFileSync(
           path.resolve(`${__dirname}/../../views/reports/general-report.html`),
@@ -89,23 +145,30 @@ function getGeneralReport(req, res) {
           title: `${office.officeName} -- General Report`,
           date: `${Moment.months(new Moment().month())} ${new Moment().format('YYYY')}`,
           office,
-          members,
+          memberRecords,
+          parentMemberRecords,
           totalNewMembers,
+          totalExternal,
           totalNewExternal,
+          totalInternal,
           totalNewInternal,
+          grossRevenue,
+          refunds,
+          managementFee,
+          netPayment,
         };
 
         // TODO: Continue to prepare the necessary information
         const report = nunjucks.renderString(generalTemplate, reportData);
 
-        // pdf.create(report, { format: 'Letter' }).toBuffer((err, resp) => {
-        //   if (err) { res.json(new BadRequestError(err)); }
-        //   res.writeHead(200, { 'Content-Type': 'application/pdf' });
-        //   res.write(resp);
-        //   res.end();
-        // });
+        pdf.create(report, { format: 'Letter' }).toBuffer((err, resp) => {
+          if (err) { res.json(new BadRequestError(err)); }
+          res.writeHead(200, { 'Content-Type': 'application/pdf' });
+          res.write(resp);
+          res.end();
+        });
 
-        res.json({ user: req.user, office, members, reportData });
+        // res.json({ user: req.user, office, members, reportData });
       });
     } else {
       // Forbidden: Current user lacks credentials
