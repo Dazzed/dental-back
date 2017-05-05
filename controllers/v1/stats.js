@@ -19,7 +19,7 @@ function getDentistsCount() {
     db.DentistInfo.count({
       where: { id: { gt: 0 } }
     }).then(count => {
-      resolve({ count });
+      resolve({ dentistOfficeCount: count });
     }).catch(err => reject(err));
   });
 }
@@ -34,7 +34,7 @@ function getActiveUserCount() {
     db.User.count({
       where: { verified: true }
     }).then(count => {
-      resolve({ count });
+      resolve({ activeUserCount: count });
     }).catch(err => reject(err));
   });
 }
@@ -50,7 +50,7 @@ function getStats(req, res) {
     getDentistsCount(),
     getActiveUserCount(),
   ]).then(stats => {
-    res.json({ data: stats });
+    res.json({ data: stats.reduce((a, b) => Object.assign(a, b)) });
   });
 }
 
