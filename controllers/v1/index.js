@@ -38,7 +38,7 @@ router.use('/dentist-specialties', dentistSpecialties);
 
 // root maybe for admin calls? add adminRequired middleware
 // Maybe also add express validators to request type user
-router.use('/stats', stats);
+router.use('/admin/stats', stats);
 router.use('/members', members);
 router.use('/memberships', memberships);
 router.use('/services', services);

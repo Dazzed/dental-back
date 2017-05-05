@@ -17,12 +17,12 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/stats/dentist-offices": {
+    "/api/v1/admin/stats": {
       "get": {
         "tags": [
           "Admin Statistics"
         ],
-        "summary": "Retrieve stats about dentist offices",
+        "summary": "Retrieve stats",
         "parameters": [],
         "responses": {
           "200": {
@@ -35,14 +35,19 @@
               "properties": {
                 "data": {
                   "required": [
-                    "count"
+                    "activeUsersCount",
+                    "dentistOfficesCount"
                   ],
                   "type": "object",
                   "description": "the response data",
                   "properties": {
-                    "count": {
+                    "dentistOfficesCount": {
                       "type": "number",
                       "description": "the number of dentist offices in the database"
+                    },
+                    "activeUsersCount": {
+                      "type": "number",
+                      "description": "the number of verified users"
                     }
                   }
                 }
@@ -51,41 +56,6 @@
           },
           "401": {
             "description": "Unauthorized access"
-          }
-        }
-      }
-    },
-    "/api/v1/stats/active-users": {
-      "get": {
-        "tags": [
-          "Admin Statistics"
-        ],
-        "summary": "Retrieve stats about active users",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Status 200",
-            "schema": {
-              "required": [
-                "data"
-              ],
-              "type": "object",
-              "properties": {
-                "data": {
-                  "required": [
-                    "count"
-                  ],
-                  "type": "object",
-                  "description": "the response data object",
-                  "properties": {
-                    "count": {
-                      "type": "number",
-                      "description": "the number of verified users"
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }
