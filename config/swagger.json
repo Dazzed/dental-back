@@ -7,6 +7,7 @@
     "termsOfService": "```\n@Copyright 2017 DentalHQ\n```",
     "contact": {}
   },
+  "host": "localhost:3090",
   "schemes": [
     "http"
   ],
@@ -59,6 +60,29 @@
           }
         }
       }
+    },
+    "/api/v1/dentist/{officeId}/general": {
+      "get": {
+        "tags": [
+          "Admin Statistics"
+        ],
+        "summary": "General Office Revenue Report",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The PDF report"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "officeId",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The ID of the office to draw the report on"
+        }
+      ]
     },
     "/api/v1/accounts/login": {
       "post": {
