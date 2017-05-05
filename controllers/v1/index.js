@@ -13,6 +13,7 @@ import offices from './offices';
 import pricing from './pricing';
 import reviews from './reviews';
 import dentistMembers from './dentist-members';
+import stats from './stats';
 
 // just one to one resources
 import dentistInfo from './dentist-info';
@@ -37,6 +38,7 @@ router.use('/dentist-specialties', dentistSpecialties);
 
 // root maybe for admin calls? add adminRequired middleware
 // Maybe also add express validators to request type user
+router.use('/stats', stats);
 router.use('/members', members);
 router.use('/memberships', memberships);
 router.use('/services', services);
