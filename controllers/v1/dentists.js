@@ -79,10 +79,7 @@ function listDentists(req, res, next) {
     // Fetch specific dentist info
     fetchDentist(req.params.userId)
     .then(dentist => res.json({ data: dentist }))
-    .catch(err => {
-      console.error(err);
-      next(new BadRequestError(err));
-    });
+    .catch(err => next(new BadRequestError(err)));
   } else {
     // Get all dentist info
     db.User.findAll({
@@ -92,15 +89,9 @@ function listDentists(req, res, next) {
     .then(users => {
       Promise.all(users.map(u => fetchDentist(u.id)))
       .then(dentists => res.json({ data: dentists }))
-      .catch(err => {
-        console.error(err);
-        next(new BadRequestError(err));
-      });
+      .catch(err => next(new BadRequestError(err)));
     })
-    .catch(err => {
-      console.error(err);
-      next(new BadRequestError(err));
-    });
+    .catch(err => next(new BadRequestError(err)));
   }
 }
 
