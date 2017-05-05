@@ -10,6 +10,10 @@ import {
 } from '../payments';
 
 import {
+  instance as UserInstance,
+} from '../../orm-methods/users';
+
+import {
   adminRequired,
 } from '../middlewares';
 
@@ -57,7 +61,7 @@ function getDateTimeInPST() {
  */
 function fetchDentist(userId) {
   return new Promise((resolve, reject) => {
-    db.User.getFullDentist(userId)
+    UserInstance.getFullDentist(userId)
     .then(resolve)
     .catch(reject);
   });
@@ -75,21 +79,28 @@ function listDentists(req, res, next) {
     // Fetch specific dentist info
     fetchDentist(req.params.userId)
     .then(dentist => res.json({ data: dentist }))
-    .catch(err => next(new BadRequestError(err)));
+    .catch(err => {
+      console.error(err);
+      next(new BadRequestError(err));
+    });
   } else {
     // Get all dentist info
     db.User.findAll({
-      where: {
-        type: 'dentist'
-      },
+      where: { type: 'dentist' },
       attributes: ['id'],
     })
     .then(users => {
       Promise.all(users.map(u => fetchDentist(u.id)))
       .then(dentists => res.json({ data: dentists }))
-      .catch(err => next(new BadRequestError(err)));
+      .catch(err => {
+        console.error(err);
+        next(new BadRequestError(err));
+      });
     })
-    .catch(err => next(new BadRequestError(err)));
+    .catch(err => {
+      console.error(err);
+      next(new BadRequestError(err));
+    });
   }
 }
 

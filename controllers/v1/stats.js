@@ -42,5 +42,4 @@ router
     adminRequired,
     getActiveUserStats);
 
-
 export default router;
