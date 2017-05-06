@@ -167,6 +167,7 @@ function updateDentistInfo(req, res, next) {
     .find(query)
     .then((info) => {
       const queries = [];
+      const user = req.body.user;
       const officeInfo = req.body.officeInfo;
       const officeImages = officeInfo.officeImages;
       const pricing = req.body.pricing;
@@ -174,6 +175,17 @@ function updateDentistInfo(req, res, next) {
       const childMembership = req.body.childMembership;
       const workingHours = req.body.workingHours;
       const services = req.body.services;
+
+      queries.push(
+        req.user.update({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          avatar: user.avatar,
+          zipCode: user.zipCode,
+          specialtyId: user.specialtyId
+        })
+      );
 
       // update info itself.
       queries.push(info.update({
@@ -289,14 +301,16 @@ function updateDentistInfo(req, res, next) {
         const existingImages = info.get('officeImages');
 
         // update office images.
-        for (const item in officeImages) {
-          if (!existingImages.find(image => image.url === officeImages[item])) {
-            db.DentistInfoPhotos.create({
-              url: officeImages[item],
-              dentistInfoId: info.get('id')
-            });
+        officeImages.forEach(imageUrl => {
+          if (!existingImages.find(image => image.url === imageUrl)) {
+            queries.push(
+              db.DentistInfoPhotos.create({
+                url: imageUrl,
+                dentistInfoId: info.get('id')
+              })
+            );
           }
-        }
+        });
       }
 
       return Promise.all(queries);
