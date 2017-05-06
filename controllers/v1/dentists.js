@@ -474,17 +474,6 @@ function getDentistNoAuth(req, res, next) {
 }
 
 router
-  .route('/:userId?/:phoneId?')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    adminRequired,
-    listDentists)
-  .put(
-    passport.authenticate('jwt', { session: false }),
-    adminRequired,
-    updateDentist);
-
-router
   .route('/:userId/review')
   .post(
     passport.authenticate('jwt', { session: false }),
@@ -527,6 +516,17 @@ router
 router
   .route('/:userId/contact_support')
   .post(contactSupportNoAuth);
+
+router
+  .route('/:userId?/:phoneId?')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    adminRequired,
+    listDentists)
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    adminRequired,
+    updateDentist);
 
 module.exports = {
   dentists: router,

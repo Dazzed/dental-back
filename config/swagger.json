@@ -7,7 +7,6 @@
     "termsOfService": "```\n@Copyright 2017 DentalHQ\n```",
     "contact": {}
   },
-  "host": "localhost:3090",
   "schemes": [
     "http"
   ],
@@ -315,6 +314,31 @@
           }
         }
       }
+    },
+    "/api/v1/reports/dentist/{officeId}/general": {
+      "get": {
+        "tags": [
+          "Dentist Office"
+        ],
+        "summary": "Get Monthly Membership Report",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The PDF report"
+          },
+          "401": {
+            "description": "Status 401"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "officeId",
+          "in": "path",
+          "required": true,
+          "type": "number"
+        }
+      ]
     }
   },
   "definitions": {

@@ -48,6 +48,7 @@ export default function (sequelize, DataTypes) {
       associate(models) {
         Subscription.belongsTo(models.Membership, {
           foreignKey: 'membershipId',
+          as: 'membership'
         });
 
         Subscription.belongsTo(models.User, {
