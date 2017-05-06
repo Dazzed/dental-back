@@ -54,6 +54,11 @@ export default function (sequelize, DataTypes) {
     },
     logo: {
       type: DataTypes.STRING
+    },
+    marketplaceOptIn: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     tableName: 'dentistInfos',
