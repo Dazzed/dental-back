@@ -54,7 +54,7 @@
 		<span>{{ date }} Report</span>
 	</div>
 	<div class="pad table-group">
-		<span>Total Members: {{ memberRecords.length }}</span>
+		<span>Total Members: {{ totalMembers }}</span>
 		<span class="half">({{ totalExternal }} external)</span>
 		<span class="quarter">({{ totalInternal }} internal)</span>
 	</div>
@@ -81,7 +81,7 @@
 	</div>
 	{# REGION MEMBER #}
 	<div class="member table-group">
-		{% for m in parentMemberRecords %}
+		{% for parentId, m in parentMemberRecords %}
 			<div class="table-group table-row">
 				<div>{{ loop.index }}) {{ m.member.client.firstName }} {{ m.member.client.lastName }}</div>
 				<div class="column first">{{ m.maturity }}</div>
@@ -91,21 +91,21 @@
 				<div class="column fifth">${{ m.net }}</div>
 			</div>
 			{% for c in m.family %}
-			<div class="table-group table-row">
-				<div>{{ loop.index }}) {{ c.member.client.firstName }} {{ c.member.client.lastName }}</div>
-				<div class="column first">{{ c.maturity }}</div>
-				<div class="column second">${{ c.fee }}</div>
-				<div class="column third">${{ c.penalties }}</div>
-				<div class="column fourth">${{ c.refunds }}</div>
-				<div class="column fifth">${{ c.net }}</div>
-			</div>
+				<div class="table-group table-row">
+					<div class="child">{{ c.member.client.firstName }} {{ c.member.client.lastName }}</div>
+					<div class="column first">{{ c.maturity }}</div>
+					<div class="column second">${{ c.fee }}</div>
+					<div class="column third">${{ c.penalties }}</div>
+					<div class="column fourth">${{ c.refunds }}</div>
+					<div class="column fifth">${{ c.net }}</div>
+				</div>
 			{% endfor %}
 			<div class="megablock table-group summary">
 				<div class="column first">Total:</div>
-				<div class="column second">$72</div>
-				<div class="column third">$0</div>
-				<div class="column fourth">$0</div>
-				<div class="column fifth">$65.08</div>
+				<div class="column second">${{ m.membershipFeeTotal }}</div>
+				<div class="column third">${{ m.penaltiesTotal }}</div>
+				<div class="column fourth">${{ m.refundsTotal }}</div>
+				<div class="column fifth">${{ m.netTotal }}</div>
 			</div>
 		{% endfor %}
 	</div>

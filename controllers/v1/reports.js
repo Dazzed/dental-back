@@ -114,11 +114,36 @@ function getGeneralReport(req, res) {
         }, {});
 
         // Nest child records of family owners
-        memberRecords.filter(m => isNaN(parseInt(m.member.client.addedBy, 10))).forEach(m => {
+        memberRecords.filter(m => !isNaN(parseInt(m.member.client.addedBy, 10))).forEach(m => {
           const parent = parentMemberRecords[m.member.client.addedBy];
           if (parent !== undefined) {
             parentMemberRecords[m.member.client.addedBy].family.push(m);
           }
+        });
+
+        // Calculate family totals
+        Object.keys(parentMemberRecords).forEach(prId => {
+          const temp = {
+            membershipFeeTotal: 0,
+            penaltiesTotal: 0,
+            refundsTotal: 0,
+            netTotal: 0,
+          };
+
+          temp.membershipFeeTotal += parentMemberRecords[prId].fee;
+          temp.penaltiesTotal += parentMemberRecords[prId].penalties;
+          temp.refundsTotal += parentMemberRecords[prId].refunds;
+          temp.netTotal += parentMemberRecords[prId].net;
+
+          // Loop through family as well
+          parentMemberRecords[prId].family.forEach(m => {
+            temp.membershipFeeTotal += m.fee;
+            temp.penaltiesTotal += m.penalties;
+            temp.refundsTotal += m.refunds;
+            temp.netTotal += m.net;
+          });
+
+          parentMemberRecords[prId] = Object.assign({}, parentMemberRecords[prId], temp);
         });
 
         // TODO: calculate refunds
@@ -144,8 +169,8 @@ function getGeneralReport(req, res) {
         const reportData = {
           title: `${office.officeName} -- General Report`,
           date: `${Moment.months(new Moment().month())} ${new Moment().format('YYYY')}`,
+          totalMembers: memberRecords.length,
           office,
-          memberRecords,
           parentMemberRecords,
           totalNewMembers,
           totalExternal,
@@ -160,15 +185,15 @@ function getGeneralReport(req, res) {
 
         // TODO: Continue to prepare the necessary information
         const report = nunjucks.renderString(generalTemplate, reportData);
+        const downloadFilename = `${reportData.title.split(' ').join('-')}_${report.date}.pdf`;
 
         pdf.create(report, { format: 'Letter' }).toBuffer((err, resp) => {
           if (err) { res.json(new BadRequestError(err)); }
+          res.setHeader('Content-disposition', `attachment; filename=${downloadFilename}`);
           res.writeHead(200, { 'Content-Type': 'application/pdf' });
           res.write(resp);
           res.end();
         });
-
-        // res.json({ user: req.user, office, members, reportData });
       });
     } else {
       // Forbidden: Current user lacks credentials
