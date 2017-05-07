@@ -30,7 +30,14 @@ function getReviews(req, res, next) {
       as: 'dentistReviews',
       attributes: {
         exclude: ['clientId', 'dentistId', 'updatedAt']
-      }
+      },
+      include: [{
+        model: db.User,
+        as: 'client',
+        attributes: {
+          include: ['firstName', 'lastName']
+        }
+      }]
     }]
   })
   .then(user => {
