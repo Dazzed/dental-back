@@ -164,7 +164,7 @@ function normalUserSignup(req, res, next) {
             ? membership.yearly : membership.monthly,
           yearly: membership.yearly,
           monthly: membership.monthly,
-          status: 'active',
+          status: 'inactive',
           membershipId: membership.id,
           clientId: createdUser.id,
           dentistId: info.get('userId'),

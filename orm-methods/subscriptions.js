@@ -21,7 +21,7 @@ export const model = {
 
   getPendingAmount(userId, dentistId) {
     const subscriptionQuery = {
-      status: 'active',
+      status: 'inactive',
     };
 
     if (dentistId) {

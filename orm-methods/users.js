@@ -12,6 +12,29 @@ const userFieldsExcluded = ['hash', 'salt', 'activationKey',
 
 export const instance = {
 
+  getSubscriptions() {
+    const where = {
+      isDeleted: false,
+      $or: [{
+        addedBy: this.get('id'),
+      }, {
+        id: this.get('id'),
+        payingMember: true,
+      }],
+    };
+
+    return db.Subscription.findAll({
+      attributes: ['monthly', 'id'],
+      where: { status: 'inactive' },
+      include: [{
+        model: db.User,
+        as: 'client',
+        attributes: ['id'],
+        where,
+      }]
+    });
+  },
+
   getDentistReviews() {
     return db.Review.findAll({
       where: { dentistId: this.get('id') },
@@ -243,7 +266,7 @@ export const instance = {
         ? membership.yearly : membership.monthly,
       yearly: membership.yearly,
       monthly: membership.monthly,
-      status: 'active',
+      status: 'inactive',
       membershipId: membership.id,
       clientId: this.get('id'),
       dentistId,
