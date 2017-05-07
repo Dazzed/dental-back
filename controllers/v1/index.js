@@ -11,6 +11,7 @@ import { dentists } from './dentists';
 import userDentist from './user-dentist';
 import offices from './offices';
 import pricing from './pricing';
+import reports from './reports';
 import reviews from './reviews';
 import dentistMembers from './dentist-members';
 
@@ -42,5 +43,6 @@ router.use('/memberships', memberships);
 router.use('/services', services);
 router.use('/offices', offices);
 router.use('/pricing', pricing);
+router.use('/reports', reports);
 
 export default router;

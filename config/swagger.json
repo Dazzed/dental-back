@@ -7,7 +7,6 @@
     "termsOfService": "```\n@Copyright 2017 DentalHQ\n```",
     "contact": {}
   },
-  "host": "localhost:3090",
   "schemes": [
     "http"
   ],
@@ -18,6 +17,72 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/admin/stats": {
+      "get": {
+        "tags": [
+          "Admin Statistics"
+        ],
+        "summary": "Retrieve stats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Status 200",
+            "schema": {
+              "required": [
+                "data"
+              ],
+              "type": "object",
+              "properties": {
+                "data": {
+                  "required": [
+                    "activeUsersCount",
+                    "dentistOfficesCount"
+                  ],
+                  "type": "object",
+                  "description": "the response data",
+                  "properties": {
+                    "dentistOfficesCount": {
+                      "type": "number",
+                      "description": "the number of dentist offices in the database"
+                    },
+                    "activeUsersCount": {
+                      "type": "number",
+                      "description": "the number of verified users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access"
+          }
+        }
+      }
+    },
+    "/api/v1/dentist/{officeId}/general": {
+      "get": {
+        "tags": [
+          "Admin Statistics"
+        ],
+        "summary": "General Office Revenue Report",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The PDF report"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "officeId",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The ID of the office to draw the report on"
+        }
+      ]
+    },
     "/api/v1/accounts/login": {
       "post": {
         "tags": [
@@ -49,8 +114,10 @@
                   "description": "the password of the user account"
                 }
               },
-              "description": "The login body request",
-              "example": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
+              "description": "The login body request"
+            },
+            "x-examples": {
+              "application/json": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
             }
           }
         ],
@@ -73,8 +140,7 @@
                   "type": "string",
                   "description": "the user access level"
                 }
-              },
-              "example": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+              }
             },
             "examples": {
               "application/json": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
@@ -114,8 +180,10 @@
                   "description": "the password of the user account"
                 }
               },
-              "description": "The login body request",
-              "example": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
+              "description": "The login body request"
+            },
+            "x-examples": {
+              "application/json": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
             }
           }
         ],
@@ -138,8 +206,7 @@
                   "type": "string",
                   "description": "the user access level"
                 }
-              },
-              "example": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+              }
             },
             "examples": {
               "application/json": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
@@ -247,6 +314,31 @@
           }
         }
       }
+    },
+    "/api/v1/reports/dentist/{officeId}/general": {
+      "get": {
+        "tags": [
+          "Dentist Office"
+        ],
+        "summary": "Get Monthly Membership Report",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The PDF report"
+          },
+          "401": {
+            "description": "Status 401"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "officeId",
+          "in": "path",
+          "required": true,
+          "type": "number"
+        }
+      ]
     }
   },
   "definitions": {
