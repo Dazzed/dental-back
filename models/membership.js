@@ -18,8 +18,7 @@ export default function (sequelize, DataTypes) {
     },
     yearly: {
       type: new DataTypes.DECIMAL(6, 2),
-      allowNull: false,
-      defaultValue: 0,
+      allowNull: true
     },
     withDiscount: {
       type: new DataTypes.DECIMAL(6, 2),

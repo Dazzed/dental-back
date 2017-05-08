@@ -47,10 +47,11 @@ function createDentistInfo(user, body) {
       default: true,
       isActive: true,
       price: 0,
-      withDiscount: pricing.treatmentDiscount,
-      discount: pricing.treatmentDiscount,
+      withDiscount: pricing.treatmentDiscount || 0,
+      discount: pricing.treatmentDiscount || 0,
       monthly: pricing.adultMonthlyFee,
-      yearly: pricing.adultYearlyFee,
+      yearly: pricing.adultYearlyFeeActivated ?
+              pricing.adultYearlyFee || null : null,
       adultYearlyFeeActivated: pricing.adultYearlyFeeActivated
     }),
 
@@ -59,10 +60,11 @@ function createDentistInfo(user, body) {
       default: true,
       isActive: true,
       price: 0,
-      withDiscount: pricing.treatmentDiscount,
-      discount: pricing.treatmentDiscount,
+      withDiscount: pricing.treatmentDiscount || 0,
+      discount: pricing.treatmentDiscount || 0,
       monthly: pricing.childMonthlyFee,
-      yearly: pricing.childYearlyFee,
+      yearly: pricing.childYearlyFeeActivated ?
+              pricing.childYearlyFee || null : null,
       childYearlyFeeActivated: pricing.childYearlyFeeActivated
     })
   ])
