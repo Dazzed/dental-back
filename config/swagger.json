@@ -7,15 +7,16 @@
     "termsOfService": "```\n@Copyright 2017 DentalHQ\n```",
     "contact": {}
   },
-  "host": "localhost:3090",
   "schemes": [
     "http"
   ],
   "consumes": [
-    "application/json"
+    "application/json",
+    "application/pdf"
   ],
   "produces": [
-    "application/json"
+    "application/json",
+    "application/pdf"
   ],
   "paths": {
     "/api/v1/admin/stats": {
@@ -367,7 +368,11 @@
               "type": "object",
               "properties": {
                 "data": {
-                  "$ref": "#/definitions/Price Code"
+                  "type": "array",
+                  "description": "the response object",
+                  "items": {
+                    "$ref": "#/definitions/Price Code"
+                  }
                 }
               }
             }
