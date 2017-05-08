@@ -7,6 +7,7 @@
     "termsOfService": "```\n@Copyright 2017 DentalHQ\n```",
     "contact": {}
   },
+  "host": "localhost:3090",
   "schemes": [
     "http"
   ],
@@ -339,6 +340,84 @@
           "type": "number"
         }
       ]
+    },
+    "/api/v1/pricing": {
+      "get": {
+        "tags": [
+          "Price Codes"
+        ],
+        "summary": "List Price Codes",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JSON Web Token",
+            "x-example": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDIwNzk2Nn0.5PzSItqokApny_WdzeTAE5Y0-pI-baa4A7ehAfZ-VQI"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of price codes submitted by all dentist offices",
+            "schema": {
+              "required": [
+                "data"
+              ],
+              "type": "object",
+              "properties": {
+                "data": {
+                  "$ref": "#/definitions/Price Code"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Price Codes"
+        ],
+        "summary": "Save new Price Code",
+        "consumes": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JSON Web Token",
+            "x-example": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDIwNzk2Nn0.5PzSItqokApny_WdzeTAE5Y0-pI-baa4A7ehAfZ-VQI"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Price Code"
+            },
+            "x-examples": {
+              "application/json": "{\n  \"description\": \"Periodic Exam\",\n  \"code\": \"0120\"\n}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response after creating or finding the price code",
+            "schema": {
+              "required": [
+                "data"
+              ],
+              "type": "object",
+              "properties": {
+                "data": {
+                  "$ref": "#/definitions/Price Code"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -590,6 +669,23 @@
           "type": "string",
           "format": "date-time",
           "description": "the last time the membership record was updated"
+        }
+      }
+    },
+    "Price Code": {
+      "type": "object",
+      "required": [
+        "code",
+        "description"
+      ],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "the laymen explanation of the price code"
+        },
+        "code": {
+          "type": "string",
+          "description": "the pricing code"
         }
       }
     }
