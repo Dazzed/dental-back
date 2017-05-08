@@ -10,7 +10,15 @@ export default function (sequelize, DataTypes) {
     },
   }, {
     timestamps: false,
-    tableName: 'priceCodes'
+    tableName: 'priceCodes',
+    classMethods: Object.assign({
+      associate(models) {
+        PriceCodes.hasMany(models.MembershipItem, {
+          foreignKey: 'pricingCode',
+          as: 'membershipItems',
+        });
+      }
+    })
   });
 
   return PriceCodes;

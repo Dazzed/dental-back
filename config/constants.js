@@ -183,3 +183,15 @@ export const EDIT_USER_BY_ADMIN = [
   'email',
   'phoneNumber'
 ];
+
+/**
+ * Pricing Codes related to calculating the full cost of a membership
+ */
+export const CODES_FOR_CALC_FULL_COST = [
+  '1110',
+  '0120',
+  '0274',
+  '0330',
+  '0220',
+  '0140',
+];
