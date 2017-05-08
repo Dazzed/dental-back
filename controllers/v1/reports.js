@@ -8,14 +8,15 @@ import { Router } from 'express';
 import Moment from 'moment';
 import pdf from 'html-pdf';
 import nunjucks from 'nunjucks';
-import passport from 'passport';
 
-import { adminRequired } from '../middlewares';
+import {
+  userRequired,
+  dentistRequired,
+  adminRequired,
+} from '../middlewares';
 
 import db from '../../models';
-import {
-  instance as UserInstance,
-} from '../../orm-methods/users.js';
+
 import {
   BadRequestError,
   ForbiddenError
@@ -230,8 +231,8 @@ function getMasterReport(req, res) {}
 
 const router = new Router({ mergeParams: true });
 
-router.route('/dentist/:officeId').get(passport.authenticate('jwt', { session: false }), getDentistReport);
-router.route('/dentist/:officeId/general').get(passport.authenticate('jwt', { session: false }), getGeneralReport);
-router.route('/dentists').get(passport.authenticate('jwt', { session: false }), adminRequired, getMasterReport);
+router.route('/dentist/:officeId').get(userRequired, dentistRequired, getDentistReport);
+router.route('/dentist/:officeId/general').get(userRequired, adminRequired, getGeneralReport);
+router.route('/dentists').get(userRequired, adminRequired, getMasterReport);
 
 export default router;
