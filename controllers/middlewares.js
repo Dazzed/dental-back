@@ -13,4 +13,16 @@ export function adminRequired(req, res, next) {
   return next(new ForbiddenError());
 }
 
+/**
+ * Middleware that request if user is admin to allow next middleware.
+ *
+ */
+export function dentistRequired(req, res, next) {
+  if (req.user && (req.user.type === 'dentist' || req.user.type === 'admin')) {
+    return next();
+  }
+
+  return next(new ForbiddenError());
+}
+
 export const userRequired = passport.authenticate('jwt', { session: false });

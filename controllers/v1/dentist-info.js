@@ -1,13 +1,17 @@
+/* eslint max-len:0 */
 import { Router } from 'express';
 import passport from 'passport';
 import _ from 'lodash';
 
 import db from '../../models';
+import { userRequired } from '../middlewares';
 import { updateTotalMembership } from '../../utils/helpers';
+import { MembershipMethods } from '../../orm-methods/memberships';
 
 import {
   NotFoundError,
   ForbiddenError,
+  BadRequestError,
 } from '../errors';
 
 
@@ -323,34 +327,61 @@ function updateDentistInfo(req, res, next) {
 function getDentistInfo(req, res) {
   let dentistInfo = req.locals.dentistInfo.toJSON();
   dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId']);
-  dentistInfo.services = dentistInfo.services.map(item => item.service);
 
-  if (req.user.get('type') === 'dentist') {
-    res.json({
-      data: dentistInfo
-    });
-  } else {
-    const user = _.omit(req.user.toJSON(), ['authorizeId', 'paymentId']);
-    user.dentistInfo = dentistInfo;
+  db.MembershipItem.findAll({
+    where: { dentistInfoId: dentistInfo.id },
+    include: [{
+      model: db.PriceCodes,
+      as: 'priceCode'
+    }]
+  }).then(items => {
+    dentistInfo.priceCodes = items.map(i => i.priceCode);
+    dentistInfo.services = dentistInfo.services.map(item => item.service);
 
-    res.json({
-      data: user
+    MembershipMethods
+    .calculateCosts(dentistInfo.id, [
+      dentistInfo.membership.id,
+      dentistInfo.childMembership.id,
+    ])
+    .then(fullCosts => {
+      fullCosts.forEach(cost => {
+        if (dentistInfo.membership.id === cost.membershipId) {
+          dentistInfo.membership.fullCost = cost.fullCost;
+          dentistInfo.membership.savings = (cost.fullCost - (parseInt(dentistInfo.membership.price, 10) * 12));
+        } else if (dentistInfo.childMembership.id === cost.membershipId) {
+          dentistInfo.childMembership.fullCost = cost.fullCost;
+          dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(dentistInfo.childMembership.price, 10) * 12));
+        }
+      });
+
+      if (req.user.get('type') === 'dentist') {
+        res.json({
+          data: dentistInfo
+        });
+      } else {
+        const user = _.omit(req.user.toJSON(), ['authorizeId', 'paymentId']);
+        user.dentistInfo = dentistInfo;
+
+        res.json({
+          data: user
+        });
+      }
     });
-  }
+  }).catch(err => new BadRequestError(err));
 }
 
 
 router
   .route('/')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getDentistInfoFromParams,
     getDentistInfo);
 
 router
   .route('/:dentistInfoId?')
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     updateDentistInfo,
     getDentistInfoFromParams,
     getDentistInfo);

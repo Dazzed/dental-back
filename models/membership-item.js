@@ -16,6 +16,10 @@ export default function (sequelize, DataTypes) {
         MembershipItem.belongsTo(models.DentistInfo, {
           foreignKey: 'dentistInfoId'
         });
+        MembershipItem.belongsTo(models.PriceCodes, {
+          foreignKey: 'pricingCode',
+          as: 'priceCode',
+        });
       }
     }
   });
