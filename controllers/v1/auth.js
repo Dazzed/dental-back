@@ -86,15 +86,17 @@ function createDentistInfo(user, body) {
       });
 
       // create pricing records for the dentist.
-      (pricing.codes || []).forEach(item => {
-        PRICING_CODES.forEach(elem => {
-          if (elem.code === item.code) {
-            db.MembershipItem.create({
-              pricingCode: item.code,
-              price: item.amount,
-              dentistInfoId: info.get('id')
-            });
-          }
+      db.PriceCodes.findAll({}).then(codes => {
+        (pricing.codes || []).forEach(item => {
+          codes.forEach(elem => {
+            if (elem.code === item.code) {
+              db.MembershipItem.create({
+                pricingCode: item.code,
+                price: item.amount,
+                dentistInfoId: info.get('id')
+              });
+            }
+          });
         });
       });
 
