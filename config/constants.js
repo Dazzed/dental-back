@@ -50,27 +50,6 @@ export const CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS = [{
   code: '0220',
 }];
 
-export const PRICING_CODES = [
-  { code: '0120' },
-  { code: '0140' },
-  { code: '0150' },
-  { code: '0220' },
-  { code: '0272' },
-  { code: '0274' },
-  { code: '0330' },
-  { code: '1110' },
-  { code: '1120' },
-  { code: '1206' },
-  { code: '2391' },
-  { code: '2392' },
-  { code: '2750' },
-  { code: '3330' },
-  { code: '4341' },
-  { code: '4910' },
-  { code: '7140' }
-];
-
-
 export const DAYS = [
   'sunday',
   'monday',
