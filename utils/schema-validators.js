@@ -332,3 +332,12 @@ export const UPDATE_DENTIST = {
     optional: true
   },
 };
+
+export const NEW_PRICING_CODE = {
+  description: {
+    notEmpty: true,
+  },
+  code: {
+    notEmpty: true,
+  }
+};

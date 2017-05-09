@@ -4,17 +4,18 @@
 
 import fs from 'fs';
 import path from 'path';
-import _ from 'lodash';
 import { Router } from 'express';
 import Moment from 'moment';
 import pdf from 'html-pdf';
 import nunjucks from 'nunjucks';
-import passport from 'passport';
+
+import {
+  userRequired,
+  dentistRequired,
+  adminRequired,
+} from '../middlewares';
 
 import db from '../../models';
-import {
-  instance as UserInstance,
-} from '../../orm-methods/users.js';
 
 import {
   BadRequestError,
@@ -29,6 +30,21 @@ nunjucks.configure('../../views');
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTES
 
+/**
+ * Retrieves a PDF report for a dentist
+ *
+ * @param {Object<any>} req - the express request
+ * @param {Object<any>} res - the express response
+ */
+function getDentistReport(req, res) {}
+
+/**
+ * Retrieves a PDF report for general membership/costs
+ * information about the members of a dentist office
+ *
+ * @param {Object<any>} req - the express request
+ * @param {Object<any>} res - the express response
+ */
 function getGeneralReport(req, res) {
   const reportEndDate = new Moment();
   reportEndDate.date(1).subtract(1, 'day');
@@ -202,11 +218,21 @@ function getGeneralReport(req, res) {
   }).catch(err => res.json(new BadRequestError(err)));
 }
 
+/**
+ * Retrieves a master report on all dentist offices
+ *
+ * @param {Object<any>} req - the express request
+ * @param {Object<any>} res - the express response
+ */
+function getMasterReport(req, res) {}
+
 // ────────────────────────────────────────────────────────────────────────────────
-// EXPORTS
+// ENDPOINTS
 
 const router = new Router({ mergeParams: true });
 
-router.route('/dentist/:officeId/general').get(passport.authenticate('jwt', { session: false }), getGeneralReport);
+router.route('/dentist/:officeId').get(userRequired, dentistRequired, getDentistReport);
+router.route('/dentist/:officeId/general').get(userRequired, adminRequired, getGeneralReport);
+router.route('/dentists').get(userRequired, adminRequired, getMasterReport);
 
 export default router;
