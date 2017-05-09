@@ -8,6 +8,8 @@ import { userRequired } from '../middlewares';
 import { updateTotalMembership } from '../../utils/helpers';
 import { MembershipMethods } from '../../orm-methods/memberships';
 
+import { SUBSCRIPTION_STATES } from '../../config/constants';
+
 import {
   NotFoundError,
   ForbiddenError,
@@ -335,9 +337,15 @@ function getDentistInfo(req, res) {
       as: 'priceCode'
     }]
   }).then(items => {
-    dentistInfo.priceCodes = items.map(i => i.priceCode);
+    delete dentistInfo.pricing;
+    dentistInfo.priceCodes = items.map(i => {
+      const temp = i.priceCode.toJSON();
+      temp.price = i.get('price');
+      return i.priceCode;
+    });
     dentistInfo.services = dentistInfo.services.map(item => item.service);
 
+    // Calculate membership costs
     MembershipMethods
     .calculateCosts(dentistInfo.id, [
       dentistInfo.membership.id,
@@ -354,18 +362,28 @@ function getDentistInfo(req, res) {
         }
       });
 
-      if (req.user.get('type') === 'dentist') {
-        res.json({
-          data: dentistInfo
-        });
-      } else {
-        const user = _.omit(req.user.toJSON(), ['authorizeId', 'paymentId']);
-        user.dentistInfo = dentistInfo;
+      // Determine # of active members
+      db.Subscription.count({
+        where: {
+          dentistId: req.user.get('id'),
+          status: 'active',
+        }
+      }).then(activeMemberCount => {
+        dentistInfo.activeMemberCount = activeMemberCount;
 
-        res.json({
-          data: user
-        });
-      }
+        if (req.user.get('type') === 'dentist') {
+          res.json({
+            data: dentistInfo
+          });
+        } else {
+          const user = _.omit(req.user.toJSON(), ['authorizeId', 'paymentId']);
+          user.dentistInfo = dentistInfo;
+
+          res.json({
+            data: user
+          });
+        }
+      }).catch(err => { throw new Error(err); });
     });
   }).catch(err => new BadRequestError(err));
 }
