@@ -174,10 +174,15 @@ export const instance = {
   },
 
 
-  getMyDentist() {
-    return db.User.find({
-      attributes: ['id', 'firstName', 'lastName', 'avatar'],
-      include: [{
+  getMyDentist(omitInclude) {
+    const query = {
+      attributes: ['id', 'firstName', 'lastName', 'avatar', 'email'],
+      subquery: false,
+      loggin: console.log,
+    };
+
+    if (!omitInclude) {
+      query.include = [{
         as: 'dentistSubscriptions',
         model: db.Subscription,
         where: { status: { $not: 'canceled' }, clientId: this.get('id') },
@@ -223,11 +228,14 @@ export const instance = {
           as: 'officeImages',
           attributes: ['url']
         }]
-      }],
-      subquery: false,
-      loggin: console.log,
-    }).then(dentist => {
+      }];
+    }
+
+    return db.User.find(query).then(dentist => {
       const parsed = dentist ? dentist.toJSON() : {};
+
+      if (omitInclude) return parsed;
+
       // parsed.subscription = parsed.dentistSubscriptions[0];
       delete parsed.dentistSubscriptions;
 

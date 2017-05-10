@@ -5,6 +5,14 @@ const Change = changeFactory();
 
 
 export const instance = {
+  /**
+   * Sets a subscription active or inactive based on a parameter's value.
+   * @param active - if this subscription should be set active.
+   * @return Promise[Subscription]
+   */
+  setActive(active) {
+    return this.update({ status: (active ? 'active' : 'inactive') });
+  }
 };
 
 

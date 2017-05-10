@@ -20,6 +20,7 @@ const router = new Router({ mergeParams: true });
 function getDentist(req, res, next) {
   req.user.getMyDentist()
     .then(data => {
+      delete data.email;
       res.json({ data });
     })
     .catch(next);
