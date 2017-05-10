@@ -25,7 +25,16 @@
           "Admin Statistics"
         ],
         "summary": "Retrieve stats",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JWT",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Status 200",
@@ -68,7 +77,16 @@
           "Admin Statistics"
         ],
         "summary": "General Office Revenue Report",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JWT",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          }
+        ],
         "responses": {
           "200": {
             "description": "The PDF report"
@@ -107,7 +125,16 @@
           "Admin Statistics"
         ],
         "summary": "Retrieve Master Report",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JWT",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          }
+        ],
         "responses": {
           "200": {
             "description": "The PDF report"
