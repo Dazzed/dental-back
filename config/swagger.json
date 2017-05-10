@@ -101,6 +101,39 @@
         }
       ]
     },
+    "/api/v1/reports/dentists/{year}/{month}": {
+      "get": {
+        "tags": [
+          "Admin Statistics"
+        ],
+        "summary": "Retrieve Master Report",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The PDF report"
+          },
+          "403": {
+            "description": "Restricted to Admins only"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "year",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The year in which the report is to be labeled as"
+        },
+        {
+          "name": "month",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The month in which the report is to labeled as"
+        }
+      ]
+    },
     "/api/v1/accounts/login": {
       "post": {
         "tags": [
