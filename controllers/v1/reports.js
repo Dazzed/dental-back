@@ -49,7 +49,6 @@ function getGeneralReport(req, res) {
   const reportEndDate = new Moment();
   reportEndDate.year(req.params.year).month(req.params.month).date(1).subtract(1, 'day');
 
-  // TODO: restrict to dentists/admins
   db.DentistInfo.find({
     where: { id: req.params.officeId },
     include: [
@@ -222,7 +221,90 @@ function getGeneralReport(req, res) {
  * @param {Object<any>} req - the express request
  * @param {Object<any>} res - the express response
  */
-function getMasterReport(req, res) {}
+function getMasterReport(req, res, next) {
+  const month = Moment.monthsShort()[req.params.month];
+
+  db.DentistInfo.findAll({
+    include: [
+      { model: db.User, as: 'user' },
+      { model: db.Membership, as: 'childMembership' },
+      { model: db.Membership, as: 'membership' }
+    ]
+  }).then(offices => {
+    // Collect office reports
+    Promise.all(offices.map(office => new Promise((resolve, reject) => {
+      // Validate the current user has the proper authorization to see this report
+      db.Subscription.findAll({
+        where: { dentistId: office.user.id },
+        include: [{
+          model: db.User,
+          as: 'client',
+        }, {
+          model: db.Membership,
+          as: 'membership',
+        }],
+      }).then(members => {
+        // Calculate gross revenue and prepare member records
+        const gross = members.reduce((sum, m) => {
+          let fee = 0;
+
+          if (office.acceptsChildren && m.membership.childYearlyFeeActivated) {
+            // Child pricing
+            fee = parseInt(office.childMembership.monthly, 10);
+          } else {
+            // Adult pricing
+            fee = parseInt(office.membership.monthly, 10);
+          }
+
+          return (sum + fee);
+        }, 0);
+
+        const managementFee = (gross * 0.11);
+
+        resolve({ officeName: office.officeName, gross, managementFee, net: (gross - managementFee) });
+      }).catch(err => reject(err));
+    }))).then(officeReports => {
+      // Calculate totals
+      const totals = officeReports.reduce((t, office) => {
+        t.gross += office.gross;
+        t.managementFee += office.managementFee;
+        t.net += office.net;
+        return t;
+      }, {
+        gross: 0,
+        managementFee: 0,
+        net: 0,
+      });
+
+      // Round off the totals
+      totals.gross = Number(totals.gross.toFixed(2));
+      totals.managementFee = Number(totals.managementFee.toFixed(2));
+      totals.net = Number(totals.net.toFixed(2));
+
+      // Fetch the master template file
+      const masterTemplate = fs.readFileSync(
+        path.resolve(`${__dirname}/../../views/reports/master-report.html`),
+        'utf8'
+      );
+
+      // Compose the master report
+      const report = nunjucks.renderString(masterTemplate, {
+        datePeriod: `${month} ${req.params.year}`,
+        records: officeReports,
+        totals,
+      });
+
+      // Send PDF file
+      pdf.create(report, { format: 'Letter' }).toBuffer((err, resp) => {
+        if (err) { res.json(new BadRequestError(err)); }
+        // res.setHeader('Content-disposition', `attachment; filename=${downloadFilename}`);
+        res.writeHead(200, { 'Content-Type': 'application/pdf' });
+        res.write(resp);
+        res.end();
+      });
+    });
+  }).catch(err => next(new BadRequestError(err)));
+}
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ENDPOINTS
@@ -231,6 +313,6 @@ const router = new Router({ mergeParams: true });
 
 router.route('/dentist/:officeId').get(userRequired, dentistRequired, getDentistReport);
 router.route('/dentist/:officeId/:year/:month/general').get(userRequired, adminRequired, getGeneralReport);
-router.route('/dentists').get(userRequired, adminRequired, getMasterReport);
+router.route('/dentists/:year/:month').get(userRequired, adminRequired, getMasterReport);
 
 export default router;
