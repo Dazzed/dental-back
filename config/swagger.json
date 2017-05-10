@@ -62,7 +62,7 @@
         }
       }
     },
-    "/api/v1/dentist/{officeId}/general": {
+    "/api/v1/dentist/{officeId}/{year}/{month}/general": {
       "get": {
         "tags": [
           "Admin Statistics"
@@ -82,6 +82,22 @@
           "required": true,
           "type": "number",
           "description": "The ID of the office to draw the report on"
+        },
+        {
+          "name": "year",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The year for which the report is compiled from",
+          "x-example": 2017
+        },
+        {
+          "name": "month",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The month for which the report is compiled from (1 - 12)",
+          "x-example": 2
         }
       ]
     },

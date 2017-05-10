@@ -47,7 +47,7 @@ function getDentistReport(req, res) {}
  */
 function getGeneralReport(req, res) {
   const reportEndDate = new Moment();
-  reportEndDate.date(1).subtract(1, 'day');
+  reportEndDate.year(req.params.year).month(req.params.month).date(1).subtract(1, 'day');
 
   // TODO: restrict to dentists/admins
   db.DentistInfo.find({
@@ -61,8 +61,6 @@ function getGeneralReport(req, res) {
     if (!office) {
       res.json(new ForbiddenError('Requested Dentist Office does not access or user does not have appropriate access'));
     }
-
-    console.log(req.user.id, office.user.id);
 
     // Validate the current user has the proper authorization to see this report
     if (req.user.id === office.user.id) {
@@ -232,7 +230,7 @@ function getMasterReport(req, res) {}
 const router = new Router({ mergeParams: true });
 
 router.route('/dentist/:officeId').get(userRequired, dentistRequired, getDentistReport);
-router.route('/dentist/:officeId/general').get(userRequired, adminRequired, getGeneralReport);
+router.route('/dentist/:officeId/:year/:month/general').get(userRequired, adminRequired, getGeneralReport);
 router.route('/dentists').get(userRequired, adminRequired, getMasterReport);
 
 export default router;
