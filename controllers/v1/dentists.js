@@ -18,6 +18,11 @@ import {
 } from '../middlewares';
 
 import db from '../../models';
+import { mailer } from '../../services/mailer';
+
+import {
+  dentistMessages
+} from '../../config/messages';
 
 import {
   CONTACT_SUPPORT_EMAIL,
@@ -177,6 +182,26 @@ function addReview(req, res, next) {
     isAnonymous: req.body.isAnonymous,
     clientId: req.user.get('id'),
     dentistId: req.params.userId,
+  });
+
+  // get the dentist user from the database.
+  db.User.findById(req.params.userId).then(dentist => {
+    if (dentist) {
+      // send new review email notification to dentist.
+      mailer.sendEmail(res.mailer, {
+        template: 'dentists/new_review',
+        subject: EMAIL_SUBJECTS.dentist.new_review,
+        user: dentist
+      }, {
+        emailBody: dentistMessages.new_review.body
+      });
+
+      // create a new notification for the dentist about new review.
+      dentist.createNotification({
+        title: dentistMessages.new_review.title,
+        body: dentistMessages.new_review.body
+      });
+    }
   });
 
   return res.json({});

@@ -174,10 +174,15 @@ export const instance = {
   },
 
 
-  getMyDentist() {
-    return db.User.find({
-      attributes: ['id', 'firstName', 'lastName', 'avatar'],
-      include: [{
+  getMyDentist(omitInclude) {
+    const query = {
+      attributes: ['id', 'firstName', 'lastName', 'avatar', 'email'],
+      subquery: false,
+      loggin: console.log,
+    };
+
+    if (!omitInclude) {
+      query.include = [{
         as: 'dentistSubscriptions',
         model: db.Subscription,
         where: { status: { $not: 'canceled' }, clientId: this.get('id') },
@@ -223,11 +228,14 @@ export const instance = {
           as: 'officeImages',
           attributes: ['url']
         }]
-      }],
-      subquery: false,
-      loggin: console.log,
-    }).then(dentist => {
+      }];
+    }
+
+    return db.User.find(query).then(dentist => {
       const parsed = dentist ? dentist.toJSON() : {};
+
+      if (omitInclude) return [parsed, dentist];
+
       // parsed.subscription = parsed.dentistSubscriptions[0];
       delete parsed.dentistSubscriptions;
 
@@ -247,7 +255,7 @@ export const instance = {
           delete review.dentistId;
         });
       parsed.dentistReviews = reviews;
-      return parsed;
+      return [parsed, dentist];
     });
   },
 
@@ -271,6 +279,14 @@ export const instance = {
       clientId: this.get('id'),
       dentistId,
     });
+  },
+
+  createNotification(data) {
+    return db.Notification.create(
+      Object.assign(data, {
+        recipientId: this.get('id')
+      })
+    );
   },
 
   getFullDentist(id = this.get('id')) {

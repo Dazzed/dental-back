@@ -23,6 +23,17 @@ import {
 } from '../../utils/schema-validators';
 
 import {
+  EMAIL_SUBJECTS
+} from '../../config/constants';
+
+import {
+  dentistMessages,
+  patientMessages
+} from '../../config/messages';
+
+import { mailer } from '../../services/mailer';
+
+import {
   BadRequestError,
   NotFoundError,
   ForbiddenError,
@@ -409,16 +420,42 @@ function verifyPassword(req, res) {
 function makePayment(req, res, next) {
   ensureCreditCard(req.locals.user, req.body.card).then(user => {
     db.Subscription.getPendingAmount(user.id).then(data => {
-      if (data.total !== 0) {
+      data.total = '300.00';
+      if (parseInt(data.total, 10) !== 0) {
         chargeAuthorize(user.authorizeId, user.paymentId, data).then(() => {
           req.locals.user.getSubscriptions().then(subscriptions => {
-            const queries = [];
-
-            subscriptions.forEach(subscription => {
-              queries.push(subscription.update({ status: 'active' }));
-            });
-            Promise.all(queries);
+            Promise.all(subscriptions.map(
+              subscription => subscription.setActive(true)
+            ));
           });
+
+          // send welcome email to patient.
+          mailer.sendEmail(res.mailer, {
+            template: 'auth/client/welcome',
+            subject: EMAIL_SUBJECTS.client.welcome,
+            user
+          }, {
+            emailBody: patientMessages.welcome.body
+          });
+
+          // send email to patient's dentist.
+          req.locals.user.getMyDentist(true).then(([dentist, rawDentist]) => {
+            mailer.sendEmail(res.mailer, {
+              template: 'dentists/new_patient',
+              subject: EMAIL_SUBJECTS.dentist.new_patient,
+              user: dentist
+            }, {
+              emailBody: dentistMessages.new_patient.body
+            });
+
+            // create a new notification for the dentist about new patient.
+            rawDentist.createNotification({
+              title: dentistMessages.new_patient.title,
+              body: dentistMessages.new_patient.body
+            });
+          });
+
+          // add notification.
 
           // TODO: keep transaction log and/or implement webhook with Authorize.
           res.json({

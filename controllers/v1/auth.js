@@ -5,11 +5,6 @@ import isPlainObject from 'is-plain-object';
 import passport from 'passport';
 import { Router } from 'express';
 import moment from 'moment';
-import {
-  ensureCreditCard,
-  chargeAuthorize
-} from '../payments';
-
 import db from '../../models';
 
 import {
@@ -24,8 +19,7 @@ import {
 } from '../../utils/schema-validators';
 
 import {
-  EMAIL_SUBJECTS,
-  PRICING_CODES
+  EMAIL_SUBJECTS
 } from '../../config/constants';
 
 
@@ -199,21 +193,6 @@ function normalUserSignup(req, res, next) {
       return Promise.all(queries);
     })
     .then(([user]) => {
-      res.mailer.send('auth/client/welcome', {
-        to: req.body.email,
-        subject: EMAIL_SUBJECTS.client.welcome,
-        site: process.env.SITE,
-        user,
-      }, (err, info) => {
-        if (err) {
-          console.log(err);
-        }
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log(info);
-        }
-      });
-
       const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
         'paymentId', 'activationKey', 'resetPasswordKey', 'isDeleted'];
 
