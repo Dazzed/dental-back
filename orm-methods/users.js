@@ -234,7 +234,7 @@ export const instance = {
     return db.User.find(query).then(dentist => {
       const parsed = dentist ? dentist.toJSON() : {};
 
-      if (omitInclude) return parsed;
+      if (omitInclude) return [parsed, dentist];
 
       // parsed.subscription = parsed.dentistSubscriptions[0];
       delete parsed.dentistSubscriptions;
@@ -255,7 +255,7 @@ export const instance = {
           delete review.dentistId;
         });
       parsed.dentistReviews = reviews;
-      return parsed;
+      return [parsed, dentist];
     });
   },
 
@@ -279,6 +279,14 @@ export const instance = {
       clientId: this.get('id'),
       dentistId,
     });
+  },
+
+  createNotification(data) {
+    return db.Notification.create(
+      Object.assign(data, {
+        recipientId: this.get('id')
+      })
+    );
   },
 
   getFullDentist(id = this.get('id')) {

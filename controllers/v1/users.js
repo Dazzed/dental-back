@@ -435,17 +435,23 @@ function makePayment(req, res, next) {
             subject: EMAIL_SUBJECTS.client.welcome,
             user
           }, {
-            emailBody: patientMessages.welcome
+            emailBody: patientMessages.welcome.body
           });
 
           // send email to patient's dentist.
-          req.locals.user.getMyDentist(true).then(dentist => {
+          req.locals.user.getMyDentist(true).then(([dentist, rawDentist]) => {
             mailer.sendEmail(res.mailer, {
               template: 'dentists/new_patient',
               subject: EMAIL_SUBJECTS.dentist.new_patient,
               user: dentist
             }, {
-              emailBody: dentistMessages.new_patient
+              emailBody: dentistMessages.new_patient.body
+            });
+
+            // create a new notification for the dentist about new patient.
+            rawDentist.createNotification({
+              title: dentistMessages.new_patient.title,
+              body: dentistMessages.new_patient.body
             });
           });
 

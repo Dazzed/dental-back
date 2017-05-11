@@ -193,7 +193,13 @@ function addReview(req, res, next) {
         subject: EMAIL_SUBJECTS.dentist.new_review,
         user: dentist
       }, {
-        emailBody: dentistMessages.new_review
+        emailBody: dentistMessages.new_review.body
+      });
+
+      // create a new notification for the dentist about new review.
+      dentist.createNotification({
+        title: dentistMessages.new_review.title,
+        body: dentistMessages.new_review.body
       });
     }
   });
