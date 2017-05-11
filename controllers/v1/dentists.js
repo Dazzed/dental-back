@@ -67,7 +67,33 @@ function getDateTimeInPST() {
 function fetchDentist(userId) {
   return new Promise((resolve, reject) => {
     UserInstance.getFullDentist(userId)
-    .then(resolve)
+    .then(d => {
+      d = d.toJSON();
+      // Retrieve Price Codes
+      db.MembershipItem.findAll({
+        where: { dentistInfoId: d.dentistInfo.id },
+        include: [{
+          model: db.PriceCodes,
+          as: 'priceCode'
+        }]
+      }).then(items => {
+        d.dentistInfo.priceCodes = items.map(i => {
+          const temp = i.priceCode.toJSON();
+          temp.price = i.get('price');
+          return i.priceCode;
+        });
+        // Retrieve Active Member Count
+        db.Subscription.count({
+          where: {
+            dentistId: d.dentistInfo.id,
+            status: 'active',
+          }
+        }).then(activeMemberCount => {
+          d.dentistInfo.activeMemberCount = activeMemberCount;
+          resolve(d);
+        }).catch(err => { throw new Error(err); });
+      }).catch(reject);
+    })
     .catch(reject);
   });
 }
