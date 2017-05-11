@@ -341,3 +341,18 @@ export const NEW_PRICING_CODE = {
     notEmpty: true,
   }
 };
+
+export const WEBHOOK_EVENT = {
+  notificationId: {
+    notEmpty: true,
+  },
+  eventType: {
+    notEmpty: true,
+  },
+  eventDate: {
+    notEmpty: true,
+  },
+  webhookId: {
+    notEmpty: true,
+  },
+};
