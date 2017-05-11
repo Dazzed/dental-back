@@ -31,14 +31,6 @@ nunjucks.configure('../../views');
 // ROUTES
 
 /**
- * Retrieves a PDF report for a dentist
- *
- * @param {Object<any>} req - the express request
- * @param {Object<any>} res - the express response
- */
-function getDentistReport(req, res) {}
-
-/**
  * Retrieves a PDF report for general membership/costs
  * information about the members of a dentist office
  *
@@ -173,7 +165,6 @@ function getGeneralReport(req, res) {
 
         /**
          * Total Gross Revenue
-         * Refunds
          * Membership Fee per User
          * Penalties per User - ???
          * Refunds per User - ???
@@ -297,7 +288,6 @@ function getMasterReport(req, res, next) {
       // Send PDF file
       pdf.create(report, { format: 'Letter' }).toBuffer((err, resp) => {
         if (err) { res.json(new BadRequestError(err)); }
-        // res.setHeader('Content-disposition', `attachment; filename=${downloadFilename}`);
         res.writeHead(200, { 'Content-Type': 'application/pdf' });
         res.write(resp);
         res.end();
@@ -311,7 +301,6 @@ function getMasterReport(req, res, next) {
 
 const router = new Router({ mergeParams: true });
 
-router.route('/dentist/:officeId').get(userRequired, dentistRequired, getDentistReport);
 router.route('/dentist/:officeId/:year/:month/general').get(userRequired, adminRequired, getGeneralReport);
 router.route('/dentists/:year/:month').get(userRequired, adminRequired, getMasterReport);
 
