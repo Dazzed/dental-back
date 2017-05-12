@@ -100,72 +100,6 @@ function listDentists(req, res, next) {
   }
 }
 
-/**
- * Updates a single dentist user
- *
- * @param {object} req - the express request object
- * @param {object} res - the express response object
- * @param {function} next - the next web action to be triggered
- */
-function updateDentist(req, res, next) {
-  req.checkBody(UPDATE_DENTIST);
-
-  req
-  .asyncValidationErrors(true)
-  .then(() => (
-    new Promise((resolve, reject) => {
-      const body = _.pick(req.body, [
-        'firstName',
-        'middleName',
-        'lastName',
-        'email',
-      ]);
-
-      if (req.params.userId) {
-        // Find the dentist and update them
-        resolve(
-          db.User.update(body, {
-            where: { id: req.params.userId }
-          })
-        );
-      } else {
-        reject(next(new BadRequestError('No user ID was provided!')));
-      }
-    })
-  ))
-  .then(resp => (
-    new Promise(resolve => {
-      // Update phone number if provided
-      if (resp && req.params.phoneId && req.body.phoneNumber) {
-        resolve(
-          db.Phone.update({
-            number: req.body.phoneNumber
-          }, {
-            where: {
-              id: req.params.phoneId,
-              userId: req.params.userId,
-            }
-          })
-        );
-      } else {
-        resolve();
-      }
-    })
-  ))
-  .then(() => {
-    fetchDentist(req.params.userId)
-    .then(dentist => res.json({ data: dentist }))
-    .catch(err => next(new BadRequestError(err)));
-  })
-  .catch((errors) => {
-    if (isPlainObject(errors)) {
-      return next(new BadRequestError(errors));
-    }
-
-    return next(errors);
-  });
-}
-
 function addReview(req, res, next) {
   req.checkBody(REVIEW);
 
@@ -452,29 +386,49 @@ function updatePatientCard(req, res, next) {
     });
 }
 
+/**
+ * Updates a single dentist user
+ *
+ * @param {object} req - the express request object
+ * @param {object} res - the express response object
+ * @param {function} next - the next web action to be triggered
+ */
 function updateDentist(req, res, next) {
   if (req.params.userId) {
-    // Update the dentist account but only with allowed fields
-    (new Promise((resolve, reject) => {
-      const body = _.pick(req.body, EDIT_USER_BY_ADMIN);
-      if (req.body.phoneNumber !== undefined) {
-        // Update the users phone number as well
-        db.Phone.update({ number: req.body.phoneNumber }, {
-          where: { userId: req.params.userId },
+    req.checkBody(UPDATE_DENTIST);
+
+    req
+    .asyncValidationErrors(true)
+    .then(() => {
+      // Update the dentist account but only with allowed fields
+      (new Promise((resolve, reject) => {
+        const body = _.pick(req.body, EDIT_USER_BY_ADMIN);
+        if (req.body.phoneNumber) {
+          // Update the users phone number as well
+          db.Phone.update({ number: req.body.phoneNumber }, {
+            where: { userId: req.params.userId },
+          })
+          .then(() => resolve(body))
+          .catch(reject);
+        } else {
+          resolve(body);
+        }
+      })).then((body = {}) => {
+        // Update the user account
+        db.User.update(body, {
+          where: { id: req.params.userId, type: 'dentist' },
         })
-        .then(() => resolve(body))
-        .catch(reject);
-      } else {
-        resolve(body);
+        .then(() => res.json({ data: { success: true } }))
+        .catch(err => next(new BadRequestError(err)));
+      }).catch(() => next(new BadRequestError('Failed to update the user')));
+    })
+    .catch((errors) => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
       }
-    })).then((body = {}) => {
-      // Update the user account
-      db.User.update(body, {
-        where: { id: req.params.userId },
-      })
-      .then(() => res.json({ data: { success: true } }))
-      .catch(err => next(new BadRequestError(err)));
-    }).catch(() => next(new BadRequestError('Failed to update the user')));
+
+      return next(errors);
+    });
   } else {
     next(new BadRequestError('Requested user does not exist'));
   }
