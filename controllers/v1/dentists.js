@@ -14,6 +14,7 @@ import {
 } from '../../orm-methods/users';
 
 import {
+  userRequired,
   adminRequired,
 } from '../middlewares';
 
@@ -527,29 +528,29 @@ function getDentistNoAuth(req, res, next) {
 router
   .route('/:userId/review')
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     addReview);
 
 router
   .route('/:userId/review/:reviewId')
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     updateReview)
   .delete(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     deleteReview);
 
 router
   .route('/:userId/patients/:patientId/waive-fees')
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getSubscribedPatient,
     waiveCancellationFee);
 
 router
   .route('/:userId/patients/:patientId/update-card')
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getSubscribedPatient,
     validateCreditCard,
     updatePatientCard);
@@ -561,7 +562,7 @@ router
 router
   .route('/:userId/invite_patient')
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     invitePatient);
 
 router
@@ -571,11 +572,11 @@ router
 router
   .route('/:userId?/:phoneId?')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     adminRequired,
     listDentists)
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     adminRequired,
     updateDentist);
 

@@ -13,7 +13,7 @@ export function adminRequired(req, res, next) {
     return next();
   }
 
-  return next(new ForbiddenError());
+  return res.json({ error: new ForbiddenError() });
 }
 
 /**
@@ -24,7 +24,7 @@ export function dentistRequired(req, res, next) {
     return next();
   }
 
-  return next(new ForbiddenError());
+  return res.json({ error: new ForbiddenError() });
 }
 
 /**
@@ -44,4 +44,13 @@ export function trackHookEvent(req, res, next) {
   }).catch(err => next(new BadRequestError(err)));
 }
 
-export const userRequired = passport.authenticate('jwt', { session: false });
+export function userRequired(req, res, next) {
+  passport.authenticate('jwt', { session: false }, (err, user) => {
+    if (err || user == null) {
+      res.json({ data: { error: 'Failed to authenticate' } });
+    } else {
+      req.user = user;
+      next();
+    }
+  })(req, res, next);
+}

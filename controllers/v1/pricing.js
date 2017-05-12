@@ -5,6 +5,8 @@ import db from '../../models';
 import { userRequired, dentistRequired } from '../middlewares';
 import { NEW_PRICING_CODE } from '../../utils/schema-validators';
 
+import { ForbiddenError } from '../errors';
+
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -24,7 +26,7 @@ function getPricingCodes(req, res) {
   db.PriceCodes.findAll({}).then(codes => {
     codes = codes.map(c => _.pick(c, VISIBLE_COLUMNS));
     res.json({ data: codes });
-  });
+  }).catch(err => res.json({ data: new ForbiddenError(err) }));
 }
 
 function savePriceCode(req, res) {
