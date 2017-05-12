@@ -13,6 +13,8 @@ import {
   instance as UserInstance,
 } from '../../orm-methods/users';
 
+import { MembershipMethods } from '../../orm-methods/memberships';
+
 import {
   userRequired,
   adminRequired,
@@ -83,16 +85,34 @@ function fetchDentist(userId) {
           temp.price = i.get('price');
           return i.priceCode;
         });
-        // Retrieve Active Member Count
-        db.Subscription.count({
-          where: {
-            dentistId: d.dentistInfo.id,
-            status: 'active',
-          }
-        }).then(activeMemberCount => {
-          d.dentistInfo.activeMemberCount = activeMemberCount;
-          resolve(d);
-        }).catch(err => { throw new Error(err); });
+        // Calculate membership costs
+        MembershipMethods
+        .calculateCosts(d.dentistInfo.id, [
+          d.dentistInfo.membership.id,
+          d.dentistInfo.childMembership.id,
+        ])
+        .then(fullCosts => {
+          fullCosts.forEach(cost => {
+            if (d.dentistInfo.membership.id === cost.membershipId) {
+              d.membership.fullCost = cost.fullCost;
+              d.membership.savings = (cost.fullCost - (parseInt(d.membership.price, 10) * 12));
+            } else if (d.childMembership.id === cost.membershipId) {
+              d.childMembership.fullCost = cost.fullCost;
+              d.childMembership.savings = (cost.fullCost - (parseInt(d.childMembership.price, 10) * 12));
+            }
+          });
+
+          // Retrieve Active Member Count
+          db.Subscription.count({
+            where: {
+              dentistId: d.dentistInfo.id,
+              status: 'active',
+            }
+          }).then(activeMemberCount => {
+            d.dentistInfo.activeMemberCount = activeMemberCount;
+            resolve(d);
+          }).catch(err => { throw new Error(err); });
+        });
       }).catch(reject);
     })
     .catch(reject);
@@ -520,7 +540,9 @@ function getDentistNoAuth(req, res, next) {
     return null;
   })
   .then(user => {
-    res.json({ data: user ? user.toJSON() : {} || {} });
+    delete user.dentistInfo.priceCodes;
+    delete user.dentistInfo.activeMemberCount;
+    res.json({ data: user || {} });
   })
   .catch(next);
 }

@@ -2,6 +2,8 @@ import moment from 'moment';
 import _ from 'lodash';
 import db from '../models';
 
+import { MembershipMethods } from '../orm-methods/memberships';
+
 import {
   generateRandomEmail
 } from '../utils/helpers';
@@ -290,50 +292,96 @@ export const instance = {
   },
 
   getFullDentist(id = this.get('id')) {
-    return db.User.find({
-      attributes: {
-        exclude: userFieldsExcluded
-      },
-      where: {
-        id,
-        type: 'dentist'
-      },
-      include: [{
-        as: 'dentistInfo',
-        model: db.DentistInfo,
+    return new Promise((resolve, reject) => {
+      db.User.find({
         attributes: {
-          exclude: ['membershipId', 'userId', 'childMembershipId'],
+          exclude: userFieldsExcluded
+        },
+        where: {
+          id,
+          type: 'dentist'
         },
         include: [{
-          model: db.Membership,
-          as: 'membership',
+          as: 'dentistInfo',
+          model: db.DentistInfo,
           attributes: {
-            exclude: ['isDeleted', 'default', 'userId'],
+            exclude: ['membershipId', 'userId', 'childMembershipId'],
           },
-        }, {
-          model: db.Membership,
-          as: 'childMembership',
-          attributes: {
-            exclude: ['isDeleted', 'default', 'userId'],
-          },
-        }, {
-          model: db.DentistInfoService,
-          as: 'services',
-          attributes: ['dentistInfoId', 'serviceId'],
           include: [{
-            model: db.Service,
-            attributes: ['name'],
-            as: 'service'
+            model: db.Membership,
+            as: 'membership',
+            attributes: {
+              exclude: ['isDeleted', 'default', 'userId'],
+            },
+          }, {
+            model: db.Membership,
+            as: 'childMembership',
+            attributes: {
+              exclude: ['isDeleted', 'default', 'userId'],
+            },
+          }, {
+            model: db.DentistInfoService,
+            as: 'services',
+            attributes: ['dentistInfoId', 'serviceId'],
+            include: [{
+              model: db.Service,
+              attributes: ['name'],
+              as: 'service'
+            }]
+          }, {
+            model: db.WorkingHours,
+            as: 'workingHours'
+          }, {
+            model: db.DentistInfoPhotos,
+            attributes: ['url'],
+            as: 'officeImages'
           }]
-        }, {
-          model: db.WorkingHours,
-          as: 'workingHours'
-        }, {
-          model: db.DentistInfoPhotos,
-          attributes: ['url'],
-          as: 'officeImages'
         }]
-      }]
+      }).then(d => {
+        d = d.toJSON();
+        // Retrieve Price Codes
+        db.MembershipItem.findAll({
+          where: { dentistInfoId: d.dentistInfo.id },
+          include: [{
+            model: db.PriceCodes,
+            as: 'priceCode'
+          }]
+        }).then(items => {
+          d.dentistInfo.priceCodes = items.map(i => {
+            const temp = i.priceCode.toJSON();
+            temp.price = i.get('price');
+            return i.priceCode;
+          });
+          // Calculate membership costs
+          MembershipMethods
+          .calculateCosts(d.dentistInfo.id, [
+            d.dentistInfo.membership.id,
+            d.dentistInfo.childMembership.id,
+          ])
+          .then(fullCosts => {
+            fullCosts.forEach(cost => {
+              if (d.dentistInfo.membership.id === cost.membershipId) {
+                d.dentistInfo.membership.fullCost = cost.fullCost;
+                d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
+              } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
+                d.dentistInfo.childMembership.fullCost = cost.fullCost;
+                d.dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
+              }
+            });
+
+            // Retrieve Active Member Count
+            db.Subscription.count({
+              where: {
+                dentistId: d.dentistInfo.id,
+                status: 'active',
+              }
+            }).then(activeMemberCount => {
+              d.dentistInfo.activeMemberCount = activeMemberCount;
+              resolve(d);
+            }).catch(reject);
+          });
+        }).catch(reject);
+      }).catch(reject);
     });
   }
 };
