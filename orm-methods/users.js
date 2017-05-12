@@ -185,12 +185,13 @@ export const instance = {
 
     if (!omitInclude) {
       query.include = [{
-        as: 'dentistSubscriptions',
         model: db.Subscription,
+        as: 'dentistSubscriptions',
         where: { status: { $not: 'canceled' }, clientId: this.get('id') },
         include: [{
-          attributes: ['name', 'default', 'monthly'],
           model: db.Membership,
+          as: 'membership',
+          attributes: ['name', 'default', 'monthly'],
         }]
       }, {
         model: db.Review,
@@ -238,10 +239,9 @@ export const instance = {
 
       if (omitInclude) return [parsed, dentist];
 
-      // parsed.subscription = parsed.dentistSubscriptions[0];
       delete parsed.dentistSubscriptions;
 
-      const dentistReviews = parsed.dentistReviews;
+      const dentistReviews = parsed.dentistReviews || [];
 
       // add all the review ratings.
       const totalRating = _.sumBy(
