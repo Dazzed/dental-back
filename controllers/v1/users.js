@@ -420,7 +420,6 @@ function verifyPassword(req, res) {
 function makePayment(req, res, next) {
   ensureCreditCard(req.locals.user, req.body.card).then(user => {
     db.Subscription.getPendingAmount(user.id).then(data => {
-      data.total = '300.00';
       if (parseInt(data.total, 10) !== 0) {
         chargeAuthorize(user.authorizeId, user.paymentId, data).then(() => {
           req.locals.user.getSubscriptions().then(subscriptions => {
