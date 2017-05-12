@@ -66,7 +66,10 @@
             }
           },
           "401": {
-            "description": "Unauthorized access"
+            "description": "Unauthorized access",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -90,6 +93,12 @@
         "responses": {
           "200": {
             "description": "The PDF report"
+          },
+          "403": {
+            "description": "Status 403",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -140,7 +149,10 @@
             "description": "The PDF report"
           },
           "403": {
-            "description": "Restricted to Admins only"
+            "description": "Restricted to Admins only",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -399,7 +411,16 @@
           "Dentist Office"
         ],
         "summary": "Get Monthly Membership Report",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "description": "The JWT",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          }
+        ],
         "responses": {
           "200": {
             "description": "The PDF report"
@@ -456,10 +477,7 @@
           "403": {
             "description": "Status 403",
             "schema": {
-              "type": "string"
-            },
-            "examples": {
-              "application/json": "Unauthorized"
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -495,7 +513,7 @@
             "required": true,
             "type": "string",
             "description": "The JSON Web Token",
-            "x-example": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDIwNzk2Nn0.5PzSItqokApny_WdzeTAE5Y0-pI-baa4A7ehAfZ-VQI"
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
           }
         ],
         "responses": {
@@ -516,6 +534,12 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Status 403",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -532,7 +556,7 @@
             "required": true,
             "type": "string",
             "description": "The JSON Web Token",
-            "x-example": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDIwNzk2Nn0.5PzSItqokApny_WdzeTAE5Y0-pI-baa4A7ehAfZ-VQI"
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
           },
           {
             "name": "body",
@@ -559,6 +583,12 @@
                   "$ref": "#/definitions/Price Code"
                 }
               }
+            }
+          },
+          "403": {
+            "description": "Status 403",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -1140,6 +1170,26 @@
         "code": {
           "type": "string",
           "description": "the pricing code"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "required": [
+        "error"
+      ],
+      "properties": {
+        "error": {
+          "required": [
+            "statusCode"
+          ],
+          "type": "object",
+          "properties": {
+            "statusCode": {
+              "type": "number",
+              "description": "the status code"
+            }
+          }
         }
       }
     }
