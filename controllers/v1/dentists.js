@@ -1,6 +1,7 @@
 /* eslint consistent-return:0, no-else-return: 0 */
+// ────────────────────────────────────────────────────────────────────────────────
+
 import { Router } from 'express';
-import passport from 'passport';
 import moment from 'moment';
 import isPlainObject from 'is-plain-object';
 import _ from 'lodash';
@@ -47,6 +48,7 @@ import {
   NotFoundError
 } from '../errors';
 
+// ────────────────────────────────────────────────────────────────────────────────
 
 const router = new Router({ mergeParams: true });
 
@@ -69,9 +71,10 @@ function getDateTimeInPST() {
  */
 function fetchDentist(userId) {
   return new Promise((resolve, reject) => {
+    userId = (parseInt(userId, 10) || 0);
     UserInstance.getFullDentist(userId)
     .then(d => {
-      d = d.toJSON();
+      if (d === null) return resolve(null);
       // Retrieve Price Codes
       db.MembershipItem.findAll({
         where: { dentistInfoId: d.dentistInfo.id },
@@ -94,11 +97,11 @@ function fetchDentist(userId) {
         .then(fullCosts => {
           fullCosts.forEach(cost => {
             if (d.dentistInfo.membership.id === cost.membershipId) {
-              d.membership.fullCost = cost.fullCost;
-              d.membership.savings = (cost.fullCost - (parseInt(d.membership.price, 10) * 12));
-            } else if (d.childMembership.id === cost.membershipId) {
-              d.childMembership.fullCost = cost.fullCost;
-              d.childMembership.savings = (cost.fullCost - (parseInt(d.childMembership.price, 10) * 12));
+              d.dentistInfo.membership.fullCost = cost.fullCost;
+              d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
+            } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
+              d.dentistInfo.childMembership.fullCost = cost.fullCost;
+              d.dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
             }
           });
 

@@ -292,8 +292,10 @@ export const instance = {
   },
 
   getFullDentist(id = this.get('id')) {
-    return new Promise((resolve, reject) => {
-      db.User.find({
+    let d = {};
+
+    return Promise.resolve().then(() => {
+      return db.User.find({
         attributes: {
           exclude: userFieldsExcluded
         },
@@ -337,51 +339,55 @@ export const instance = {
             as: 'officeImages'
           }]
         }]
-      }).then(d => {
-        d = d.toJSON();
-        // Retrieve Price Codes
-        db.MembershipItem.findAll({
-          where: { dentistInfoId: d.dentistInfo.id },
-          include: [{
-            model: db.PriceCodes,
-            as: 'priceCode'
-          }]
-        }).then(items => {
-          d.dentistInfo.priceCodes = items.map(i => {
-            const temp = i.priceCode.toJSON();
-            temp.price = i.get('price');
-            return i.priceCode;
-          });
-          // Calculate membership costs
-          MembershipMethods
-          .calculateCosts(d.dentistInfo.id, [
-            d.dentistInfo.membership.id,
-            d.dentistInfo.childMembership.id,
-          ])
-          .then(fullCosts => {
-            fullCosts.forEach(cost => {
-              if (d.dentistInfo.membership.id === cost.membershipId) {
-                d.dentistInfo.membership.fullCost = cost.fullCost;
-                d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
-              } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
-                d.dentistInfo.childMembership.fullCost = cost.fullCost;
-                d.dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
-              }
-            });
+      });
+    })
+    .then(dentist => {
+      if (dentist == null) return Promise.resolve([]);
+      d = dentist.toJSON();
+      // Retrieve Price Codes
+      return db.MembershipItem.findAll({
+        where: { dentistInfoId: d.dentistInfo.id },
+        include: [{
+          model: db.PriceCodes,
+          as: 'priceCode'
+        }]
+      });
+    })
+    .then(items => {
+      d.dentistInfo.priceCodes = items.map(i => {
+        const temp = i.priceCode.toJSON();
+        temp.price = i.get('price');
+        return i.priceCode;
+      });
+      // Calculate membership costs
+      return MembershipMethods
+      .calculateCosts(d.dentistInfo.id, [
+        d.dentistInfo.membership.id,
+        d.dentistInfo.childMembership.id,
+      ]);
+    })
+    .then(fullCosts => {
+      fullCosts.forEach(cost => {
+        if (d.dentistInfo.membership.id === cost.membershipId) {
+          d.dentistInfo.membership.fullCost = cost.fullCost;
+          d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
+        } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
+          d.dentistInfo.childMembership.fullCost = cost.fullCost;
+          d.dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
+        }
+      });
 
-            // Retrieve Active Member Count
-            db.Subscription.count({
-              where: {
-                dentistId: d.dentistInfo.id,
-                status: 'active',
-              }
-            }).then(activeMemberCount => {
-              d.dentistInfo.activeMemberCount = activeMemberCount;
-              resolve(d);
-            }).catch(reject);
-          });
-        }).catch(reject);
-      }).catch(reject);
+      // Retrieve Active Member Count
+      return db.Subscription.count({
+        where: {
+          dentistId: d.dentistInfo.id,
+          status: 'active',
+        }
+      });
+    })
+    .then(activeMemberCount => {
+      d.dentistInfo.activeMemberCount = activeMemberCount;
+      return Promise.resolve(d);
     });
   }
 };
