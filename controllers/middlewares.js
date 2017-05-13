@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import passport from 'passport';
+import HTTPStatus from 'http-status';
 import { WEBHOOK_EVENT } from '../utils/schema-validators';
 
 import db from '../models';
@@ -71,6 +72,7 @@ export function validateHook(req, res, next) {
   if (value === req.get('X-ANET-Signature')) {
     next();
   } else {
-    res.json({ error: new ForbiddenError() });
+    res.status(HTTPStatus.FORBIDDEN);
+    res.send('Forbidden');
   }
 }
