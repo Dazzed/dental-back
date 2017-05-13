@@ -1,68 +1,74 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "description": "The complete API documentation of the DentalHQ API",
-    "version": "1.0.0",
-    "title": "DentalHQ",
-    "termsOfService": "```\n@Copyright 2017 DentalHQ\n```",
-    "contact": {}
-  },
-  "schemes": [
-    "http"
-  ],
-  "consumes": [
-    "application/json",
-    "application/pdf"
-  ],
-  "produces": [
-    "application/json",
-    "application/pdf"
-  ],
-  "paths": {
-    "/api/v1/admin/stats": {
-      "get": {
-        "tags": [
-          "Admin Statistics"
-        ],
-        "summary": "Retrieve stats",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": "The JWT",
-            "x-example": "JWT xxxxx.yyyyy.zzzzz"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Status 200",
-            "schema": {
-              "required": [
-                "data"
-              ],
-              "type": "object",
-              "properties": {
-                "data": {
-                  "required": [
-                    "activeUsersCount",
-                    "dentistOfficesCount"
-                  ],
-                  "type": "object",
-                  "description": "the response data",
-                  "properties": {
-                    "dentistOfficesCount": {
-                      "type": "number",
-                      "description": "the number of dentist offices in the database"
-                    },
-                    "activeUsersCount": {
-                      "type": "number",
-                      "description": "the number of verified users"
+    "swagger": "2.0",
+    "info": {
+        "description": "The complete API documentation of the DentalHQ API",
+        "version": "1.0.0",
+        "title": "DentalHQ",
+        "termsOfService": "```\n@Copyright 2017 DentalHQ\n```",
+        "contact": {}
+    },
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json",
+        "application/pdf"
+    ],
+    "produces": [
+        "application/json",
+        "application/pdf"
+    ],
+    "paths": {
+        "/api/v1/admin/stats": {
+            "get": {
+                "tags": [
+                    "Admin Statistics"
+                ],
+                "summary": "Retrieve stats",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "type": "string",
+                        "description": "The JWT",
+                        "x-example": "JWT xxxxx.yyyyy.zzzzz"
                     }
-                  }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status 200",
+                        "schema": {
+                            "required": [
+                                "data"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "required": [
+                                        "activeUsersCount",
+                                        "dentistOfficesCount"
+                                    ],
+                                    "type": "object",
+                                    "description": "the response data",
+                                    "properties": {
+                                        "dentistOfficesCount": {
+                                            "type": "number",
+                                            "description": "the number of dentist offices in the database"
+                                        },
+                                        "activeUsersCount": {
+                                            "type": "number",
+                                            "description": "the number of verified users"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access"
+                    }
                 }
-              }
             }
           },
           "401": {
@@ -199,207 +205,640 @@
                   "type": "string",
                   "description": "the email of the user account"
                 },
-                "password": {
-                  "type": "string",
-                  "description": "the password of the user account"
+                {
+                    "name": "month",
+                    "in": "path",
+                    "required": true,
+                    "type": "number",
+                    "description": "The month for which the report is compiled from (1 - 12)",
+                    "x-example": 2
                 }
-              },
-              "description": "The login body request"
+            ]
+        },
+        "/api/v1/reports/dentists/{year}/{month}": {
+            "get": {
+                "tags": [
+                    "Admin Statistics"
+                ],
+                "summary": "Retrieve Master Report",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "type": "string",
+                        "description": "The JWT",
+                        "x-example": "JWT xxxxx.yyyyy.zzzzz"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The PDF report"
+                    },
+                    "403": {
+                        "description": "Restricted to Admins only"
+                    }
+                }
             },
-            "x-examples": {
-              "application/json": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful login",
-            "schema": {
-              "required": [
-                "token",
-                "type"
-              ],
-              "type": "object",
-              "description": "the login success response",
-              "properties": {
-                "token": {
-                  "type": "string",
-                  "description": "the signed JSON web api token"
+            "parameters": [
+                {
+                    "name": "year",
+                    "in": "path",
+                    "required": true,
+                    "type": "number",
+                    "description": "The year in which the report is to be labeled as"
                 },
-                "type": {
-                  "type": "string",
-                  "description": "the user access level"
+                {
+                    "name": "month",
+                    "in": "path",
+                    "required": true,
+                    "type": "number",
+                    "description": "The month in which the report is to labeled as"
                 }
-              }
-            },
-            "examples": {
-              "application/json": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+            ]
+        },
+        "/api/v1/accounts/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login",
+                "description": "Attempts to login as user",
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "email",
+                                "password"
+                            ],
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "description": "the email of the user account"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "the password of the user account"
+                                }
+                            },
+                            "description": "The login body request"
+                        },
+                        "x-examples": {
+                            "application/json": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful login",
+                        "schema": {
+                            "required": [
+                                "token",
+                                "type"
+                            ],
+                            "type": "object",
+                            "description": "the login success response",
+                            "properties": {
+                                "token": {
+                                    "type": "string",
+                                    "description": "the signed JSON web api token"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "description": "the user access level"
+                                }
+                            }
+                        },
+                        "examples": {
+                            "application/json": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+                        }
+                    }
+                }
             }
-          }
+        },
+        "/api/v1/accounts/admin/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login",
+                "description": "Attempts to login as user",
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "email",
+                                "password"
+                            ],
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "description": "the email of the user account"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "the password of the user account"
+                                }
+                            },
+                            "description": "The login body request"
+                        },
+                        "x-examples": {
+                            "application/json": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful login",
+                        "schema": {
+                            "required": [
+                                "token",
+                                "type"
+                            ],
+                            "type": "object",
+                            "description": "the login success response",
+                            "properties": {
+                                "token": {
+                                    "type": "string",
+                                    "description": "the signed JSON web api token"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "description": "the user access level"
+                                }
+                            }
+                        },
+                        "examples": {
+                            "application/json": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
+                        }
+                    },
+                    "403": {
+                        "description": "User account does not have the right access",
+                        "schema": {
+                            "required": [
+                                "token",
+                                "type"
+                            ],
+                            "type": "object",
+                            "description": "the HTTP response if the request was recognized as forbidden",
+                            "properties": {
+                                "token": {
+                                    "type": "string",
+                                    "description": "the JWT sign auth token"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "description": "the user type (Should be admin only)"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/signup": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Register a new user",
+                "consumes": [],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "confirmEmail",
+                                "confirmPassword",
+                                "email",
+                                "firstName",
+                                "lastName",
+                                "origin",
+                                "password"
+                            ],
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "description": "the email of the new user"
+                                },
+                                "firstName": {
+                                    "type": "string",
+                                    "description": "the first name of the user"
+                                },
+                                "lastName": {
+                                    "type": "string",
+                                    "description": "the last name of the user"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "the password of the new user"
+                                },
+                                "confirmPassword": {
+                                    "type": "string",
+                                    "description": "confirmation of the user's password"
+                                },
+                                "confirmEmail": {
+                                    "type": "string",
+                                    "description": "confirmation of the user's email"
+                                },
+                                "origin": {
+                                    "type": "string",
+                                    "description": "health network coverage of the user",
+                                    "enum": [
+                                        "external",
+                                        "internal"
+                                    ]
+                                }
+                            },
+                            "description": "The initial user object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful in creating a new user account",
+                        "schema": {
+                            "required": [
+                                "data"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Dentist"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/reports/dentist/{officeId}/general": {
+            "get": {
+                "tags": [
+                    "Dentist Office"
+                ],
+                "summary": "Get Monthly Membership Report",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "The PDF report"
+                    },
+                    "401": {
+                        "description": "Status 401"
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "name": "officeId",
+                    "in": "path",
+                    "required": true,
+                    "type": "number"
+                }
+            ]
+        },
+        "/api/v1/pricing": {
+            "get": {
+                "tags": [
+                    "Price Codes"
+                ],
+                "summary": "List Price Codes",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "type": "string",
+                        "description": "The JSON Web Token",
+                        "x-example": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDIwNzk2Nn0.5PzSItqokApny_WdzeTAE5Y0-pI-baa4A7ehAfZ-VQI"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The list of price codes submitted by all dentist offices",
+                        "schema": {
+                            "required": [
+                                "data"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "description": "the response object",
+                                    "items": {
+                                        "$ref": "#/definitions/Price Code"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Price Codes"
+                ],
+                "summary": "Save new Price Code",
+                "consumes": [],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "type": "string",
+                        "description": "The JSON Web Token",
+                        "x-example": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDIwNzk2Nn0.5PzSItqokApny_WdzeTAE5Y0-pI-baa4A7ehAfZ-VQI"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Price Code"
+                        },
+                        "x-examples": {
+                            "application/json": "{\n  \"description\": \"Periodic Exam\",\n  \"code\": \"0120\"\n}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The response after creating or finding the price code",
+                        "schema": {
+                            "required": [
+                                "data"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Price Code"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dentists/{userId}": {
+            "put": {
+                "tags": [
+                    "Dentist"
+                ],
+                "summary": "Admin :: Update a Dentist",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "type": "string",
+                        "description": "The JSON Web Token (must be of an Admin)",
+                        "x-example": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDIwNzk2Nn0.5PzSItqokApny_WdzeTAE5Y0-pI-baa4A7ehAfZ-VQI"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "firstName",
+                                "middleName",
+                                "lastName",
+                                "email",
+                                "phoneNumber"
+                            ],
+                            "properties": {
+                                "firstName": {
+                                    "type": "string",
+                                    "description": "the first name of the dentist."
+                                },
+                                "middleName": {
+                                    "type": "string",
+                                    "description": "the middle name of the dentist."
+                                },
+                                "lastName": {
+                                    "type": "string",
+                                    "description": "the last name of the dentist."
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "description": "the email address of the dentist."
+                                },
+                                "phoneNumber": {
+                                    "type": "string",
+                                    "description": "the phone number of the dentist (optional)."
+                                }
+                            },
+                            "description": "The body parameters."
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The success status of the dentist update."
+                    },
+                    "401": {
+                        "description": "Status 401 (Unauthorized); not an admin or invalid token."
+                    },
+                    "403": {
+                        "description": "Status 403 (Bad Request); incomplete/invalid data."
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "name": "userId",
+                    "in": "path",
+                    "required": true,
+                    "type": "number",
+                    "description": "Id of dentist user."
+                }
+            ]
         }
-      }
     },
-    "/api/v1/accounts/admin/login": {
-      "post": {
-        "tags": [
-          "Authentication"
-        ],
-        "summary": "Login",
-        "description": "Attempts to login as user",
-        "consumes": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
+    "definitions": {
+        "Dentist": {
+            "type": "object",
+            "required": [
+                "acceptsChildren",
+                "address",
+                "childMembership",
+                "childMembershipId",
+                "city",
+                "createdAt",
                 "email",
-                "password"
-              ],
-              "properties": {
+                "id",
+                "logo",
+                "membership",
+                "message",
+                "officeImages",
+                "officeName",
+                "phone",
+                "state",
+                "updatedAt",
+                "url",
+                "workingHours",
+                "zipCode"
+            ],
+            "properties": {
+                "id": {
+                    "type": "number",
+                    "description": "the unique id of the user"
+                },
+                "officeName": {
+                    "type": "string",
+                    "description": "the dentist office name"
+                },
+                "url": {
+                    "type": "string",
+                    "description": "the url of the office"
+                },
                 "email": {
-                  "type": "string",
-                  "description": "the email of the user account"
+                    "type": "string",
+                    "description": "the email of the office"
                 },
-                "password": {
-                  "type": "string",
-                  "description": "the password of the user account"
+                "phone": {
+                    "type": "string",
+                    "description": "the phone number for the office"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "the office message"
+                },
+                "address": {
+                    "type": "string",
+                    "description": "address of the office"
+                },
+                "city": {
+                    "type": "string",
+                    "description": "city of the office"
+                },
+                "state": {
+                    "type": "string",
+                    "description": "state of the office"
+                },
+                "zipCode": {
+                    "type": "string",
+                    "description": "zip-code for the office"
+                },
+                "acceptsChildren": {
+                    "type": "boolean",
+                    "description": "true if the office accepts children as members"
+                },
+                "childStartingAge": {
+                    "type": "number",
+                    "description": "the starting age for child members if accepted"
+                },
+                "logo": {
+                    "type": "string",
+                    "description": "AWS S3 URL for the dentist office logo"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "when the office record was first created"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "description": "last time the office record was updated"
+                },
+                "childMembershipId": {
+                    "type": "number",
+                    "description": "the child membership ID"
+                },
+                "workingHours": {
+                    "type": "array",
+                    "description": "the hours of the week for when the office is open",
+                    "items": {
+                        "$ref": "#/definitions/Work Hours"
+                    }
+                },
+                "membership": {
+                    "$ref": "#/definitions/Membership"
+                },
+                "childMembership": {
+                    "$ref": "#/definitions/Membership"
+                },
+                "officeImages": {
+                    "type": "array",
+                    "description": "collection of image URLs from AWS S3 bucket",
+                    "items": {
+                        "type": "string"
+                    }
                 }
-              },
-              "description": "The login body request"
             },
-            "x-examples": {
-              "application/json": "{\n  \"email\": \"n672588341@mvrht.com\",\n  \"password\": \"WORDpa55\"\n}"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful login",
-            "schema": {
-              "required": [
-                "token",
-                "type"
-              ],
-              "type": "object",
-              "description": "the login success response",
-              "properties": {
-                "token": {
-                  "type": "string",
-                  "description": "the signed JSON web api token"
+            "description": "The DentalHQ user object"
+        },
+        "Work Hours": {
+            "type": "object",
+            "required": [
+                "createdAt",
+                "day",
+                "endAt",
+                "id",
+                "isOpen",
+                "startAt",
+                "updatedAt"
+            ],
+            "properties": {
+                "id": {
+                    "type": "number",
+                    "description": "unique identifier"
                 },
-                "type": {
-                  "type": "string",
-                  "description": "the user access level"
+                "day": {
+                    "type": "string",
+                    "description": "day of the week",
+                    "enum": [
+                        "monday",
+                        "tuesday",
+                        "wednesday",
+                        "thursday",
+                        "friday",
+                        "saturday",
+                        "sunday"
+                    ]
+                },
+                "isOpen": {
+                    "type": "boolean",
+                    "description": "true if the office is open on the day"
+                },
+                "startAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "the time office opens"
+                },
+                "endAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "the time office closes"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "the time when the record was first created"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "the time when the record was last updated"
                 }
-              }
-            },
-            "examples": {
-              "application/json": "{\n  \"type\": \"admin\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5Mzc3MjAzOH0.7NReO9rJQybjwc7iHFlS26bSzLYt2_JrH0KXo7le5dQ\"\n}"
-            }
-          },
-          "403": {
-            "description": "User account does not have the right access",
-            "schema": {
-              "required": [
-                "token",
-                "type"
-              ],
-              "type": "object",
-              "description": "the HTTP response if the request was recognized as forbidden",
-              "properties": {
-                "token": {
-                  "type": "string",
-                  "description": "the JWT sign auth token"
-                },
-                "type": {
-                  "type": "string",
-                  "description": "the user type (Should be admin only)"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/accounts/signup": {
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Register a new user",
-        "consumes": [],
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "confirmEmail",
-                "confirmPassword",
-                "email",
-                "firstName",
-                "lastName",
-                "origin",
-                "password"
-              ],
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "description": "the email of the new user"
-                },
-                "firstName": {
-                  "type": "string",
-                  "description": "the first name of the user"
-                },
-                "lastName": {
-                  "type": "string",
-                  "description": "the last name of the user"
-                },
-                "password": {
-                  "type": "string",
-                  "description": "the password of the new user"
-                },
-                "confirmPassword": {
-                  "type": "string",
-                  "description": "confirmation of the user's password"
-                },
-                "confirmEmail": {
-                  "type": "string",
-                  "description": "confirmation of the user's email"
-                },
-                "origin": {
-                  "type": "string",
-                  "description": "health network coverage of the user",
-                  "enum": [
-                    "external",
-                    "internal"
-                  ]
-                }
-              },
-              "description": "The initial user object"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful in creating a new user account",
-            "schema": {
-              "required": [
-                "data"
-              ],
-              "type": "object",
-              "properties": {
-                "data": {
-                  "$ref": "#/definitions/Dentist"
-                }
-              }
             }
           }
         }
@@ -568,21 +1007,22 @@
             "x-examples": {
               "application/json": "{\n  \"description\": \"Periodic Exam\",\n  \"code\": \"0120\"\n}"
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The response after creating or finding the price code",
-            "schema": {
-              "required": [
-                "data"
-              ],
-              "type": "object",
-              "properties": {
-                "data": {
-                  "$ref": "#/definitions/Price Code"
+        },
+        "Price Code": {
+            "type": "object",
+            "required": [
+                "code",
+                "description"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "the laymen explanation of the price code"
+                },
+                "code": {
+                    "type": "string",
+                    "description": "the pricing code"
                 }
-              }
             }
           },
           "403": {
