@@ -344,9 +344,10 @@ export const instance = {
     .then(dentist => {
       if (dentist == null) return Promise.resolve([]);
       d = dentist.toJSON();
+      const dentistInfoId = d.dentistInfo ? d.dentistInfo.id : 0;
       // Retrieve Price Codes
       return db.MembershipItem.findAll({
-        where: { dentistInfoId: d.dentistInfo.id },
+        where: { dentistInfoId },
         include: [{
           model: db.PriceCodes,
           as: 'priceCode'
@@ -354,11 +355,16 @@ export const instance = {
       });
     })
     .then(items => {
+      d.dentistInfo = d.dentistInfo || {};
       d.dentistInfo.priceCodes = items.map(i => {
         const temp = i.priceCode.toJSON();
         temp.price = i.get('price');
         return i.priceCode;
       });
+
+      d.dentistInfo.membership = d.dentistInfo.membership || {};
+      d.dentistInfo.childMembership = d.dentistInfo.childMembership || {};
+
       // Calculate membership costs
       return MembershipMethods
       .calculateCosts(d.dentistInfo.id, [
