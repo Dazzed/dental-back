@@ -355,4 +355,7 @@ export const WEBHOOK_EVENT = {
   webhookId: {
     notEmpty: true,
   },
+  payload: {
+    notEmpty: true,
+  },
 };

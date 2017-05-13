@@ -1,6 +1,6 @@
 export default function (sequelize, DataTypes) {
   const Webhooks = sequelize.define('Webhooks', {
-    webbhookId: {
+    webhookId: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -18,7 +18,8 @@ export default function (sequelize, DataTypes) {
       allowNull: false,
     },
   }, {
-    tableName: 'webhooks'
+    tableName: 'webhooks',
+    timestamps: false,
   });
 
   return Webhooks;

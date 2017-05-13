@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
 import db from '../../models';
-import { userRequired, adminRequired, validateHook, trackHookEvent } from '../middlewares';
 
 const NAME = process.env.AUTHORIZE_NAME;
 const KEY = process.env.AUTHORIZE_KEY;
@@ -18,7 +17,7 @@ const router = new Router({ mergeParams: true });
 // ROUTES
 
 // router.route('/')
-//   .post(userRequired, adminRequired, saveHook)
-//   .delete(userRequired, adminRequired, deleteHook);
+//   .post(saveHook)
+//   .delete(deleteHook);
 
 export default router;

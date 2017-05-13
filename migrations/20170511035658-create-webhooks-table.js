@@ -9,7 +9,7 @@ module.exports = {
           allowNull: false,
           autoIncrement: true,
         },
-        webbhookId: {
+        webhookId: {
           type: Sequelize.STRING,
           allowNull: false,
         },

@@ -48,10 +48,13 @@ export function userRequired(req, res, next) {
 export function trackHookEvent(req, res, next) {
   req.checkBody(WEBHOOK_EVENT);
 
+  console.log(req.body);
+
   db.Webhooks.create({
     webhookId: req.body.webhookId,
     notificationId: req.body.notificationId,
-    eventType: req.body.eventType
+    eventType: req.body.eventType,
+    createdAt: req.body.eventDate,
   }).then(() => {
     // Move the content up
     req.body = req.body.payload;
@@ -63,10 +66,13 @@ export function trackHookEvent(req, res, next) {
  * Checks if the body of the request is a valid HMAC-SHA 512 hash
  */
 export function validateHook(req, res, next) {
-  const hash = crypto.createHmac('sha512', process.env.AUTHORIZE_SIGNATURE_KEY).update(req.body);
-  const value = hash.digest('hex');
+  const contents = JSON.stringify(req.body);
+  const hash = crypto.createHmac('sha512', process.env.AUTHORIZE_SIGNATURE_KEY).update(contents);
+  const value = hash.digest('base64');
 
-  if (value === req.headers['X-ANET-Signature']) {
+  console.log(value, req.get('X-ANET-Signature'));
+
+  if (value === req.get('X-ANET-Signature')) {
     next();
   } else {
     res.json({ error: new ForbiddenError() });
