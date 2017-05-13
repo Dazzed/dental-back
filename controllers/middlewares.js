@@ -48,8 +48,6 @@ export function userRequired(req, res, next) {
 export function trackHookEvent(req, res, next) {
   req.checkBody(WEBHOOK_EVENT);
 
-  console.log(req.body);
-
   db.Webhooks.create({
     webhookId: req.body.webhookId,
     notificationId: req.body.notificationId,
@@ -69,8 +67,6 @@ export function validateHook(req, res, next) {
   const contents = JSON.stringify(req.body);
   const hash = crypto.createHmac('sha512', process.env.AUTHORIZE_SIGNATURE_KEY).update(contents);
   const value = hash.digest('base64');
-
-  console.log(value, req.get('X-ANET-Signature'));
 
   if (value === req.get('X-ANET-Signature')) {
     next();
