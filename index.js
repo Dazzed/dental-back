@@ -27,7 +27,7 @@ const mailer = require('express-mailer');
 const nunjucks = require('nunjucks');
 const aws = require('aws-sdk');
 const swaggerTools = require('swagger-tools');
-const swaggerDoc = require('./config/swagger.json');
+const swaggerDoc = require('./docs/DentalHQ.json');
 
 const app = express();
 
