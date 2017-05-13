@@ -16,6 +16,7 @@ import reports from './reports';
 import reviews from './reviews';
 import dentistMembers from './dentist-members';
 import stats from './stats';
+import webhooks from './webhooks';
 
 // just one to one resources
 import dentistInfo from './dentist-info';
@@ -48,5 +49,8 @@ router.use('/services', services);
 router.use('/offices', offices);
 router.use('/pricing', pricing);
 router.use('/reports', reports);
+
+// 3rd Party endpoints
+router.use('/webhooks', webhooks);
 
 export default router;

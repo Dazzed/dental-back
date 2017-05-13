@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import passport from 'passport';
 import { WEBHOOK_EVENT } from '../utils/schema-validators';
 
@@ -28,6 +29,20 @@ export function dentistRequired(req, res, next) {
 }
 
 /**
+ * Middleware to track a user login
+ */
+export function userRequired(req, res, next) {
+  passport.authenticate('jwt', { session: false }, (err, user) => {
+    if (err || user == null) {
+      res.json({ data: { error: 'Failed to authenticate' } });
+    } else {
+      req.user = user;
+      next();
+    }
+  })(req, res, next);
+}
+
+/**
  * Adds the webhook event into the webhooks table
  */
 export function trackHookEvent(req, res, next) {
@@ -44,13 +59,16 @@ export function trackHookEvent(req, res, next) {
   }).catch(err => next(new BadRequestError(err)));
 }
 
-export function userRequired(req, res, next) {
-  passport.authenticate('jwt', { session: false }, (err, user) => {
-    if (err || user == null) {
-      res.json({ data: { error: 'Failed to authenticate' } });
-    } else {
-      req.user = user;
-      next();
-    }
-  })(req, res, next);
+/**
+ * Checks if the body of the request is a valid HMAC-SHA 512 hash
+ */
+export function validateHook(req, res, next) {
+  const hash = crypto.createHmac('sha512', process.env.AUTHORIZE_SIGNATURE_KEY).update(req.body);
+  const value = hash.digest('hex');
+
+  if (value === req.headers['X-ANET-Signature']) {
+    next();
+  } else {
+    res.json({ error: new ForbiddenError() });
+  }
 }
