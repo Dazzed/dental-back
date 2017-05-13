@@ -3,7 +3,7 @@
 	"info": {
 		"name": "DentalHQ",
 		"_postman_id": "026ad3b3-a17d-4a49-7835-c0b266b390a8",
-		"description": "",
+		"description": "A collection of API endpoints built for the DentalHQ API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
 	"item": [
@@ -205,7 +205,7 @@
 				{
 					"name": "List all dentists",
 					"request": {
-						"url": "{{host}}/api/v1/dentists/2",
+						"url": "{{host}}/api/v1/dentists",
 						"method": "GET",
 						"header": [
 							{
@@ -448,6 +448,26 @@
 			"description": "",
 			"item": [
 				{
+					"name": "List Report URLs",
+					"request": {
+						"url": "{{host}}/api/v1/reports/dentist/19/list",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
 					"name": "Dentist - General",
 					"request": {
 						"url": "{{host}}/api/v1/reports/dentist/21/general",
@@ -501,12 +521,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Basic {{webhookSignatureKey}}",
-								"description": ""
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
+								"value": "Basic {{webhookAuthKey}}",
 								"description": ""
 							}
 						],
@@ -526,7 +541,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Basic {{webhookSignatureKey}}",
+								"value": "Basic {{webhookAuthKey}}",
 								"description": ""
 							},
 							{
@@ -551,7 +566,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Basic {{webhookSignatureKey}}",
+								"value": "Basic {{webhookAuthKey}}",
 								"description": ""
 							},
 							{
@@ -587,7 +602,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Basic {{webhookSignatureKey}}",
+								"value": "Basic {{webhookAuthKey}}",
 								"description": ""
 							},
 							{
@@ -623,7 +638,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Basic {{webhookSignatureKey}}",
+								"value": "Basic {{webhookAuthKey}}",
 								"description": ""
 							},
 							{
@@ -659,7 +674,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Basic {{webhookSignatureKey}}",
+								"value": "Basic {{webhookAuthKey}}",
 								"description": ""
 							},
 							{
@@ -684,7 +699,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Basic {{webhookSignatureKey}}",
+								"value": "Basic {{webhookAuthKey}}",
 								"description": ""
 							},
 							{
@@ -720,7 +735,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Basic {{webhookSignatureKey}}",
+								"value": "Basic {{webhookAuthKey}}",
 								"description": ""
 							},
 							{
@@ -732,6 +747,31 @@
 						"body": {
 							"mode": "raw",
 							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Test API Hook",
+					"request": {
+						"url": "{{host}}/{{basePath}}/webhooks/authorize",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "X-ANET-Signature",
+								"value": "{{webhookSignature}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"notificationId\": \"d0e8e7fe-c3e7-4add-a480-27bc5ce28a18\",\n\t\"eventType\": \"net.authorize.payment.refund.created\",\n\t\"eventDate\": \"2017-03-29T20:48:02.0080095Z\",\n\t\"webhookId\": \"63d6fea2-aa13-4b1d-a204-f5fbc15942b7\",\n\t\"payload\": {\n\t\t\"responseCode\": 1,\n\t\t\"authCode\": \"LZ6I19\",\n\t\t\"avsResponse\": \"Y\",\n\t\t\"authAmount\": 45.00,\n\t\t\"entityName\": \"transaction\",\n\t\t\"id\": \"60020981676\"\n\t}\n}\n"
 						},
 						"description": ""
 					},
