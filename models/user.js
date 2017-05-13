@@ -208,12 +208,26 @@ export default function (sequelize, DataTypes) {
         User.belongsTo(models.DentistSpecialty, {
           foreignKey: 'dentistSpecialtyId',
           as: 'dentistSpecialty',
-          allowNull: true
+          allowNull: true,
         });
 
         User.hasOne(models.DentistInfo, {
           foreignKey: 'userId',
           as: 'dentistInfo',
+        });
+
+        // refunds relationship
+        User.hasMany(models.Refunds, {
+          foreignKey: 'userId',
+          as: 'refunds',
+          allowNull: true,
+        });
+
+        // penalties relationship
+        User.hasMany(models.Penalties, {
+          foreignKey: 'userId',
+          as: 'penalties',
+          allowNull: true,
         });
       },
 

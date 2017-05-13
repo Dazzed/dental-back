@@ -55,8 +55,6 @@ export function trackHookEvent(req, res, next) {
     eventType: req.body.eventType,
     createdAt: req.body.eventDate,
   }).then(() => {
-    // Move the content up
-    req.body = req.body.payload;
     next();
   }).catch(err => next(new BadRequestError(err)));
 }
