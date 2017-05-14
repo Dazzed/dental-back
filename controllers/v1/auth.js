@@ -214,8 +214,8 @@ function dentistUserSignup(req, res, next) {
   const entireBody = req.body;
   req.body = entireBody.user;
   req.checkBody(DENTIST_USER_REGISTRATION);
-  req.checkBody('confirmPassword', 'Password do not match').equals(req.body.password);
-  req.checkBody('confirmEmail', 'Email do not match').equals(req.body.email);
+  req.checkBody('confirmPassword', 'Password does not match').equals(req.body.password);
+  req.checkBody('confirmEmail', 'Email does not match').equals(req.body.email);
 
   req.body = entireBody;
 
@@ -389,7 +389,6 @@ router
 router
   .route('/activate/:key')
   .get(activate);
-
 
 module.exports = {
   auth: router,
