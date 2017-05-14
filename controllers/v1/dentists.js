@@ -133,7 +133,7 @@ function listDentists(req, res, next) {
   if (req.params.userId) {
     // Fetch specific dentist info
     fetchDentist(req.params.userId)
-    .then(dentist => res.json({ data: [dentist] }))
+    .then(dentist => res.json({ data: dentist }))
     .catch(err => next(new BadRequestError(err)));
   } else {
     // Get all dentist info
