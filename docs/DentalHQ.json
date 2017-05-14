@@ -3,7 +3,7 @@
   "info": {
     "version": "1.0",
     "title": "DentalHQ",
-    "description": "TODO: Add Description",
+    "description": "A collection of API endpoints built for the DentalHQ API",
     "license": {
       "name": "MIT",
       "url": "http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT"
@@ -67,7 +67,7 @@
               "uri": "/api/v1/dentists/8/members",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -132,7 +132,7 @@
               "uri": "/api/v1/dentists/8/reviews",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -197,7 +197,7 @@
               "uri": "/api/v1/dentists/8/reviews/3",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -413,7 +413,7 @@
         }
       }
     },
-    "/api/v1/dentists/2": {
+    "/api/v1/dentists": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "List all dentists",
@@ -450,10 +450,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/dentists/2",
+              "uri": "/api/v1/dentists",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -527,7 +527,7 @@
               "uri": "/api/v1/dentists/1",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               },
               "body": "{\n\t\"middleName\": \"XXX\",\n\t\"phoneNumber\": \"(415) 400-8898\"\n}"
             },
@@ -593,7 +593,7 @@
               "uri": "/api/v1/users/me/dentist",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -658,7 +658,7 @@
               "uri": "/api/v1/users/15/dentist-info",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -723,7 +723,7 @@
               "uri": "/api/v1/dentists/2/no-auth",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -843,7 +843,7 @@
               "uri": "/api/v1/users/7/dentist-info/1",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               },
               "body": "{\n  \"officeInfo\": {\n    \"id\": 1,\n    \"officeName\": \"Test Dentistry\",\n    \"email\": \"test_dentistry@example.com\",\n    \"phone\": \"(123) 232-3232\",\n    \"url\": \"https://google.com\",\n    \"message\": \"alksdjf\",\n    \"address\": \"lasdkjf\",\n    \"city\": \"asldkjf\",\n    \"state\": \"AL\",\n    \"zipCode\": \"11111\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/9360f79a-37e0-491b-a660-f764e5555d0a_be-like-jane.jpg\",\n    \"officeImages\": [\n      \"https://dentalman_uploads.s3.amazonaws.com/02fa2040-b6f0-4aff-bc0d-569bdff1a7da_favicon---CORRECT-SIZE.png\"\n    ],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"10\",\n    \"marketplaceOptIn\": true\n  },\n  \"pricing\": {\n  \t\"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      }\n\t]\n  }\n}"
             },
@@ -911,6 +911,63 @@
         }
       }
     },
+    "/api/v1/reports/dentist/19/list": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "List Report URLs",
+        "tags": [
+          "Reports"
+        ],
+        "operationId": "List Report URLs",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/api/v1/reports/dentist/19/list",
+              "headers": {
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "List Report URLs",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
     "/api/v1/reports/dentist/21/general": {
       "get": {
         "description": "TODO: Add Description",
@@ -943,7 +1000,7 @@
               "method": "GET",
               "uri": "/api/v1/reports/dentist/21/general",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -1000,7 +1057,7 @@
               "method": "GET",
               "uri": "/api/v1/reports/dentists/2017/1",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -1065,7 +1122,7 @@
               "uri": "/api/v1/admin/stats/",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -1122,7 +1179,7 @@
               "method": "GET",
               "uri": "/api/v1/pricing",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               }
             },
             "expectedResponse": {
@@ -1194,7 +1251,7 @@
               "uri": "/api/v1/pricing",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDU1MDYwM30.OEIBbMh9p09l-CngggM7zE6yzDaVANlepiUj8rdg-pc"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImlhdCI6MTQ5NDY0OTkyOH0.Vvbg4GCYORZ0a1tPZ31RW_0ZTpeqqbcVsxAck0h3uPI"
               },
               "body": "{\n\t\"description\": \"Lorem Ipsum Dolor\",\n\t\"code\": \"0129382\"\n}"
             },
@@ -1238,13 +1295,6 @@
             "required": true,
             "type": "string",
             "description": ""
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
           }
         ],
         "responses": {
@@ -1263,8 +1313,7 @@
               "method": "GET",
               "uri": "/rest/v1/eventtypes",
               "headers": {
-                "Authorization": "Basic --base64-encoded-key--",
-                "Content-Type": "application/json"
+                "Authorization": "Basic N3A5d3M5dE1GTjZOOjNVd1czR3JwTDczNmVMM3o="
               }
             },
             "expectedResponse": {
@@ -1332,7 +1381,7 @@
               "method": "GET",
               "uri": "/rest/v1/webhooks",
               "headers": {
-                "Authorization": "Basic --base64-encoded-key--",
+                "Authorization": "Basic N3A5d3M5dE1GTjZOOjNVd1czR3JwTDczNmVMM3o=",
                 "Content-Type": "application/json"
               }
             },
@@ -1409,7 +1458,7 @@
               "uri": "/rest/v1/webhooks",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "Basic --base64-encoded-key--"
+                "Authorization": "Basic N3A5d3M5dE1GTjZOOjNVd1czR3JwTDczNmVMM3o="
               },
               "body": "{\n\t\"url\": \"http://{yourserver.com}/api/webhooks\",\n\t\"eventTypes\": [\n\t\t\"net.authorize.payment.authcapture.created\",\n\t\t\"net.authorize.customer.created\",\n\t\t\"net.authorize.customer.paymentProfile.created\",\n\t\t\"net.authorize.customer.subscription.expiring\"\n\t],\n\t\"status\": \"active\"\n}\n"
             },
@@ -1674,7 +1723,7 @@
               "method": "GET",
               "uri": "/rest/v1/notifications?from_date=2017-03-01&to_date=2017-03-13&offset=0&limit=100",
               "headers": {
-                "Authorization": "Basic --base64-encoded-key--",
+                "Authorization": "Basic N3A5d3M5dE1GTjZOOjNVd1czR3JwTDczNmVMM3o=",
                 "Content-Type": "application/json"
               }
             },
@@ -1745,6 +1794,81 @@
           }
         ],
         "x-unitTests": [],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/api/v1/webhooks/authorize": {
+      "post": {
+        "description": "TODO: Add Description",
+        "summary": "Test API Hook",
+        "tags": [
+          "Webhooks"
+        ],
+        "operationId": "Test API Hook",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/TestApiHookrequest"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "X-ANET-Signature",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "POST",
+              "uri": "/api/v1/webhooks/authorize",
+              "headers": {
+                "Content-Type": "application/json",
+                "X-ANET-Signature": "nrHd4NcxvsmWN6PUitrdYzF9bWVO88/94fN93nnq7mPWdUNjsMqIzGramnmnMwIimBFjOD2udi+mymiwZuIThw=="
+              },
+              "body": "{\n\t\"notificationId\": \"d0e8e7fe-c3e7-4add-a480-27bc5ce28a18\",\n\t\"eventType\": \"net.authorize.payment.refund.created\",\n\t\"eventDate\": \"2017-03-29T20:48:02.0080095Z\",\n\t\"webhookId\": \"63d6fea2-aa13-4b1d-a204-f5fbc15942b7\",\n\t\"payload\": {\n\t\t\"responseCode\": 1,\n\t\t\"authCode\": \"LZ6I19\",\n\t\t\"avsResponse\": \"Y\",\n\t\t\"authAmount\": 45.00,\n\t\t\"entityName\": \"transaction\",\n\t\t\"id\": \"60020981676\"\n\t}\n}\n"
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Test API Hook",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
         "x-operation-settings": {
           "CollectParameters": false,
           "AllowDynamicQueryParameters": false,
@@ -2243,6 +2367,78 @@
         "url",
         "eventTypes",
         "status"
+      ]
+    },
+    "TestApiHookrequest": {
+      "title": "Test API HookRequest",
+      "type": "object",
+      "properties": {
+        "notificationId": {
+          "description": "",
+          "type": "string"
+        },
+        "eventType": {
+          "description": "",
+          "type": "string"
+        },
+        "eventDate": {
+          "description": "",
+          "type": "string"
+        },
+        "webhookId": {
+          "description": "",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/definitions/Payload"
+        }
+      },
+      "required": [
+        "notificationId",
+        "eventType",
+        "eventDate",
+        "webhookId",
+        "payload"
+      ]
+    },
+    "Payload": {
+      "title": "Payload",
+      "type": "object",
+      "properties": {
+        "responseCode": {
+          "description": "",
+          "type": "integer",
+          "format": "int32"
+        },
+        "authCode": {
+          "description": "",
+          "type": "string"
+        },
+        "avsResponse": {
+          "description": "",
+          "type": "string"
+        },
+        "authAmount": {
+          "description": "",
+          "type": "number",
+          "format": "double"
+        },
+        "entityName": {
+          "description": "",
+          "type": "string"
+        },
+        "id": {
+          "description": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "responseCode",
+        "authCode",
+        "avsResponse",
+        "authAmount",
+        "entityName",
+        "id"
       ]
     }
   }
