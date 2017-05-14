@@ -54,6 +54,9 @@ export const WebhookMethods = {
    */
   updateSubscription(payload) {
     // 1. Locate the associated subscription record using `payload.id === subscriptionId`
+    // db.Subscription.find({
+    //   where: {},
+    // });
     // 2. Update the subscription status and amount
   },
 
