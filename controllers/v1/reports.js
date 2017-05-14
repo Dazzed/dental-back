@@ -46,10 +46,12 @@ function getListOfReportURLs(req, res) {
   while (left.diff(moment.now()) <= 0) {
     const month = moment.months()[left.month()];
     const monthShort = moment.monthsShort()[left.month()];
+    const year = left.year();
 
     timeBlocks.push({
       month,
-      url: `/reports/dentist/${req.dentist.id}/${left.year()}/${monthShort}/general`
+      year,
+      url: `/reports/dentist/${req.dentist.id}/${year}/${monthShort}/general`
     });
 
     left.add(1, 'month');
