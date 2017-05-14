@@ -85,7 +85,7 @@ function createDentistInfo(user, body) {
           codes.forEach(elem => {
             if (elem.code === item.code) {
               db.MembershipItem.create({
-                pricingCode: item.code,
+                pricingCode: elem.get('id'),
                 price: item.amount,
                 dentistInfoId: info.get('id')
               });
