@@ -4,6 +4,7 @@ import HTTPStatus from 'http-status';
 import { WEBHOOK_EVENT } from '../utils/schema-validators';
 
 import db from '../models';
+import { instance as UserInstance } from '../orm-methods/users';
 import { BadRequestError, ForbiddenError } from './errors';
 
 /**
@@ -19,14 +20,27 @@ export function adminRequired(req, res, next) {
 }
 
 /**
- * Middleware that request if user is admin to allow next middleware
+ * Middleware that request if user is admin to allow next middleware and
+ * injects the dentist object into the request
  */
 export function dentistRequired(req, res, next) {
   if (req.user && (req.user.type === 'dentist' || req.user.type === 'admin')) {
-    return next();
+    next();
+  } else {
+    res.json({ error: new ForbiddenError() });
   }
+}
 
-  return res.json({ error: new ForbiddenError() });
+/**
+ * Injects the Dentist Office object into the request
+ */
+export function injectDentistOffice(paramName) {
+  return (req, res, next) => {
+    UserInstance.getFullDentist(req.params[paramName]).then(dentist => {
+      req.dentist = dentist;
+      next();
+    }).catch(err => new BadRequestError(err));
+  };
 }
 
 /**
