@@ -197,3 +197,10 @@ export const CODES_FOR_CALC_FULL_COST = [
   '0220',
   '0140',
 ];
+
+export const AUTHORIZE_HOOK_EVENTS = {
+  REFUND_CREATED: 'net.authorize.payment.refund.created',
+  SUBSCRIPTION_SUSPENDED: 'net.authorize.customer.subscription.suspended',
+  SUBSCRIPTION_TERMINATED: 'net.authorize.customer.subscription.terminated',
+  SUBSCRIPTION_CANCELLED: 'net.authorize.customer.subscription.cancelled',
+};

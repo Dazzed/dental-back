@@ -8,10 +8,12 @@ import { Router } from 'express';
 import Moment from 'moment';
 import pdf from 'html-pdf';
 import nunjucks from 'nunjucks';
+import moment from 'moment';
 
 import {
   userRequired,
   dentistRequired,
+  injectDentistOffice,
   adminRequired,
 } from '../middlewares';
 
@@ -31,12 +33,32 @@ nunjucks.configure('../../views');
 // ROUTES
 
 /**
- * Retrieves a PDF report for a dentist
+ * Retrieves a list of URLs for the FE to link to for Report URLs
  *
  * @param {Object<any>} req - the express request
  * @param {Object<any>} res - the express response
  */
-function getDentistReport(req, res) {}
+function getListOfReportURLs(req, res) {
+  // 1. Reports start when dentistOffice was established
+  const left = moment(req.dentist.dentistInfo.createdAt);
+  const timeBlocks = [];
+
+  while (left.diff(moment.now()) <= 0) {
+    const month = moment.months()[left.month()];
+    const monthShort = moment.monthsShort()[left.month()];
+    const year = left.year();
+
+    timeBlocks.push({
+      month,
+      year,
+      url: `/reports/dentist/${req.dentist.id}/${year}/${monthShort}/general`
+    });
+
+    left.add(1, 'month');
+  }
+
+  res.json({ data: timeBlocks });
+}
 
 /**
  * Retrieves a PDF report for general membership/costs
@@ -173,7 +195,6 @@ function getGeneralReport(req, res) {
 
         /**
          * Total Gross Revenue
-         * Refunds
          * Membership Fee per User
          * Penalties per User - ???
          * Refunds per User - ???
@@ -297,7 +318,6 @@ function getMasterReport(req, res, next) {
       // Send PDF file
       pdf.create(report, { format: 'Letter' }).toBuffer((err, resp) => {
         if (err) { res.json(new BadRequestError(err)); }
-        // res.setHeader('Content-disposition', `attachment; filename=${downloadFilename}`);
         res.writeHead(200, { 'Content-Type': 'application/pdf' });
         res.write(resp);
         res.end();
@@ -311,8 +331,13 @@ function getMasterReport(req, res, next) {
 
 const router = new Router({ mergeParams: true });
 
-router.route('/dentist/:officeId').get(userRequired, dentistRequired, getDentistReport);
-router.route('/dentist/:officeId/:year/:month/general').get(userRequired, adminRequired, getGeneralReport);
-router.route('/dentists/:year/:month').get(userRequired, adminRequired, getMasterReport);
+router.route('/dentist/:officeId/list')
+  .get(userRequired, dentistRequired, injectDentistOffice('officeId'), getListOfReportURLs);
+
+router.route('/dentist/:officeId/:year/:month/general')
+  .get(userRequired, dentistRequired, getGeneralReport);
+
+router.route('/dentists/:year/:month')
+  .get(userRequired, adminRequired, getMasterReport);
 
 export default router;

@@ -214,64 +214,62 @@ function dentistUserSignup(req, res, next) {
   const entireBody = req.body;
   req.body = entireBody.user;
   req.checkBody(DENTIST_USER_REGISTRATION);
-  req.checkBody('confirmPassword', 'Password do not match').equals(req.body.password);
-  req.checkBody('confirmEmail', 'Email do not match').equals(req.body.email);
+  req.checkBody('confirmPassword', 'Password does not match').equals(req.body.password);
+  req.checkBody('confirmEmail', 'Email does not match').equals(req.body.email);
 
   req.body = entireBody;
 
-  // console.log(entireBody);
-
   req
-    .asyncValidationErrors(true)
-    .then(() => {
-      const user = _.omit(req.body.user, ['phone']);
-      user.type = 'dentist';
-      user.dentistSpecialtyId = req.body.user.specialtyId;
+  .asyncValidationErrors(true)
+  .then(() => {
+    const user = _.omit(req.body.user, ['phone']);
+    user.type = 'dentist';
+    user.dentistSpecialtyId = req.body.user.specialtyId;
 
-      return new Promise((resolve, reject) => {
-        db.User.register(user, user.password, (registerError, createdUser) => {
-          if (registerError) {
-            reject(registerError);
-          } else {
-            resolve(createdUser);
-            createDentistInfo(createdUser, req.body);
-            res.mailer.send('auth/dentist/activation_required', {
-              to: user.email,
-              subject: EMAIL_SUBJECTS.client.activation_required,
-              site: process.env.SITE,
-              user: createdUser,
-            }, (err, info) => {
-              if (err) {
-                console.log(err);
-              }
+    return new Promise((resolve, reject) => {
+      db.User.register(user, user.password, (registerError, createdUser) => {
+        if (registerError) {
+          reject(registerError);
+        } else {
+          resolve(createdUser);
+          createDentistInfo(createdUser, req.body);
+          res.mailer.send('auth/dentist/activation_required', {
+            to: user.email,
+            subject: EMAIL_SUBJECTS.client.activation_required,
+            site: process.env.SITE,
+            user: createdUser,
+          }, (err, info) => {
+            if (err) {
+              console.log(err);
+            }
 
-              if (process.env.NODE_ENV === 'development') {
-                console.log(info);
-              }
-            });
-          }
-        });
+            if (process.env.NODE_ENV === 'development') {
+              console.log(info);
+            }
+          });
+        }
       });
-    })
-    .then((user) => (
-      Promise.all([
-        user.createPhoneNumber({ number: req.body.user.phone }),
-        // This should be created so we can edit values
-        user.createAddress({ value: '' }),
-      ])
-    ))
-    .then(() => {
-      res
-        .status(HTTPStatus.CREATED)
-        .json({});
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
-
-      return next(errors);
     });
+  })
+  .then((user) => (
+    Promise.all([
+      user.createPhoneNumber({ number: req.body.user.phone }),
+      // This should be created so we can edit values
+      user.createAddress({ value: '' }),
+    ])
+  ))
+  .then(() => {
+    res
+      .status(HTTPStatus.CREATED)
+      .json({});
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      return next(new BadRequestError(errors));
+    }
+
+    return next(errors);
+  });
 }
 
 
@@ -389,7 +387,6 @@ router
 router
   .route('/activate/:key')
   .get(activate);
-
 
 module.exports = {
   auth: router,

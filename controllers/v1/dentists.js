@@ -1,6 +1,7 @@
 /* eslint consistent-return:0, no-else-return: 0 */
+// ────────────────────────────────────────────────────────────────────────────────
+
 import { Router } from 'express';
-import passport from 'passport';
 import moment from 'moment';
 import isPlainObject from 'is-plain-object';
 import _ from 'lodash';
@@ -13,7 +14,10 @@ import {
   instance as UserInstance,
 } from '../../orm-methods/users';
 
+import { MembershipMethods } from '../../orm-methods/memberships';
+
 import {
+  userRequired,
   adminRequired,
 } from '../middlewares';
 
@@ -44,6 +48,7 @@ import {
   NotFoundError
 } from '../errors';
 
+// ────────────────────────────────────────────────────────────────────────────────
 
 const router = new Router({ mergeParams: true });
 
@@ -66,8 +71,53 @@ function getDateTimeInPST() {
  */
 function fetchDentist(userId) {
   return new Promise((resolve, reject) => {
+    userId = (parseInt(userId, 10) || 0);
     UserInstance.getFullDentist(userId)
-    .then(resolve)
+    .then(d => {
+      if (d === null) return resolve(null);
+      // Retrieve Price Codes
+      db.MembershipItem.findAll({
+        where: { dentistInfoId: d.dentistInfo.id },
+        include: [{
+          model: db.PriceCodes,
+          as: 'priceCode'
+        }]
+      }).then(items => {
+        d.dentistInfo.priceCodes = items.map(i => {
+          const temp = i.priceCode.toJSON();
+          temp.price = i.get('price');
+          return i.priceCode;
+        });
+        // Calculate membership costs
+        MembershipMethods
+        .calculateCosts(d.dentistInfo.id, [
+          d.dentistInfo.membership.id,
+          d.dentistInfo.childMembership.id,
+        ])
+        .then(fullCosts => {
+          fullCosts.forEach(cost => {
+            if (d.dentistInfo.membership.id === cost.membershipId) {
+              d.dentistInfo.membership.fullCost = cost.fullCost;
+              d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
+            } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
+              d.dentistInfo.childMembership.fullCost = cost.fullCost;
+              d.dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
+            }
+          });
+
+          // Retrieve Active Member Count
+          db.Subscription.count({
+            where: {
+              dentistId: d.dentistInfo.id,
+              status: 'active',
+            }
+          }).then(activeMemberCount => {
+            d.dentistInfo.activeMemberCount = activeMemberCount;
+            resolve(d);
+          }).catch(err => { throw new Error(err); });
+        });
+      }).catch(reject);
+    })
     .catch(reject);
   });
 }
@@ -83,7 +133,7 @@ function listDentists(req, res, next) {
   if (req.params.userId) {
     // Fetch specific dentist info
     fetchDentist(req.params.userId)
-    .then(dentist => res.json({ data: dentist }))
+    .then(dentist => res.json({ data: [dentist] }))
     .catch(err => next(new BadRequestError(err)));
   } else {
     // Get all dentist info
@@ -447,7 +497,9 @@ function getDentistNoAuth(req, res, next) {
     return null;
   })
   .then(user => {
-    res.json({ data: user ? user.toJSON() : {} || {} });
+    delete user.dentistInfo.priceCodes;
+    delete user.dentistInfo.activeMemberCount;
+    res.json({ data: user || {} });
   })
   .catch(next);
 }
@@ -455,29 +507,29 @@ function getDentistNoAuth(req, res, next) {
 router
   .route('/:userId/review')
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     addReview);
 
 router
   .route('/:userId/review/:reviewId')
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     updateReview)
   .delete(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     deleteReview);
 
 router
   .route('/:userId/patients/:patientId/waive-fees')
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getSubscribedPatient,
     waiveCancellationFee);
 
 router
   .route('/:userId/patients/:patientId/update-card')
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getSubscribedPatient,
     validateCreditCard,
     updatePatientCard);
@@ -489,7 +541,7 @@ router
 router
   .route('/:userId/invite_patient')
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     invitePatient);
 
 router
@@ -499,11 +551,11 @@ router
 router
   .route('/:userId?/:phoneId?')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     adminRequired,
     listDentists)
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     adminRequired,
     updateDentist);
 
