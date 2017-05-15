@@ -16,11 +16,20 @@ const router = new Router({ mergeParams: true });
  */
 function getDentistsCount() {
   return new Promise((resolve, reject) => {
-    db.DentistInfo.count({
-      where: { id: { gt: 0 } }
-    }).then(count => {
-      resolve({ dentistOfficeCount: count });
-    }).catch(err => reject(err));
+    db.User.findAll({
+      where: { type: 'dentist' },
+      attributes: ['id'],
+    }).then(users =>
+      // Count user associated dentist offices
+      Promise.all(users.map(u =>
+        db.DentistInfo.count({
+          where: { userId: u.get('id') }
+        })
+      ))
+    ).then(counts => {
+      resolve({ dentistOfficeCount: counts.reduce((a, b) => a + (parseInt(b, 10) || 0), 0) });
+    })
+    .catch(err => reject(err));
   });
 }
 
@@ -31,9 +40,7 @@ function getDentistsCount() {
  */
 function getActiveUserCount() {
   return new Promise((resolve, reject) => {
-    db.User.count({
-      where: { verified: true }
-    }).then(count => {
+    db.Subscription.count().then(count => {
       resolve({ activeUserCount: count });
     }).catch(err => reject(err));
   });
