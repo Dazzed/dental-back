@@ -25,8 +25,14 @@ export const patientMessages = {
   welcome: {
     title: 'Welcome to the Dental Marketplace!',
     body: `
-      If you were assisted by your dental office in setting up your account
-      please click here to create a new password.
+      Welcome to the {{ officeName }} Membership plan.
+      Your enrollment is now complete and you are an active member.
+      Please feel free to login to your dashboard to add/edit family members,
+      update your payment information, communicate with your dentist and
+      leave reviews on your experiences at the office.
+      Below you will find your dentists contact information.
+      If you have indicated that you would like them to contact you
+      then you will receive a call or email within 3 business days.
     `.trim()
   }
 };
