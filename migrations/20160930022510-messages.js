@@ -62,16 +62,14 @@ module.exports = {
       },
     };
 
-    return Promise.all([
-      queryInterface.createTable('conversations', conversationSchema),
-      queryInterface.createTable('messages', messageSchema),
-    ]);
+    return Promise.resolve()
+    .then(() => queryInterface.createTable('conversations', conversationSchema))
+    .then(() => queryInterface.createTable('messages', messageSchema));
   },
 
   down: function (queryInterface, Sequelize) {
-    return Promise.all([
-      queryInterface.dropTable('messages'),
-      queryInterface.dropTable('conversations'),
-    ]);
+    return Promise.resolve()
+      .then(() => queryInterface.dropTable('messages'))
+      .then(() => queryInterface.dropTable('conversations'));
   }
 };
