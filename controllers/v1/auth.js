@@ -150,16 +150,19 @@ function normalUserSignup(req, res, next) {
             chargeAuthorize(user.authorizeId, user.paymentId, pendingAmountData)
               .then(() => resolve(createdUser))
               .catch(errors => {
+                // delete the user, account couldn't be charged successfully.
                 db.User.destroy({ where: { id: createdUser.id } });
                 reject(errors);
               });
           })
           .catch((errors) => {
-            // delete the user, account couldn't be charged successfully.
+            // delete the user, card couldn't be verified.
             db.User.destroy({ where: { id: createdUser.id } });
             reject(errors);
           });
       } else {
+        // delete the user, card details was missing.
+        db.User.destroy({ where: { id: createdUser.id } });
         reject('Credit card details is missing.');
       }
     }))
