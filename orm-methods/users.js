@@ -276,7 +276,7 @@ export const instance = {
         ? membership.yearly : membership.monthly,
       yearly: membership.yearly,
       monthly: membership.monthly,
-      status: 'inactive',
+      status: 'active',
       membershipId: membership.id,
       clientId: this.get('id'),
       dentistId,
