@@ -28,41 +28,67 @@ function getMembershipFromParams(req, res, next) {
   const userId = req.params.userId;
 
   /*
-   * If user is not admin and try to requests paths not related
+   * If user is not admin, or parent of user and try to requests paths not related
    * to that user will return forbidden.
    */
-  const canEdit =
-    userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-    req.user.get('type') === 'admin';
-
-  if (!canEdit) {
-    return next(new ForbiddenError());
-  }
-
-  const query = {
+  db.User.count({
     where: {
-      id: req.params.membershipId,
+      id: userId,
+      addedBy: req.user.get('id')
     }
-  };
+  }).then(count => {
+    const canEdit =
+      userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
+      req.user.get('type') === 'admin' || count >= 1;
 
-  // if not admin limit query to related data userId
-  if (req.user.get('type') !== 'admin') {
-    query.where.userId = req.user.get('id');
-    query.where.isDeleted = false;  // this to save
-  }
+    if (!canEdit) {
+      return next(new ForbiddenError());
+    }
 
-  return db.Membership.find(query).then((membership) => {
+    const query = {
+      where: {
+        id: req.params.membershipId,
+      }
+    };
+
+    // if not admin limit query to related data userId
+    if (req.user.get('type') !== 'admin') {
+      query.where.userId = req.user.get('id');
+      query.where.isDeleted = false;  // this to save
+    }
+
+    return db.Membership.find(query);
+  }).then((membership) => {
     if (!membership) {
-      return next(new NotFoundError());
+      next(new NotFoundError());
     }
 
     req.locals.membership = membership;
-    return next();
+    next();
   }).catch((error) => {
     next(error);
   });
 }
 
+/**
+ * Injects the requested user object into the request
+ */
+function getUserFromParams(req, res, next) {
+  let id = req.params.userId;
+
+  if (id === 'me') id = req.user.get('id');
+
+  Promise.resolve()
+  .then(() => db.User.find({ where: { id } }))
+  .then(user => {
+    if (!user || req.params.userId !== 'me') next(new BadRequestError());
+    req.membershipUser = user;
+    next();
+  }).catch(err => {
+    console.log(err);
+    next(new BadRequestError());
+  });
+}
 
 // TODO: add pagination and filters?
 function getMemberships(req, res, next) {
@@ -183,6 +209,35 @@ function deleteMembership(req, res) {
   req.locals.membership.update({ isDeleted: true }).then(() => res.end());
 }
 
+function cancelMembership(req, res, next) {
+  // Check if the user has access to cancel the user
+  if (req.user.get('id') !== req.membershipUser.get('id') &&
+  req.user.get('id') !== req.membershipUser.get('addedBy')) {
+    next(new BadRequestError());
+  } else {
+    // Cancel the membership/subscription
+    db.Subscription.update({
+      status: 'canceled'
+    }, {
+      where: { clientId: req.membershipUser.get('id') }
+    }).then(() => res.end());
+  }
+}
+
+function deactivateMembership(req, res, next) {
+  // Check if the user has access to cancel the user
+  if (req.user.get('id') !== req.membershipUser.get('id') &&
+  req.user.get('id') !== req.membershipUser.get('addedBy')) {
+    next(new BadRequestError());
+  } else {
+    // Cancel the membership/subscription
+    db.Subscription.update({
+      status: 'inactive'
+    }, {
+      where: { clientId: req.membershipUser.get('id') }
+    }).then(() => res.end());
+  }
+}
 
 router
   .route('/')
@@ -209,5 +264,20 @@ router
     getMembershipFromParams,
     deleteMembership);
 
+router
+  .route('/cancel/:userId')
+  .delete(
+    passport.authenticate('jwt', { session: false }),
+    getUserFromParams,
+    cancelMembership
+  );
+
+router
+  .route('/deactivate/:userId')
+  .delete(
+    passport.authenticate('jwt', { session: false }),
+    getUserFromParams,
+    deactivateMembership
+  );
 
 export default router;
