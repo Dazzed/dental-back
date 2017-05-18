@@ -34,9 +34,7 @@ function getReviews(req, res, next) {
       include: [{
         model: db.User,
         as: 'client',
-        attributes: {
-          include: ['firstName', 'lastName']
-        }
+        attributes: ['firstName', 'lastName']
       }]
     }]
   })
