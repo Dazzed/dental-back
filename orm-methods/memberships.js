@@ -1,9 +1,5 @@
 import db from '../models';
 
-import {
-  CODES_FOR_CALC_FULL_COST,
-} from '../config/constants';
-
 /**
  * Methods related to providing additional information about Memberships
  */
@@ -13,7 +9,7 @@ export const MembershipMethods = {
    *
    * @param {Number} dentistId - the id of the dentist who provides this membership
    * @param {Membership} membership - the membership to calculate against
-   * @return {Array<>}
+   * @return {Array<[membershipId, fullCost]>}
    */
   calculateCosts(dentistInfoId, memberships) {
     return Promise.all(memberships.map(membershipId =>
