@@ -27,6 +27,15 @@ import {
   EMAIL_SUBJECTS
 } from '../../config/constants';
 
+import {
+  dentistMessages,
+  patientMessages
+} from '../../config/messages';
+
+import { mailer } from '../../services/mailer';
+
+import { getPendingAmountFromRawData } from '../../utils/helpers';
+
 
 const router = new Router();
 
@@ -131,25 +140,28 @@ function normalUserSignup(req, res, next) {
         });
       });
     })
-    .then((__user) => new Promise((resolve, reject) => {
+    .then((createdUser) => new Promise((resolve, reject) => {
       if (data.card) {
-        return ensureCreditCard(__user, data.card)
+        ensureCreditCard(createdUser, data.card)
           .then(user => {
             // compute the object as expected by #chargeAuthorize.
-            chargeAuthorize(user.authorizeId, user.paymentId, data)
-              .then(() => resolve(__user))
+            const pendingAmountData = getPendingAmountFromRawData(data);
+
+            chargeAuthorize(user.authorizeId, user.paymentId, pendingAmountData)
+              .then(() => resolve(createdUser))
               .catch(errors => {
-                db.User.destroy({ where: { id: __user.id } });
+                db.User.destroy({ where: { id: createdUser.id } });
                 reject(errors);
               });
           })
           .catch((errors) => {
             // delete the user, account couldn't be charged successfully.
-            db.User.destroy({ where: { id: __user.id } });
+            db.User.destroy({ where: { id: createdUser.id } });
             reject(errors);
           });
+      } else {
+        reject('Credit card details is missing.');
       }
-      return resolve(__user);
     }))
     .then((createdUser) => {
       db.DentistInfo.find({
@@ -168,7 +180,7 @@ function normalUserSignup(req, res, next) {
             ? membership.yearly : membership.monthly,
           yearly: membership.yearly,
           monthly: membership.monthly,
-          status: 'inactive',
+          status: 'active',
           membershipId: membership.id,
           clientId: createdUser.id,
           dentistId: info.get('userId'),
@@ -195,6 +207,36 @@ function normalUserSignup(req, res, next) {
           queries.push(db.User.addMember(member, user));
         });
       }
+
+      db.User
+        .find({ where: { id: user.id } })
+        .then(createdUser => {
+          // send welcome email to patient.
+          mailer.sendEmail(res.mailer, {
+            template: 'auth/client/welcome',
+            subject: EMAIL_SUBJECTS.client.welcome,
+            user
+          }, {
+            emailBody: patientMessages.welcome.body
+          });
+
+          // send email to patient's dentist.
+          createdUser.getMyDentist(true).then(([dentist, rawDentist]) => {
+            mailer.sendEmail(res.mailer, {
+              template: 'dentists/new_patient',
+              subject: EMAIL_SUBJECTS.dentist.new_patient,
+              user: dentist
+            }, {
+              emailBody: dentistMessages.new_patient.body
+            });
+
+            // create a new notification for the dentist about new patient.
+            rawDentist.createNotification({
+              title: dentistMessages.new_patient.title,
+              body: dentistMessages.new_patient.body
+            });
+          });
+        });
 
       return Promise.all(queries);
     })
