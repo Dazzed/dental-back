@@ -14,6 +14,11 @@ import {
 } from '../errors';
 
 import {
+  ensureCreditCard,
+  chargeAuthorize
+} from '../payments';
+
+import {
   NORMAL_USER_REGISTRATION,
   DENTIST_USER_REGISTRATION
 } from '../../utils/schema-validators';
@@ -85,7 +90,7 @@ function createDentistInfo(user, body) {
           codes.forEach(elem => {
             if (elem.code === item.code) {
               db.MembershipItem.create({
-                pricingCode: item.code,
+                pricingCode: elem.get('id'),
                 price: item.amount,
                 dentistInfoId: info.get('id')
               });
@@ -126,25 +131,26 @@ function normalUserSignup(req, res, next) {
         });
       });
     })
-    // .then((__user) => new Promise((resolve, reject) => {
-    //   if (data.card) {
-    //     return ensureCreditCard(__user, data.card)
-    //       .then(user => {
-    //         chargeAuthorize(user.authorizeId, user.paymentId, data)
-    //           .then(() => resolve(__user))
-    //           .catch(errors => {
-    //             db.User.destroy({ where: { id: __user.id } });
-    //             reject(errors);
-    //           });
-    //       })
-    //       .catch((errors) => {
-    //         // delete the user, account couldn't be charged successfully.
-    //         db.User.destroy({ where: { id: __user.id } });
-    //         reject(errors);
-    //       });
-    //   }
-    //   return resolve(__user);
-    // }))
+    .then((__user) => new Promise((resolve, reject) => {
+      if (data.card) {
+        return ensureCreditCard(__user, data.card)
+          .then(user => {
+            // compute the object as expected by #chargeAuthorize.
+            chargeAuthorize(user.authorizeId, user.paymentId, data)
+              .then(() => resolve(__user))
+              .catch(errors => {
+                db.User.destroy({ where: { id: __user.id } });
+                reject(errors);
+              });
+          })
+          .catch((errors) => {
+            // delete the user, account couldn't be charged successfully.
+            db.User.destroy({ where: { id: __user.id } });
+            reject(errors);
+          });
+      }
+      return resolve(__user);
+    }))
     .then((createdUser) => {
       db.DentistInfo.find({
         attributes: ['membershipId', 'userId'],

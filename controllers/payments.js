@@ -228,9 +228,9 @@ export function chargeAuthorize(profileId, paymentId, data) {
 
   const lineItemList = [];
 
-  (data.members || []).forEach((member, index) => {
+  (data.members || []).forEach((member /* index */) => {
     const lineItem = new APIContracts.LineItemType();
-    lineItem.setItemId(index);
+    // lineItem.setItemId(index);
     lineItem.setName(member.fullName);
     // lineItem.setDescription(member.fullName);
     lineItem.setQuantity('1');

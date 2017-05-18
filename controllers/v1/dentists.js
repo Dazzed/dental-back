@@ -234,6 +234,7 @@ function deleteReview(req, res) {
   return res.json({});
 }
 
+
 function invitePatient(req, res, next) { // eslint-disable-line
   req.checkBody(INVITE_PATIENT);
 
@@ -484,6 +485,18 @@ function updateDentist(req, res, next) {
   }
 }
 
+
+function searchDentist(req, res, next) {
+  db.DentistInfo.findAll({
+    where: { zipCode: req.query.zipCode }
+  })
+  .then(infos => {
+    res.json({ data: infos });
+  })
+  .catch(next);
+}
+
+
 function getDentistNoAuth(req, res, next) {
   db.User.findOne({
     attributes: ['id'],
@@ -503,6 +516,10 @@ function getDentistNoAuth(req, res, next) {
   })
   .catch(next);
 }
+
+router
+  .route('/search')
+  .get(searchDentist);
 
 router
   .route('/:userId/review')
