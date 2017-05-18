@@ -46,7 +46,7 @@ export default function (sequelize, DataTypes) {
 
     classMethods: Object.assign({
       associate(models) {
-        Subscription.belongsTo(models.Membership, {
+        Subscription.hasOne(models.Membership, {
           foreignKey: 'membershipId',
           as: 'membership'
         });
