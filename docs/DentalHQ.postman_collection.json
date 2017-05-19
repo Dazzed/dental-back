@@ -120,7 +120,7 @@
 			]
 		},
 		{
-			"name": "Auth",
+			"name": "Authorization",
 			"description": "",
 			"item": [
 				{
@@ -153,6 +153,39 @@
 							"raw": "{\n\t\"email\": \"vicsstar@hotmail.com\",\n\t\"password\": \"Password123\"\n}"
 						},
 						"description": "Creates a JSON Web Token used for authorization to related resources."
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{host}}/api/v1/accounts/admin/login",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"vicsstar@hotmail.com\",\n\t\"password\": \"Password123\"\n}"
+						},
+						"description": "(Limited to ADMIN users only) Creates a JSON Web Token used for authorization to related resources."
 					},
 					"response": []
 				},
@@ -190,7 +223,83 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"pricing\": {\n    \"adultYearlyFeeActivated\": true,\n    \"childYearlyFeeActivated\": true,\n    \"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0150\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0220\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0272\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0274\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0330\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"1110\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"1120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"1206\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"2391\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"2392\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"2750\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"3330\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"4341\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"4910\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"7140\",\n        \"amount\": \"10.00\"\n      }\n    ],\n    \"adultMonthlyFee\": \"20.00\",\n    \"childMonthlyFee\": \"15.00\",\n    \"adultYearlyFee\": \"51.00\",\n    \"childYearlyFee\": \"54.00\",\n    \"treatmentDiscount\": \"5\"\n  },\n  \"workingHours\": [\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"monday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"tuesday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"wednesday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"thursday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"friday\"\n    },\n    {\n      \"isOpen\": false,\n      \"day\": \"saturday\"\n    },\n    {\n      \"isOpen\": false,\n      \"day\": \"sunday\"\n    }\n  ],\n  \"user\": {\n    \"firstName\": \"Victor\",\n    \"lastName\": \"Igbokwe\",\n    \"phone\": \"(070) 305-4164\",\n    \"email\": \"vicsstar@hotmail.com\",\n    \"confirmEmail\": \"vicsstar@hotmail.com\",\n    \"password\": \"Password123\",\n    \"confirmPassword\": \"Password123\",\n    \"zipCode\": \"23401\",\n    \"specialtyId\": \"2\"\n  },\n  \"officeInfo\": {\n    \"officeName\": \"Hepzibah Dental\",\n    \"email\": \"vic.igbokwe@gmail.com\",\n    \"phone\": \"(070) 305-4164\",\n    \"url\": \"https://hepdentist.com\",\n    \"message\": \"We solve you teeth issues.\",\n    \"address\": \"294, Herbert Macaulay Way, Sabo, Yaba\",\n    \"city\": \"Lagos\",\n    \"state\": \"AZ\",\n    \"zipCode\": \"23401\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/72d1d3eb-ffbb-44a2-af2e-92a9d257f836_02NneqJ7MF0Vh_4312.jpg\",\n    \"officeImages\": [],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"7\",\n    \"marketplaceOptIn\": true\n  },\n  \"services\": [\n    \"3\",\n    \"8\",\n    \"12\",\n    \"13\",\n    \"14\",\n    \"23\",\n    \"15\",\n    \"21\",\n    \"1\",\n    \"16\",\n    \"10\",\n    \"9\",\n    \"5\",\n    \"4\"\n  ]\n}"
+							"raw": "{\n  \"pricing\": {\n    \"adultYearlyFeeActivated\": true,\n    \"childYearlyFeeActivated\": true,\n    \"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0150\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0220\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0272\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0274\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0330\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"1110\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"1120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"1206\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"2391\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"2392\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"2750\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"3330\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"4341\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"4910\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"7140\",\n        \"amount\": \"10.00\"\n      }\n    ],\n    \"adultMonthlyFee\": \"20.00\",\n    \"childMonthlyFee\": \"15.00\",\n    \"adultYearlyFee\": \"51.00\",\n    \"childYearlyFee\": \"54.00\",\n    \"treatmentDiscount\": \"5\"\n  },\n  \"workingHours\": [\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"monday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"tuesday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"wednesday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"thursday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"friday\"\n    },\n    {\n      \"isOpen\": false,\n      \"day\": \"saturday\"\n    },\n    {\n      \"isOpen\": false,\n      \"day\": \"sunday\"\n    }\n  ],\n  \"user\": {\n    \"firstName\": \"Victor\",\n    \"lastName\": \"Igbokwe\",\n    \"phone\": \"(070) 305-4164\",\n    \"email\": \"vicsstar3@hotmail.com\",\n    \"confirmEmail\": \"vicsstar3@hotmail.com\",\n    \"password\": \"Password123\",\n    \"confirmPassword\": \"Password123\",\n    \"zipCode\": \"23401\",\n    \"specialtyId\": \"2\"\n  },\n  \"officeInfo\": {\n    \"officeName\": \"Hepzibah Dental\",\n    \"email\": \"vic.igbokwe@gmail.com\",\n    \"phone\": \"(070) 305-4164\",\n    \"url\": \"https://hepdentist.com\",\n    \"message\": \"We solve you teeth issues.\",\n    \"address\": \"294, Herbert Macaulay Way, Sabo, Yaba\",\n    \"city\": \"Lagos\",\n    \"state\": \"AZ\",\n    \"zipCode\": \"23401\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/72d1d3eb-ffbb-44a2-af2e-92a9d257f836_02NneqJ7MF0Vh_4312.jpg\",\n    \"officeImages\": [],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"7\",\n    \"marketplaceOptIn\": true\n  },\n  \"services\": [\n    \"3\",\n    \"8\",\n    \"12\",\n    \"13\",\n    \"14\",\n    \"23\",\n    \"15\",\n    \"21\",\n    \"1\",\n    \"16\",\n    \"10\",\n    \"9\",\n    \"5\",\n    \"4\"\n  ]\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "User Signup",
+					"request": {
+						"url": "{{host}}/{{basePath}}/accounts/signup",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"\",\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"password\": \"\",\n\t\"confirmPassword\": \"\",\n\t\"confirmEmail\": \"\",\n\t\"origin\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Activate Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"postman.setEnvironmentVariable(\"activationKey\", \"variable_value\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{host}}/{{basePath}}/accounts/activate/{{activationKey}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Contact Support",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentists/{{userId}}/contact_support",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"\",\n\t\"email\": \"\",\n\t\"message\": \"\"\n}"
 						},
 						"description": ""
 					},
@@ -199,7 +308,63 @@
 			]
 		},
 		{
-			"name": "Dentist",
+			"name": "Dentist Info",
+			"description": "",
+			"item": [
+				{
+					"name": "Get Dentist Info",
+					"request": {
+						"url": "{{host}}/{{basePath}}/users/{{userId}}/dentist-info/{{dentistInfoId}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"officeInfo\": {\n    \"id\": 1,\n    \"officeName\": \"Test Dentistry\",\n    \"email\": \"test_dentistry@example.com\",\n    \"phone\": \"(123) 232-3232\",\n    \"url\": \"https://google.com\",\n    \"message\": \"alksdjf\",\n    \"address\": \"lasdkjf\",\n    \"city\": \"asldkjf\",\n    \"state\": \"AL\",\n    \"zipCode\": \"11111\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/9360f79a-37e0-491b-a660-f764e5555d0a_be-like-jane.jpg\",\n    \"officeImages\": [\n      \"https://dentalman_uploads.s3.amazonaws.com/02fa2040-b6f0-4aff-bc0d-569bdff1a7da_favicon---CORRECT-SIZE.png\"\n    ],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"10\",\n    \"marketplaceOptIn\": true\n  },\n  \"pricing\": {\n  \t\"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      }\n\t]\n  }\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Update Dentist Info",
+					"request": {
+						"url": "{{host}}/{{basePath}}/users/{{userId}}/dentist-info/{{dentistInfoId}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"user\": \"\",\n\t\"officeInfo\": \"\",\n\t\"officeImages\": \"\",\n\t\"pricing\": \"\",\n\t\"membership\": \"\",\n\t\"childMembership\": \"\",\n\t\"workingHours\": \"\",\n\t\"services\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dentists",
 			"description": "",
 			"item": [
 				{
@@ -228,9 +393,59 @@
 					"response": []
 				},
 				{
+					"name": "List User's Dentists",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentists/{{userId}}/{{phoneId}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"\",\n\t\"email\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "List Members",
+					"request": {
+						"url": "{{host}}/api/v1/dentists/{{dentistId}}/members",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
 					"name": "Update Dentist",
 					"request": {
-						"url": "{{host}}/api/v1/dentists/1",
+						"url": "{{host}}/{{basePath}}/dentists/{{dentistId}}",
 						"method": "PUT",
 						"header": [
 							{
@@ -253,10 +468,10 @@
 					"response": []
 				},
 				{
-					"name": "Get My Dentist Info",
+					"name": "Update User's Dentist",
 					"request": {
-						"url": "{{host}}/{{basePath}}/users/me/dentist",
-						"method": "GET",
+						"url": "{{host}}/{{basePath}}/dentists/{{userId}}/{{phoneId}}",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -271,7 +486,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"officeInfo\": {\n    \"id\": 1,\n    \"officeName\": \"Test Dentistry\",\n    \"email\": \"test_dentistry@example.com\",\n    \"phone\": \"(123) 232-3232\",\n    \"url\": \"https://google.com\",\n    \"message\": \"alksdjf\",\n    \"address\": \"lasdkjf\",\n    \"city\": \"asldkjf\",\n    \"state\": \"AL\",\n    \"zipCode\": \"11111\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/9360f79a-37e0-491b-a660-f764e5555d0a_be-like-jane.jpg\",\n    \"officeImages\": [\n      \"https://dentalman_uploads.s3.amazonaws.com/02fa2040-b6f0-4aff-bc0d-569bdff1a7da_favicon---CORRECT-SIZE.png\"\n    ],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"10\",\n    \"marketplaceOptIn\": true\n  },\n  \"pricing\": {\n  \t\"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      }\n\t]\n  }\n}"
+							"raw": "{\n\t\"firstName\": \"\",\n\t\"middleName\": \"\",\n\t\"lastName\": \"\",\n\t\"email\": \"\",\n\t\"phoneNumber\": \"\"\n}"
 						},
 						"description": ""
 					},
@@ -280,7 +495,7 @@
 				{
 					"name": "Get Dentist Info",
 					"request": {
-						"url": "{{host}}/{{basePath}}/users/15/dentist-info",
+						"url": "{{host}}/{{basePath}}/users/{{dentistId}}/dentist",
 						"method": "GET",
 						"header": [
 							{
@@ -305,47 +520,8 @@
 				{
 					"name": "Get Dentist - No Auth",
 					"request": {
-						"url": "{{host}}/{{basePath}}/dentists/2/no-auth",
+						"url": "{{host}}/{{basePath}}/dentists/{{dentistId}}/no-auth",
 						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
-							},
-							{
-								"key": "Authorization",
-								"value": "JWT {{token}}",
-								"description": ""
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"officeInfo\": {\n    \"id\": 1,\n    \"officeName\": \"Test Dentistry\",\n    \"email\": \"test_dentistry@example.com\",\n    \"phone\": \"(123) 232-3232\",\n    \"url\": \"https://google.com\",\n    \"message\": \"alksdjf\",\n    \"address\": \"lasdkjf\",\n    \"city\": \"asldkjf\",\n    \"state\": \"AL\",\n    \"zipCode\": \"11111\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/9360f79a-37e0-491b-a660-f764e5555d0a_be-like-jane.jpg\",\n    \"officeImages\": [\n      \"https://dentalman_uploads.s3.amazonaws.com/02fa2040-b6f0-4aff-bc0d-569bdff1a7da_favicon---CORRECT-SIZE.png\"\n    ],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"10\",\n    \"marketplaceOptIn\": true\n  },\n  \"pricing\": {\n  \t\"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      }\n\t]\n  }\n}"
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "Dentists :: Update Dentist Info",
-					"request": {
-						"url": "",
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "Dentists :: Update Dentist Info",
-					"request": {
-						"url": "{{host}}/{{basePath}}/users/7/dentist-info/1",
-						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -390,6 +566,605 @@
 							]
 						},
 						"description": "Upload files to S3"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Members",
+			"description": "",
+			"item": [
+				{
+					"name": "Get Members",
+					"request": {
+						"url": "{{host}}/{{basePath}}/members",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Member",
+					"request": {
+						"url": "{{host}}/{{basePath}}/members/{{memberId}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Update Member",
+					"request": {
+						"url": "{{host}}/{{basePath}}/members/{{memberId}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"birthDate\": \"\",\n\t\"sex\": \"\",\n\t\"familyRelationship\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Member",
+					"request": {
+						"url": "{{host}}/{{basePath}}/members/{{memberId}}",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Memberships",
+			"description": "",
+			"item": [
+				{
+					"name": "Get Memberships",
+					"request": {
+						"url": "{{host}}/api/v1/memberships",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Add Membership",
+					"request": {
+						"url": "{{host}}/api/v1/memberships",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"\",\n\t\"price\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Membership",
+					"request": {
+						"url": "{{host}}/api/v1/memberships/{{membershipId}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Update Membership",
+					"request": {
+						"url": "{{host}}/api/v1/memberships/{{membershipId}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"\",\n\t\"price\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Membership",
+					"request": {
+						"url": "{{host}}/api/v1/memberships/{{membershipId}}",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel User's Membership",
+					"request": {
+						"url": "{{host}}/api/v1/memberships/cancel/me",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate User's Membership",
+					"request": {
+						"url": "{{host}}/api/v1/memberships/deactivate/me",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Messages",
+			"description": "",
+			"item": [
+				{
+					"name": "Get Unread Count",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/messages/{{recipientId}}/unread_count",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Mark all read",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/messages/{{recipientId}}/mark_all_read",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messages",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/messages/{{recipientId}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Add Message",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"{",
+									"    \"message\": \"\"",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/messages/{{recipientId}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"description": "",
+			"item": [
+				{
+					"name": "Get All Notifications",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/notifications",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unread Count",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/notifications/unread_count",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Mark all read",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/notifications/mark_all_read",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Offices",
+			"description": "",
+			"item": [
+				{
+					"name": "Get Offices",
+					"request": {
+						"url": "{{host}}/{{basePath}}/offices",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"officeInfo\": {\n    \"id\": 1,\n    \"officeName\": \"Test Dentistry\",\n    \"email\": \"test_dentistry@example.com\",\n    \"phone\": \"(123) 232-3232\",\n    \"url\": \"https://google.com\",\n    \"message\": \"alksdjf\",\n    \"address\": \"lasdkjf\",\n    \"city\": \"asldkjf\",\n    \"state\": \"AL\",\n    \"zipCode\": \"11111\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/9360f79a-37e0-491b-a660-f764e5555d0a_be-like-jane.jpg\",\n    \"officeImages\": [\n      \"https://dentalman_uploads.s3.amazonaws.com/02fa2040-b6f0-4aff-bc0d-569bdff1a7da_favicon---CORRECT-SIZE.png\"\n    ],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"10\",\n    \"marketplaceOptIn\": true\n  },\n  \"pricing\": {\n  \t\"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      }\n\t]\n  }\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Patients",
+			"description": "",
+			"item": [
+				{
+					"name": "Invite Patient",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentists//{{userId}}/invite_patient",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Update Card",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentists//{{userId}}/patients/{{patientId}}/update-card",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"card\": \"\",\n\t\"periodontalDiseaseWaiver\": \"\",\n\t\"cancellationFeeWaiver\": \"\",\n\t\"reEnrollmentFeeWaiver\": \"\",\n\t\"termsAndConditions\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Waive Fees",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentists//{{userId}}/patients/{{patientId}}/waive-fees",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"cancellationFee\": \"\",\n\t\"reEnrollmentFee\": \"\"\n}"
+						},
+						"description": ""
 					},
 					"response": []
 				}
@@ -450,7 +1225,7 @@
 				{
 					"name": "List Report URLs",
 					"request": {
-						"url": "{{host}}/api/v1/reports/dentist/19/list",
+						"url": "{{host}}/api/v1/reports/dentist/{{dentistId}}/list",
 						"method": "GET",
 						"header": [
 							{
@@ -470,7 +1245,7 @@
 				{
 					"name": "Dentist - General",
 					"request": {
-						"url": "{{host}}/api/v1/reports/dentist/21/general",
+						"url": "{{host}}/api/v1/reports/dentist/{{dentistId}}/general",
 						"method": "GET",
 						"header": [
 							{
@@ -490,7 +1265,7 @@
 				{
 					"name": "Dentist - Master",
 					"request": {
-						"url": "{{host}}/api/v1/reports/dentists/2017/1",
+						"url": "{{host}}/api/v1/reports/dentists/{{reportYear}}/{{reportMonth}}",
 						"method": "GET",
 						"header": [
 							{
@@ -502,6 +1277,430 @@
 						"body": {
 							"mode": "raw",
 							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"description": "",
+			"item": [
+				{
+					"name": "Get Reviews",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentists/{{dentistId}}/reviews",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"officeInfo\": {\n    \"id\": 1,\n    \"officeName\": \"Test Dentistry\",\n    \"email\": \"test_dentistry@example.com\",\n    \"phone\": \"(123) 232-3232\",\n    \"url\": \"https://google.com\",\n    \"message\": \"alksdjf\",\n    \"address\": \"lasdkjf\",\n    \"city\": \"asldkjf\",\n    \"state\": \"AL\",\n    \"zipCode\": \"11111\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/9360f79a-37e0-491b-a660-f764e5555d0a_be-like-jane.jpg\",\n    \"officeImages\": [\n      \"https://dentalman_uploads.s3.amazonaws.com/02fa2040-b6f0-4aff-bc0d-569bdff1a7da_favicon---CORRECT-SIZE.png\"\n    ],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"10\",\n    \"marketplaceOptIn\": true\n  },\n  \"pricing\": {\n  \t\"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      }\n\t]\n  }\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Add Review",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentists/{{userId}}/review",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"message\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Update Review",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentists/{{userId}}/review/{{reviewId}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"message\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Review",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentists/{{dentistId}}/reviews/{{reviewId}}",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Services",
+			"description": "",
+			"item": [
+				{
+					"name": "Get Services",
+					"request": {
+						"url": "{{host}}/{{basePath}}/services",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"officeInfo\": {\n    \"id\": 1,\n    \"officeName\": \"Test Dentistry\",\n    \"email\": \"test_dentistry@example.com\",\n    \"phone\": \"(123) 232-3232\",\n    \"url\": \"https://google.com\",\n    \"message\": \"alksdjf\",\n    \"address\": \"lasdkjf\",\n    \"city\": \"asldkjf\",\n    \"state\": \"AL\",\n    \"zipCode\": \"11111\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/9360f79a-37e0-491b-a660-f764e5555d0a_be-like-jane.jpg\",\n    \"officeImages\": [\n      \"https://dentalman_uploads.s3.amazonaws.com/02fa2040-b6f0-4aff-bc0d-569bdff1a7da_favicon---CORRECT-SIZE.png\"\n    ],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"10\",\n    \"marketplaceOptIn\": true\n  },\n  \"pricing\": {\n  \t\"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      }\n\t]\n  }\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Specialties",
+			"description": "",
+			"item": [
+				{
+					"name": "Get Specialties",
+					"request": {
+						"url": "{{host}}/{{basePath}}/dentist-specialties",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"officeInfo\": {\n    \"id\": 1,\n    \"officeName\": \"Test Dentistry\",\n    \"email\": \"test_dentistry@example.com\",\n    \"phone\": \"(123) 232-3232\",\n    \"url\": \"https://google.com\",\n    \"message\": \"alksdjf\",\n    \"address\": \"lasdkjf\",\n    \"city\": \"asldkjf\",\n    \"state\": \"AL\",\n    \"zipCode\": \"11111\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/9360f79a-37e0-491b-a660-f764e5555d0a_be-like-jane.jpg\",\n    \"officeImages\": [\n      \"https://dentalman_uploads.s3.amazonaws.com/02fa2040-b6f0-4aff-bc0d-569bdff1a7da_favicon---CORRECT-SIZE.png\"\n    ],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"10\",\n    \"marketplaceOptIn\": true\n  },\n  \"pricing\": {\n  \t\"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      }\n\t]\n  }\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"description": "",
+			"item": [
+				{
+					"name": "Get My User Details",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"confirmNewPassword\": \"\",\n\t\"email\": \"\",\n\t\"specialtyId\": \"\",\n\t\"newEmail\": \"\",\n\t\"confirmEmail\": \"\",\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"birthDate\": \"\",\n\t\"phone\": \"\",\n\t\"sex\": \"\",\n\t\"address\": \"\",\n\t\"city\": \"\",\n\t\"state\": \"\",\n\t\"zipCode\": \"\",\n\t\"contactMethod\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Change My Password",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/change-auth",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"newEmail\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Update Patient",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/patients/{{patientId}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"phone\": \"\",\n\t\"address\": \"\",\n\t\"city\": \"\",\n\t\"state\": \"\",\n\t\"zipCode\": \"\",\n\t\"contactMethod\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Password",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/verify-password",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"oldPassword\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Credit Card Info",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/credit-card",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pending Amount",
+					"request": {
+						"url": "{{host}}/{{basePath}}/users/{{userId}}/pending-amount",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"officeInfo\": {\n    \"id\": 1,\n    \"officeName\": \"Test Dentistry\",\n    \"email\": \"test_dentistry@example.com\",\n    \"phone\": \"(123) 232-3232\",\n    \"url\": \"https://google.com\",\n    \"message\": \"alksdjf\",\n    \"address\": \"lasdkjf\",\n    \"city\": \"asldkjf\",\n    \"state\": \"AL\",\n    \"zipCode\": \"11111\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/9360f79a-37e0-491b-a660-f764e5555d0a_be-like-jane.jpg\",\n    \"officeImages\": [\n      \"https://dentalman_uploads.s3.amazonaws.com/02fa2040-b6f0-4aff-bc0d-569bdff1a7da_favicon---CORRECT-SIZE.png\"\n    ],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"10\",\n    \"marketplaceOptIn\": true\n  },\n  \"pricing\": {\n  \t\"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      }\n\t]\n  }\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Charge Bill",
+					"request": {
+						"url": "{{host}}/{{basePath}}/users/{{userId}}/charge-bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"card\": \"\"\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Make Payment",
+					"request": {
+						"url": "{{host}}/api/v1/users/{{userId}}/payments",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "JWT {{token}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"card\": \"\"\n}"
 						},
 						"description": ""
 					},
