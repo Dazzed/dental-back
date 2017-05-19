@@ -114,7 +114,7 @@ function fetchDentist(userId) {
           }).then(activeMemberCount => {
             d.dentistInfo.activeMemberCount = activeMemberCount;
             resolve(d);
-          }).catch(err => { throw new Error(err); });
+          }).catch(reject);
         });
       }).catch(reject);
     })
@@ -144,9 +144,15 @@ function listDentists(req, res, next) {
     .then(users => {
       Promise.all(users.map(u => fetchDentist(u.id)))
       .then(dentists => res.json({ data: dentists }))
-      .catch(err => next(new BadRequestError(err)));
+      .catch(err => {
+        console.error(err);
+        next(new BadRequestError(err));
+      });
     })
-    .catch(err => next(new BadRequestError(err)));
+    .catch(err => {
+      console.error(err);
+      next(new BadRequestError(err));
+    });
   }
 }
 
@@ -503,6 +509,9 @@ function getDentistNoAuth(req, res, next) {
   })
   .catch(next);
 }
+
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTES
 
 router
   .route('/:userId/review')
