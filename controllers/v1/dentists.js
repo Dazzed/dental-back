@@ -98,10 +98,12 @@ function fetchDentist(userId) {
           fullCosts.forEach(cost => {
             if (d.dentistInfo.membership.id === cost.membershipId) {
               d.dentistInfo.membership.fullCost = cost.fullCost;
-              d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
+              d.dentistInfo.membership.savings = (cost.fullCost -
+                (parseInt(d.dentistInfo.membership.price, 10) * 12));
             } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
               d.dentistInfo.childMembership.fullCost = cost.fullCost;
-              d.dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
+              d.dentistInfo.childMembership.savings = (cost.fullCost -
+                (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
             }
           });
 
@@ -233,7 +235,6 @@ function deleteReview(req, res) {
 
   return res.json({});
 }
-
 
 function invitePatient(req, res, next) { // eslint-disable-line
   req.checkBody(INVITE_PATIENT);
@@ -485,18 +486,6 @@ function updateDentist(req, res, next) {
   }
 }
 
-
-function searchDentist(req, res, next) {
-  db.DentistInfo.findAll({
-    where: { zipCode: req.query.zipCode }
-  })
-  .then(infos => {
-    res.json({ data: infos });
-  })
-  .catch(next);
-}
-
-
 function getDentistNoAuth(req, res, next) {
   db.User.findOne({
     attributes: ['id'],
@@ -516,10 +505,6 @@ function getDentistNoAuth(req, res, next) {
   })
   .catch(next);
 }
-
-router
-  .route('/search')
-  .get(searchDentist);
 
 router
   .route('/:userId/review')

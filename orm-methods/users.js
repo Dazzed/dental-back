@@ -276,7 +276,7 @@ export const instance = {
         ? membership.yearly : membership.monthly,
       yearly: membership.yearly,
       monthly: membership.monthly,
-      status: 'inactive',
+      status: 'active',
       membershipId: membership.id,
       clientId: this.get('id'),
       dentistId,
@@ -376,10 +376,12 @@ export const instance = {
       fullCosts.forEach(cost => {
         if (d.dentistInfo.membership.id === cost.membershipId) {
           d.dentistInfo.membership.fullCost = cost.fullCost;
-          d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
+          d.dentistInfo.membership.savings = (cost.fullCost -
+            (parseInt(d.dentistInfo.membership.price, 10) * 12));
         } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
           d.dentistInfo.childMembership.fullCost = cost.fullCost;
-          d.dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
+          d.dentistInfo.childMembership.savings = (cost.fullCost -
+            (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
         }
       });
 

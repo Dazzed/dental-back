@@ -1,7 +1,7 @@
 export default function (sequelize, DataTypes) {
   const MembershipItem = sequelize.define('MembershipItem', {
     pricingCode: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     price: {
