@@ -1,13 +1,13 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
 
 import db from '../../models';
 import { userRequired, adminRequired } from '../middlewares';
-// import { BadRequestError } from '../errors';
-
-const router = new Router({ mergeParams: true });
 
 // ────────────────────────────────────────────────────────────────────────────────
-// HANDLERS
+// ROUTER
 
 /**
  * Retrieves dentist offices count
@@ -55,8 +55,14 @@ function getStats(req, res) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
-// ROUTES
+// ENDPOINTS
 
-router.route('/').get(userRequired, adminRequired, getStats);
+const router = new Router({ mergeParams: true });
+
+router.route('/')
+  .get(
+    userRequired,
+    adminRequired,
+    getStats);
 
 export default router;

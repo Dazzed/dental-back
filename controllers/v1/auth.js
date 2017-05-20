@@ -1,3 +1,6 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import HTTPStatus from 'http-status';
 import _ from 'lodash';
 import jwt from 'jsonwebtoken';
@@ -22,12 +25,15 @@ import {
   EMAIL_SUBJECTS
 } from '../../config/constants';
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
-const router = new Router();
-
-
-// util methods
-
+/**
+ * Creates a dentist info record
+ *
+ * @param {Object} user - the related user object for the record
+ * @param {Object} body - the new dentist info record
+ */
 function createDentistInfo(user, body) {
   const dentistInfo = body.officeInfo;
   const pricing = body.pricing || {};
@@ -103,8 +109,13 @@ function createDentistInfo(user, body) {
   });
 }
 
-// Middlewares
-
+/**
+ * Registers a new user account
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function normalUserSignup(req, res, next) {
   req.checkBody(NORMAL_USER_REGISTRATION);
   req.checkBody('confirmPassword', 'Password do not match').equals(req.body.password);
@@ -209,7 +220,13 @@ function normalUserSignup(req, res, next) {
     });
 }
 
-
+/**
+ * Registers a new dentist user account
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function dentistUserSignup(req, res, next) {
   const entireBody = req.body;
   req.body = entireBody.user;
@@ -272,7 +289,13 @@ function dentistUserSignup(req, res, next) {
   });
 }
 
-
+/**
+ * Activates a user account
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function activate(req, res, next) {
   db.User.find({ where: { activationKey: req.params.key } })
     .then((user) => {
@@ -307,7 +330,13 @@ function activate(req, res, next) {
     });
 }
 
-
+/**
+ * Attempts to login as a user account and provide a session token
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function login(req, res, next) {
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err) {
@@ -336,9 +365,9 @@ function login(req, res, next) {
 /**
  * Attempts to login as an administrator
  *
- * @param {Object} req - the express request object
- * @param {Object} res - the express response object
- * @param {Function} next - call to begin the next phase of the filter chain
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
  */
 function adminLogin(req, res, next) {
   passport.authenticate('local', { session: false }, (err, user, info) => {
@@ -355,7 +384,11 @@ function adminLogin(req, res, next) {
   })(req, res, next);
 }
 
-// Bind with routes
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
+
 router
   .route('/login')
   .post(login);
@@ -374,12 +407,6 @@ router
   .route('/signup')
   .post(normalUserSignup);
 
-// router
-//   .route('/complete-signup')
-//   .post(
-//     passport.authenticate('jwt', { session: false }),
-//     completeNormalUserSignup);
-
 router
   .route('/dentist-signup')
   .post(dentistUserSignup);
@@ -388,11 +415,4 @@ router
   .route('/activate/:key')
   .get(activate);
 
-module.exports = {
-  auth: router,
-  login,
-  logout: (req, res) => res.end(),
-  signup: normalUserSignup,
-  dentistUserSignup,
-  activate
-};
+export default router;

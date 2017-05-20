@@ -1,8 +1,11 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
 
 import db from '../../models';
 import {
+  userRequired,
   adminRequired,
 } from '../middlewares';
 
@@ -13,8 +16,8 @@ import {
 const userFieldsExcluded = ['hash', 'salt', 'activationKey',
   'resetPasswordKey', 'verified', 'authorizeId', 'paymentId'];
 
-const router = new Router({ mergeParams: true });
-
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
 /**
  * Gets all members subscribed to the dentist whose ID is set in params.
@@ -41,11 +44,15 @@ function getMembers(req, res, next) {
   .catch(next);
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     adminRequired,
     getMembers);
 

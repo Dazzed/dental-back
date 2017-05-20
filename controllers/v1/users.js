@@ -1,10 +1,9 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
 import isPlainObject from 'is-plain-object';
 import HTTPStatus from 'http-status';
-// import aws from 'aws-sdk';
-// import multer from 'multer';
-// import multerS3 from 'multer-s3';
 import _ from 'lodash';
 
 import db from '../../models';
@@ -31,6 +30,10 @@ import {
   patientMessages
 } from '../../config/messages';
 
+import {
+  userRequired,
+} from '../middlewares';
+
 import { mailer } from '../../services/mailer';
 
 import {
@@ -40,13 +43,20 @@ import {
   UnauthorizedError
 } from '../errors';
 
-
-const router = new Router();
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
 /**
  * Fill req.locals.user with the requested used on url params and
  * call next middleware if allowed.
  *
+ */
+/**
+ * Fills the request object with the user record from the URL params
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
  */
 export function getUserFromParam(req, res, next) {
   const userId = req.params.userId;
@@ -79,7 +89,13 @@ export function getUserFromParam(req, res, next) {
   });
 }
 
-
+/**
+ * Verifies a users password
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function verifyPasswordLocal(req, res, next) {
   // req.checkBody({ oldPassword: { nonEmpty: true } });
   // const errors = req.asyncValidationErrors(true)
@@ -105,7 +121,13 @@ function verifyPasswordLocal(req, res, next) {
   });
 }
 
-
+/**
+ * Gets a user account record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function getUser(req, res, next) {
   if (req.user.get('type') === 'dentist') {
     return req.locals.user
@@ -142,7 +164,12 @@ function getUser(req, res, next) {
     .catch(next);
 }
 
-
+/**
+ * Deletes a user account record (soft delete)
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function deleteUser(req, res) {
   const delEmail = `DELETED_${req.locals.user.email}`;
   req.locals.user.update({ email: delEmail, isDeleted: true }).then(() => res.json({}));
@@ -150,6 +177,13 @@ function deleteUser(req, res) {
 
 
 // TODO: maybe later add avatar support?? or another endpoint
+/**
+ * Updates a user record account
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function updateUser(req, res, next) {
   // const validator = Object.assign({}, req.locals.user.type === 'client' ?
   //   NORMAL_USER_EDIT : DENTIST_USER_EDIT);
@@ -206,7 +240,13 @@ function updateUser(req, res, next) {
     });
 }
 
-
+/**
+ * Updates a patient account record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function updatePatient(req, res, next) {
   req.checkBody(PATIENT_EDIT);
 
@@ -254,7 +294,13 @@ function updatePatient(req, res, next) {
     });
 }
 
-
+/**
+ * Updates the user account authorization (i.e. Password)
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function updateAuth(req, res, next) {
   let validator = {};
 
@@ -313,7 +359,13 @@ function updateAuth(req, res, next) {
     });
 }
 
-
+/**
+ * Gets the user account payment card info
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function getCardInfo(req, res, next) {
   const queries = [
     db.Subscription.getPendingAmount(req.locals.user.get('id')),
@@ -411,12 +463,23 @@ function getCardInfo(req, res, next) {
 //   });
 // }
 
-
+/**
+ * Verifies a user account password
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function verifyPassword(req, res) {
   res.json({ passwordVerified: req.locals.passwordVerified });
 }
 
-
+/**
+ * Submits a request to charge the associated user account record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function makePayment(req, res, next) {
   ensureCreditCard(req.locals.user, req.body.card).then(user => {
     db.Subscription.getPendingAmount(user.id).then(data => {
@@ -472,27 +535,31 @@ function makePayment(req, res, next) {
   .catch(errors => next(errors));
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/:userId')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getUserFromParam,
     getUser)
-  .delete(
-    passport.authenticate('jwt', { session: false }),
-    getUserFromParam,
-    deleteUser)
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getUserFromParam,
     verifyPasswordLocal,
-    updateUser);
+    updateUser)
+  .delete(
+    userRequired,
+    getUserFromParam,
+    deleteUser);
 
 router
   .route('/:userId/change-auth')
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getUserFromParam,
     verifyPasswordLocal,
     updateAuth);
@@ -500,21 +567,14 @@ router
 router
   .route('/:userId/patients/:patientId')
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getUserFromParam,
     updatePatient);
-
-// router
-//   .route('/upload-photos')
-//   .post(
-//     createS3Bucket,
-//     upload.array('photos', 10),
-//     signS3Upload);
 
 router
   .route('/:userId/verify-password')
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getUserFromParam,
     verifyPasswordLocal,
     verifyPassword);
@@ -522,7 +582,7 @@ router
 router
   .route('/:userId/credit-card')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getUserFromParam,
     getCardInfo);
 

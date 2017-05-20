@@ -1,3 +1,6 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
 import passport from 'passport';
 import changeFactory from 'change-js';
@@ -12,11 +15,18 @@ import {
   chargeAuthorize,
 } from '../payments';
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
 const Change = changeFactory();
-const router = new Router({ mergeParams: true });
 
-
+/**
+ * Gets the dentist record from the url params
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function getDentist(req, res, next) {
   req.user.getMyDentist()
     .then(([data]) => {
@@ -26,13 +36,19 @@ function getDentist(req, res, next) {
     .catch(next);
 }
 
-
+/**
+ * Gets the remaining amount to be paid for the user
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function getPendingAmount(req, res, next) {
   let userId = req.params.userId;
-  let dentistId = undefined;
+  let dentistId;
 
   if (userId === 'me' && req.user.get('type') === 'dentist') {
-    return next(new BadRequestError('Dentist donnot have subscription'));
+    next(new BadRequestError('Dentist donnot have subscription'));
   }
 
   userId = userId === 'me' ? req.user.get('id') : userId;
@@ -48,13 +64,19 @@ function getPendingAmount(req, res, next) {
     .catch(next);
 }
 
-
+/**
+ * Charges the user account record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function chargeBill(req, res, next) {
   let userId = req.params.userId;
-  let dentistId = undefined;
+  let dentistId;
 
   if (userId === 'me' && req.user.get('type') === 'dentist') {
-    return next(new BadRequestError('Dentist donnot have subscription'));
+    next(new BadRequestError('Dentist donnot have subscription'));
   }
 
   userId = userId === 'me' ? req.user.get('id') : userId;
@@ -94,10 +116,12 @@ function chargeBill(req, res, next) {
     .catch(next);
 }
 
-
 /**
- * Ensure card exists, create or update card if needed.
+ * Validates that the card exists, creates or updates if needed
  *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
  */
 function ensureCreditCard(req, res, next) {
   let userId = req.params.userId;
@@ -142,7 +166,13 @@ function ensureCreditCard(req, res, next) {
     });
 }
 
-
+/**
+ * Generates a CSV report
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function generateReport(req, res, next) {
   return db.User.findAll({
     attributes: ['id', 'firstName', 'lastName', 'email',
@@ -228,6 +258,10 @@ function generateReport(req, res, next) {
   });
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/dentist')

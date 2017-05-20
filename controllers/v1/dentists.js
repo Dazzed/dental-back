@@ -50,9 +50,7 @@ import {
 
 // ────────────────────────────────────────────────────────────────────────────────
 
-const router = new Router({ mergeParams: true });
-
-
+/** Gets time in pacific standard time */
 function getDateTimeInPST() {
   const now = moment();
   const time = now.format('h:mm a');
@@ -64,9 +62,9 @@ function getDateTimeInPST() {
 /**
  * Prepares a promise for fetching a dentist's information
  *
- * @param {object} req - the express request object
- * @param {object} res - the express response object
- * @param {function} next - the next web action to be triggered
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
  * @return {Promise<Dentist>}
  */
 function fetchDentist(userId) {
@@ -125,9 +123,9 @@ function fetchDentist(userId) {
 /**
  * Obtains the details of one or several dentists
  *
- * @param {object} req - the express request object
- * @param {object} res - the express response object
- * @param {function} next - the next web action to be triggered
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
  */
 function listDentists(req, res, next) {
   if (req.params.userId) {
@@ -156,6 +154,13 @@ function listDentists(req, res, next) {
   }
 }
 
+/**
+ * Adds a review
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function addReview(req, res, next) {
   req.checkBody(REVIEW);
 
@@ -197,7 +202,13 @@ function addReview(req, res, next) {
   return res.json({});
 }
 
-
+/**
+ * Updates a review
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function updateReview(req, res, next) {
   req.checkBody(REVIEW);
 
@@ -228,7 +239,13 @@ function updateReview(req, res, next) {
   .catch(errs => next(new BadRequestError(errs)));
 }
 
-
+/**
+ * Deletes a dentist office review
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function deleteReview(req, res) {
   db.Review.destroy({
     where: {
@@ -240,6 +257,13 @@ function deleteReview(req, res) {
   return res.json({});
 }
 
+/**
+ * Invites a patient to register with a dentist office
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function invitePatient(req, res, next) { // eslint-disable-line
   req.checkBody(INVITE_PATIENT);
 
@@ -269,7 +293,13 @@ function invitePatient(req, res, next) { // eslint-disable-line
   });
 }
 
-
+/**
+ * Contacts support
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function contactSupport(req, res, next) { // eslint-disable-line
   req.checkBody(CONTACT_SUPPORT);
 
@@ -302,7 +332,13 @@ function contactSupport(req, res, next) { // eslint-disable-line
   });
 }
 
-
+/**
+ * Contacts support without being logged in
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function contactSupportNoAuth(req, res, next) { // eslint-disable-line
   req.checkBody(
     Object.assign({
@@ -340,7 +376,13 @@ function contactSupportNoAuth(req, res, next) { // eslint-disable-line
   });
 }
 
-
+/**
+ * Gets a subscribed patient record
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function getSubscribedPatient(req, res, next) {
   db.Subscription.findOne({
     where: {
@@ -363,7 +405,13 @@ function getSubscribedPatient(req, res, next) {
   .catch(next);
 }
 
-
+/**
+ * Waives the cancellation fee for a user
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function waiveCancellationFee(req, res, next) {
   req.checkBody(WAIVE_CANCELLATION);
 
@@ -384,6 +432,13 @@ function waiveCancellationFee(req, res, next) {
 }
 
 
+/**
+ * Validates a Credit Card
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function validateCreditCard(req, res, next) {
   ensureCreditCard(req.locals.client, req.body.card)
     .then(user => {
@@ -399,7 +454,13 @@ function validateCreditCard(req, res, next) {
     });
 }
 
-
+/**
+ * Updates a Patient Card
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function updatePatientCard(req, res, next) {
   req.checkBody(PATIENT_CARD_UPDATE);
   // req.checkBody([
@@ -445,9 +506,9 @@ function updatePatientCard(req, res, next) {
 /**
  * Updates a single dentist user
  *
- * @param {object} req - the express request object
- * @param {object} res - the express response object
- * @param {function} next - the next web action to be triggered
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
  */
 function updateDentist(req, res, next) {
   if (req.params.userId) {
@@ -490,6 +551,13 @@ function updateDentist(req, res, next) {
   }
 }
 
+/**
+ * Gets a dentist record without authorization
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
+ */
 function getDentistNoAuth(req, res, next) {
   db.User.findOne({
     attributes: ['id'],
@@ -512,6 +580,8 @@ function getDentistNoAuth(req, res, next) {
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTES
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/:userId/review')
@@ -568,8 +638,4 @@ router
     adminRequired,
     updateDentist);
 
-module.exports = {
-  dentists: router,
-  listDentists,
-  updateDentist,
-};
+export default router;

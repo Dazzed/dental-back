@@ -332,12 +332,22 @@ function getMasterReport(req, res, next) {
 const router = new Router({ mergeParams: true });
 
 router.route('/dentist/:officeId/list')
-  .get(userRequired, dentistRequired, injectDentistOffice('officeId'), getListOfReportURLs);
+  .get(
+    userRequired,
+    dentistRequired,
+    injectDentistOffice('officeId'),
+    getListOfReportURLs);
 
 router.route('/dentist/:officeId/:year/:month/general')
-  .get(userRequired, dentistRequired, getGeneralReport);
+  .get(
+    userRequired,
+    dentistRequired,
+    getGeneralReport);
 
 router.route('/dentists/:year/:month')
-  .get(userRequired, adminRequired, getMasterReport);
+  .get(
+    userRequired,
+    adminRequired,
+    getMasterReport);
 
 export default router;

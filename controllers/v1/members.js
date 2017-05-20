@@ -1,5 +1,7 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
 import _ from 'lodash';
 import HTTPStatus from 'http-status';
 import moment from 'moment';
@@ -17,10 +19,20 @@ import {
   NotFoundError
 } from '../errors';
 
+import {
+  userRequired,
+} from '../middlewares';
 
-const router = new Router({ mergeParams: true });
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
-
+/**
+ * Gets a list of member records
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function getMembers(req, res, next) {
   let query;
 
@@ -36,7 +48,13 @@ function getMembers(req, res, next) {
     .catch(next);
 }
 
-
+/**
+ * Adds a member record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function addMember(req, res, next) {
   req.checkBody(MEMBER);
 
@@ -68,7 +86,13 @@ function addMember(req, res, next) {
     });
 }
 
-
+/**
+ * Updates a member record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function updateMember(req, res, next) {
   const memberValidator = MEMBER;
 
@@ -164,11 +188,12 @@ function updateMember(req, res, next) {
     });
 }
 
-
 /**
- * Fill req.locals.familyMember with the requested member on url params,
- * if allowed call next middleware.
+ * Injects the member requested into the request object
  *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
  */
 function getMemberFromParam(req, res, next) {
   const memberId = req.params.memberId;
@@ -185,7 +210,13 @@ function getMemberFromParam(req, res, next) {
   }).catch(error => next(error));
 }
 
-
+/**
+ * Gets a specific member record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function getMember(req, res, next) {
   const subscription = req.locals.member.subscription;
   const membershipId = subscription ? subscription.membershipId : 0;
@@ -200,7 +231,13 @@ function getMember(req, res, next) {
   .catch(error => next(error));
 }
 
-
+/**
+ * Deletes a member record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function deleteMember(req, res) {
   const delEmail = `DELETED_${req.locals.member.email}`;
 
@@ -211,15 +248,19 @@ function deleteMember(req, res) {
   }).then(() => res.json({}));
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     checkUserDentistPermission,
     getMembers)
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     checkUserDentistPermission,
     addMember);
 
@@ -227,18 +268,17 @@ router
 router
   .route('/:memberId')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getMemberFromParam,
     getMember)
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getMemberFromParam,
     updateMember,
     getMember)
   .delete(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getMemberFromParam,
     deleteMember);
-
 
 export default router;

@@ -1,6 +1,9 @@
 /* eslint max-len:0 */
+
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
 import _ from 'lodash';
 
 import db from '../../models';
@@ -8,22 +11,22 @@ import { userRequired } from '../middlewares';
 import { updateTotalMembership } from '../../utils/helpers';
 import { MembershipMethods } from '../../orm-methods/memberships';
 
-import { SUBSCRIPTION_STATES } from '../../config/constants';
-
 import {
   NotFoundError,
   ForbiddenError,
   BadRequestError,
 } from '../errors';
 
-
-const router = new Router({ mergeParams: true });
-
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
 /**
- * Fill req.locals.dentistInfo with the requested member on url params,
- * if allowed call next middleware.
+ * Fills the request with the dentist information from
+ * the requested member found in the url params
  *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
  */
 function getDentistInfoFromParams(req, res, next) {
   const userId = req.params.userId;
@@ -135,7 +138,13 @@ function getDentistInfoFromParams(req, res, next) {
   });
 }
 
-
+/**
+ * Updates the dentist info record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function updateDentistInfo(req, res, next) {
   const userId = req.params.userId;
 
@@ -325,7 +334,12 @@ function updateDentistInfo(req, res, next) {
     }).catch(next);
 }
 
-
+/**
+ * Gets the dentist info record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function getDentistInfo(req, res) {
   let dentistInfo = req.locals.dentistInfo.toJSON();
   dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId']);
@@ -388,6 +402,10 @@ function getDentistInfo(req, res) {
   }).catch(err => new BadRequestError(err));
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/')
@@ -403,6 +421,5 @@ router
     updateDentistInfo,
     getDentistInfoFromParams,
     getDentistInfo);
-
 
 export default router;

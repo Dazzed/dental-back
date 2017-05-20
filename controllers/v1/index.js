@@ -1,28 +1,31 @@
 import { Router } from 'express';
 
-import { auth } from './auth';
-import users from './users';
-import memberships from './memberships';
-import members from './members';
-import services from './services';
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER COMPONENTS
+
+import auth from './auth';
+import dentists from './dentists';
+import dentistMembers from './dentist-members';
 import dentistSpecialties from './dentist-specialties';
+import dentistInfo from './dentist-info';
+import members from './members';
+import memberships from './memberships';
 import messages from './messages';
 import notifications from './notifications';
-import { dentists } from './dentists';
-import userDentist from './user-dentist';
 import offices from './offices';
 import pricing from './pricing';
 import reports from './reports';
 import reviews from './reviews';
-import dentistMembers from './dentist-members';
+import services from './services';
 import stats from './stats';
+import userDentist from './user-dentist';
+import users from './users';
 import webhooks from './webhooks';
 
-// Middleware
 import { validateHook, trackHookEvent } from '../middlewares';
 
-// just one to one resources
-import dentistInfo from './dentist-info';
+// ────────────────────────────────────────────────────────────────────────────────
+// MIDDLEWARE
 
 const router = new Router({ mergeParams: true });
 

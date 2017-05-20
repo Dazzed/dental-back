@@ -1,12 +1,19 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-// import passport from 'passport';
 
 import db from '../../models';
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
-const router = new Router({ mergeParams: true });
-
-
+/**
+ * Gets a list of dentist offices
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function getOffices(req, res, next) {
   db.DentistInfo.findAll({
     attributes: ['officeName', 'id'],
@@ -16,6 +23,10 @@ function getOffices(req, res, next) {
   .catch(next);
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/')

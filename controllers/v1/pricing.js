@@ -1,3 +1,6 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
 import _ from 'lodash';
 
@@ -10,8 +13,6 @@ import { ForbiddenError } from '../errors';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
-const router = new Router({ mergeParams: true });
-
 const VISIBLE_COLUMNS = [
   'description', 'code'
 ];
@@ -19,8 +20,8 @@ const VISIBLE_COLUMNS = [
 /**
  * Retrieves a list of price codes created by all dentist offices
  *
- * @param {Object<any>} req - the express request
- * @param {Object<any>} res - the express response
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
  */
 function getPricingCodes(req, res) {
   db.PriceCodes.findAll({}).then(codes => {
@@ -29,6 +30,12 @@ function getPricingCodes(req, res) {
   }).catch(err => res.json({ data: new ForbiddenError(err) }));
 }
 
+/**
+ * Saves a new price code record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function savePriceCode(req, res) {
   req.checkBody(NEW_PRICING_CODE);
 
@@ -43,8 +50,15 @@ function savePriceCode(req, res) {
 // ────────────────────────────────────────────────────────────────────────────────
 // ENDPOINTS
 
+const router = new Router({ mergeParams: true });
+
 router.route('/')
-  .get(userRequired, getPricingCodes)
-  .post(userRequired, dentistRequired, savePriceCode);
+  .get(
+    userRequired,
+    getPricingCodes)
+  .post(
+    userRequired,
+    dentistRequired,
+    savePriceCode);
 
 export default router;

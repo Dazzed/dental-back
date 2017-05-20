@@ -1,11 +1,10 @@
-import { Router } from 'express';
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
 
-import db from '../../models';
+import { Router } from 'express';
 
 import { WebhookMethods } from '../../orm-methods/webhooks';
 import { AUTHORIZE_HOOK_EVENTS } from '../../config/constants';
-
-const router = new Router({ mergeParams: true });
 
 // ────────────────────────────────────────────────────────────────────────────────
 // HANDLERS
@@ -42,6 +41,8 @@ function handleAuthorizeHook(req, res) {
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTES
+
+const router = new Router({ mergeParams: true });
 
 router.route('/authorize')
   .post(handleAuthorizeHook);

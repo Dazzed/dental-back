@@ -1,5 +1,7 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
 import HTTPStatus from 'http-status';
 import _ from 'lodash';
 
@@ -15,14 +17,19 @@ import {
   ForbiddenError,
 } from '../errors';
 
+import {
+  userRequired,
+} from '../middlewares';
 
-const router = new Router({ mergeParams: true });
-
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
 /**
- * Fill req.locals.familyMember with the requested member on url params,
- * if allowed call next middleware.
+ * Fills the request object with the membership record
  *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
  */
 function getMembershipFromParams(req, res, next) {
   const userId = req.params.userId;
@@ -71,7 +78,11 @@ function getMembershipFromParams(req, res, next) {
 }
 
 /**
- * Injects the requested user object into the request
+ * Injects the user object into the request
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
  */
 function getUserFromParams(req, res, next) {
   let id = req.params.userId;
@@ -91,6 +102,13 @@ function getUserFromParams(req, res, next) {
 }
 
 // TODO: add pagination and filters?
+/**
+ * Gets the list of available memberships
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function getMemberships(req, res, next) {
   const userId = req.params.userId;
 
@@ -126,14 +144,25 @@ function getMemberships(req, res, next) {
   });
 }
 
-
+/**
+ * Gets a membership record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function getMembership(req, res) {
   res.json({
     data: _.omit(req.locals.membership.toJSON(), ['isDeleted']),
   });
 }
 
-
+/**
+ * Adds a new membership record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function addMembership(req, res, next) {
   const userId = req.params.userId;
 
@@ -180,7 +209,13 @@ function addMembership(req, res, next) {
   });
 }
 
-
+/**
+ * Updates a membership record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function updateMembership(req, res, next) {
   req.checkBody(MEMBERSHIP);
 
@@ -204,11 +239,23 @@ function updateMembership(req, res, next) {
   });
 }
 
-
+/**
+ * Deletes a membership record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function deleteMembership(req, res) {
   req.locals.membership.update({ isDeleted: true }).then(() => res.end());
 }
 
+/**
+ * Cancels a membership plan for a user account
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function cancelMembership(req, res, next) {
   // Check if the user has access to cancel the user
   if (req.user.get('id') !== req.membershipUser.get('id') &&
@@ -224,6 +271,13 @@ function cancelMembership(req, res, next) {
   }
 }
 
+/**
+ * Deactivates a user from a membership plan
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Object} next - the next middleware function
+ */
 function deactivateMembership(req, res, next) {
   // Check if the user has access to cancel the user
   if (req.user.get('id') !== req.membershipUser.get('id') &&
@@ -239,35 +293,40 @@ function deactivateMembership(req, res, next) {
   }
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
+
 router
   .route('/')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getMemberships)
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     addMembership);
 
 
 router
   .route('/:membershipId')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getMembershipFromParams,
     getMembership)
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getMembershipFromParams,
     updateMembership)
   .delete(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getMembershipFromParams,
     deleteMembership);
 
 router
   .route('/cancel/:userId')
   .delete(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getUserFromParams,
     cancelMembership
   );
@@ -275,7 +334,7 @@ router
 router
   .route('/deactivate/:userId')
   .delete(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getUserFromParams,
     deactivateMembership
   );
