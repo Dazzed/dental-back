@@ -13,93 +13,18 @@ import {
 
 import {
   BadRequestError,
-  NotFoundError,
   ForbiddenError,
 } from '../errors';
 
 import {
   userRequired,
+  injectSimpleUser,
+  injectMembership,
+  validateBody,
 } from '../middlewares';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
-
-/**
- * Fills the request object with the membership record
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
- */
-function getMembershipFromParams(req, res, next) {
-  const userId = req.params.userId;
-
-  /*
-   * If user is not admin, or parent of user and try to requests paths not related
-   * to that user will return forbidden.
-   */
-  db.User.count({
-    where: {
-      id: userId,
-      addedBy: req.user.get('id')
-    }
-  }).then(count => {
-    const canEdit =
-      userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-      req.user.get('type') === 'admin' || count >= 1;
-
-    if (!canEdit) {
-      return next(new ForbiddenError());
-    }
-
-    const query = {
-      where: {
-        id: req.params.membershipId,
-      }
-    };
-
-    // if not admin limit query to related data userId
-    if (req.user.get('type') !== 'admin') {
-      query.where.userId = req.user.get('id');
-      query.where.isDeleted = false;  // this to save
-    }
-
-    return db.Membership.find(query);
-  }).then((membership) => {
-    if (!membership) {
-      next(new NotFoundError());
-    }
-
-    req.locals.membership = membership;
-    next();
-  }).catch((error) => {
-    next(error);
-  });
-}
-
-/**
- * Injects the user object into the request
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
- */
-function getUserFromParams(req, res, next) {
-  let id = req.params.userId;
-
-  if (id === 'me') id = req.user.get('id');
-
-  Promise.resolve()
-  .then(() => db.User.find({ where: { id } }))
-  .then(user => {
-    if (!user || req.params.userId !== 'me') next(new BadRequestError());
-    req.membershipUser = user;
-    next();
-  }).catch(err => {
-    console.log(err);
-    next(new BadRequestError());
-  });
-}
 
 // TODO: add pagination and filters?
 /**
@@ -181,14 +106,6 @@ function addMembership(req, res, next) {
     return next(new ForbiddenError());
   }
 
-  req.checkBody(MEMBERSHIP);
-
-  const errors = req.validationErrors(true);
-
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
   const data = _.pick(req.body, ['name', 'price', 'description']);
 
   // if userId is not set or is me set to loggedin user id.
@@ -214,17 +131,8 @@ function addMembership(req, res, next) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
  */
-function updateMembership(req, res, next) {
-  req.checkBody(MEMBERSHIP);
-
-  const errors = req.validationErrors(true);
-
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
+function updateMembership(req, res) {
   const data = _.pick(req.body, ['name', 'price', 'description']);
 
   // if userId is undefined set body param
@@ -258,15 +166,15 @@ function deleteMembership(req, res) {
  */
 function cancelMembership(req, res, next) {
   // Check if the user has access to cancel the user
-  if (req.user.get('id') !== req.membershipUser.get('id') &&
-  req.user.get('id') !== req.membershipUser.get('addedBy')) {
+  if (req.user.get('id') !== req.locals.membershipUser.get('id') &&
+  req.user.get('id') !== req.locals.membershipUser.get('addedBy')) {
     next(new BadRequestError());
   } else {
     // Cancel the membership/subscription
     db.Subscription.update({
       status: 'canceled'
     }, {
-      where: { clientId: req.membershipUser.get('id') }
+      where: { clientId: req.locals.membershipUser.get('id') }
     }).then(() => res.end());
   }
 }
@@ -280,15 +188,15 @@ function cancelMembership(req, res, next) {
  */
 function deactivateMembership(req, res, next) {
   // Check if the user has access to cancel the user
-  if (req.user.get('id') !== req.membershipUser.get('id') &&
-  req.user.get('id') !== req.membershipUser.get('addedBy')) {
+  if (req.user.get('id') !== req.locals.membershipUser.get('id') &&
+  req.user.get('id') !== req.locals.membershipUser.get('addedBy')) {
     next(new BadRequestError());
   } else {
     // Cancel the membership/subscription
     db.Subscription.update({
       status: 'inactive'
     }, {
-      where: { clientId: req.membershipUser.get('id') }
+      where: { clientId: req.locals.membershipUser.get('id') }
     }).then(() => res.end());
   }
 }
@@ -305,6 +213,7 @@ router
     getMemberships)
   .post(
     userRequired,
+    validateBody(MEMBERSHIP),
     addMembership);
 
 
@@ -312,22 +221,23 @@ router
   .route('/:membershipId')
   .get(
     userRequired,
-    getMembershipFromParams,
+    injectMembership(),
     getMembership)
   .put(
     userRequired,
-    getMembershipFromParams,
+    validateBody(MEMBERSHIP),
+    injectMembership(),
     updateMembership)
   .delete(
     userRequired,
-    getMembershipFromParams,
+    injectMembership(),
     deleteMembership);
 
 router
   .route('/cancel/:userId')
   .delete(
     userRequired,
-    getUserFromParams,
+    injectSimpleUser(),
     cancelMembership
   );
 
@@ -335,7 +245,7 @@ router
   .route('/deactivate/:userId')
   .delete(
     userRequired,
-    getUserFromParams,
+    injectSimpleUser(),
     deactivateMembership
   );
 

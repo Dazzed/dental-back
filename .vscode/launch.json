@@ -10,7 +10,16 @@
             "sourceMaps": true,
             "name": "Launch Program",
             "envFile": "${workspaceRoot}/.env",
-            "program": "${workspaceRoot}/index.js"
+            "program": "${workspaceRoot}/index.js",
+            "protocol": "legacy"
+        },
+        {
+          "type": "node",
+          "request": "attach",
+          "name": "Attach to Process",
+          "protocol": "legacy",
+          "restart": true,
+          "port": 5858
         }
     ]
 }

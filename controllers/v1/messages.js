@@ -12,11 +12,11 @@ import {
 
 import {
   NotFoundError,
-  BadRequestError,
 } from '../errors';
 
 import {
   userRequired,
+  validateBody,
 } from '../middlewares';
 
 
@@ -168,14 +168,6 @@ function getMessages(req, res, next) {
  * @param {Object} next - the next middleware function
  */
 function addMessage(req, res, next) {
-  req.checkBody(MESSAGE);
-
-  const errors = req.validationErrors(true);
-
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
   const data = userQueryHelper(
     req.user.get('type'),
     req.user.get('id'),
@@ -228,6 +220,7 @@ router
     getMessages)
   .post(
     userRequired,
+    validateBody(MESSAGE),
     addMessage);
 
 export default router;

@@ -17,6 +17,10 @@ import {
 } from '../errors';
 
 import {
+  validateBody,
+} from '../middlewares';
+
+import {
   NORMAL_USER_REGISTRATION,
   DENTIST_USER_REGISTRATION
 } from '../../utils/schema-validators';
@@ -117,107 +121,87 @@ function createDentistInfo(user, body) {
  * @param {Function} next - the next middleware function
  */
 function normalUserSignup(req, res, next) {
-  req.checkBody(NORMAL_USER_REGISTRATION);
   req.checkBody('confirmPassword', 'Password do not match').equals(req.body.password);
   req.checkBody('confirmEmail', 'Email do not match').equals(req.body.email);
 
   const data = req.body;
 
   req
-    .asyncValidationErrors(true)
-    .then(() => {
-      data.verified = true;
+  .asyncValidationErrors(true)
+  .then(() => {
+    data.verified = true;
 
-      return new Promise((resolve, reject) => {
-        db.User.register(data, data.password, (registerError, createdUser) => {
-          if (registerError) {
-            return reject(registerError);
-          }
-          return resolve(createdUser);
-        });
+    return new Promise((resolve, reject) => {
+      db.User.register(data, data.password, (registerError, createdUser) => {
+        if (registerError) {
+          return reject(registerError);
+        }
+        return resolve(createdUser);
       });
-    })
-    // .then((__user) => new Promise((resolve, reject) => {
-    //   if (data.card) {
-    //     return ensureCreditCard(__user, data.card)
-    //       .then(user => {
-    //         chargeAuthorize(user.authorizeId, user.paymentId, data)
-    //           .then(() => resolve(__user))
-    //           .catch(errors => {
-    //             db.User.destroy({ where: { id: __user.id } });
-    //             reject(errors);
-    //           });
-    //       })
-    //       .catch((errors) => {
-    //         // delete the user, account couldn't be charged successfully.
-    //         db.User.destroy({ where: { id: __user.id } });
-    //         reject(errors);
-    //       });
-    //   }
-    //   return resolve(__user);
-    // }))
-    .then((createdUser) => {
-      db.DentistInfo.find({
-        attributes: ['membershipId', 'userId'],
-        where: { id: data.officeId }
-      })
-      .then((info) => {
-        const membership = data.subscription;
-        const today = moment();
-
-        db.Subscription.create({
-          startAt: today,
-          endAt: moment(today).add(1, 'months'),
-          total: (membership.adultYearlyFeeActivated
-            || membership.childYearlyFeeActivated)
-            ? membership.yearly : membership.monthly,
-          yearly: membership.yearly,
-          monthly: membership.monthly,
-          status: 'inactive',
-          membershipId: membership.id,
-          clientId: createdUser.id,
-          dentistId: info.get('userId'),
-        });
-      });
-      return createdUser;
-    })
-    .then((user) => {
-      const queries = [
-        user,
-        // This should be created so we can edit values
-      ];
-
-      if (req.body.phone) {
-        queries.push(user.createPhoneNumber({ number: req.body.phone || '' }));
-      }
-
-      if (req.body.address) {
-        queries.push(user.createAddress({ value: req.body.address || '' }));
-      }
-
-      if (req.body.members) {
-        req.body.members.forEach(member => {
-          queries.push(db.User.addMember(member, user));
-        });
-      }
-
-      return Promise.all(queries);
-    })
-    .then(([user]) => {
-      const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
-        'paymentId', 'activationKey', 'resetPasswordKey', 'isDeleted'];
-
-      res
-        .status(HTTPStatus.CREATED)
-        .json({ data: [_.omit(user, excludedKeys)] });
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
-
-      return next(errors);
     });
+  })
+  .then((createdUser) => {
+    db.DentistInfo.find({
+      attributes: ['membershipId', 'userId'],
+      where: { id: data.officeId }
+    })
+    .then((info) => {
+      const membership = data.subscription;
+      const today = moment();
+
+      db.Subscription.create({
+        startAt: today,
+        endAt: moment(today).add(1, 'months'),
+        total: (membership.adultYearlyFeeActivated
+          || membership.childYearlyFeeActivated)
+          ? membership.yearly : membership.monthly,
+        yearly: membership.yearly,
+        monthly: membership.monthly,
+        status: 'inactive',
+        membershipId: membership.id,
+        clientId: createdUser.id,
+        dentistId: info.get('userId'),
+      });
+    });
+    return createdUser;
+  })
+  .then((user) => {
+    const queries = [
+      user,
+      // This should be created so we can edit values
+    ];
+
+    if (req.body.phone) {
+      queries.push(user.createPhoneNumber({ number: req.body.phone || '' }));
+    }
+
+    if (req.body.address) {
+      queries.push(user.createAddress({ value: req.body.address || '' }));
+    }
+
+    if (req.body.members) {
+      req.body.members.forEach(member => {
+        queries.push(db.User.addMember(member, user));
+      });
+    }
+
+    return Promise.all(queries);
+  })
+  .then(([user]) => {
+    const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
+      'paymentId', 'activationKey', 'resetPasswordKey', 'isDeleted'];
+
+    res
+    .status(HTTPStatus.CREATED)
+    .json({ data: [_.omit(user, excludedKeys)] });
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      return next(new BadRequestError(errors));
+    }
+
+    return next(errors);
+  });
 }
 
 /**
@@ -228,9 +212,6 @@ function normalUserSignup(req, res, next) {
  * @param {Function} next - the next middleware function
  */
 function dentistUserSignup(req, res, next) {
-  const entireBody = req.body;
-  req.body = entireBody.user;
-  req.checkBody(DENTIST_USER_REGISTRATION);
   req.checkBody('confirmPassword', 'Password does not match').equals(req.body.password);
   req.checkBody('confirmEmail', 'Email does not match').equals(req.body.email);
 
@@ -400,16 +381,21 @@ router
 router
   .route('/logout')
   .get((req, res) => {
+    req.logout();
     res.end();
   });
 
 router
   .route('/signup')
-  .post(normalUserSignup);
+  .post(
+    validateBody(NORMAL_USER_REGISTRATION),
+    normalUserSignup);
 
 router
   .route('/dentist-signup')
-  .post(dentistUserSignup);
+  .post(
+    validateBody(DENTIST_USER_REGISTRATION, (body) => body.user),
+    dentistUserSignup);
 
 router
   .route('/activate/:key')

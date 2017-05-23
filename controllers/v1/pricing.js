@@ -1,11 +1,11 @@
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
-import { Router } from 'express';
 import _ from 'lodash';
+import { Router } from 'express';
 
 import db from '../../models';
-import { userRequired, dentistRequired } from '../middlewares';
+import { userRequired, dentistRequired, validateBody } from '../middlewares';
 import { NEW_PRICING_CODE } from '../../utils/schema-validators';
 
 import { ForbiddenError } from '../errors';
@@ -37,8 +37,6 @@ function getPricingCodes(req, res) {
  * @param {Object} res - the express response
  */
 function savePriceCode(req, res) {
-  req.checkBody(NEW_PRICING_CODE);
-
   db.PriceCodes.findOrCreate({
     where: req.body,
     returning: true,
@@ -59,6 +57,7 @@ router.route('/')
   .post(
     userRequired,
     dentistRequired,
+    validateBody(NEW_PRICING_CODE),
     savePriceCode);
 
 export default router;

@@ -12,8 +12,8 @@ import { AUTHORIZE_HOOK_EVENTS } from '../../config/constants';
 /**
  * Handles a Webhook payload from Authorize.net
  *
- * @param {Object<any>} req - the express request
- * @param {Object<any>} res - the express response
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
  */
 function handleAuthorizeHook(req, res) {
   let action;

@@ -24,6 +24,10 @@
           "args": ["run", "dev"]
         },
         {
+          "taskName": "debug",
+          "args": ["run", "debug"]
+        },
+        {
           "taskName": "migrate",
           "args": ["run", "postinstall"]
         }

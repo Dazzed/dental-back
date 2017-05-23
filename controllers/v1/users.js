@@ -32,6 +32,9 @@ import {
 
 import {
   userRequired,
+  injectUser,
+  verifyPasswordLocal,
+  validateBody,
 } from '../middlewares';
 
 import { mailer } from '../../services/mailer';
@@ -39,87 +42,11 @@ import { mailer } from '../../services/mailer';
 import {
   BadRequestError,
   NotFoundError,
-  ForbiddenError,
   UnauthorizedError
 } from '../errors';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
-
-/**
- * Fill req.locals.user with the requested used on url params and
- * call next middleware if allowed.
- *
- */
-/**
- * Fills the request object with the user record from the URL params
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
-export function getUserFromParam(req, res, next) {
-  const userId = req.params.userId;
-
-  if (userId === 'me' ||
-      (req.user && req.user.get('id') === parseInt(userId, 10))) {
-    req.locals.user = req.user;
-    return next();
-  }
-
-  if (req.user && req.user.get('type') === 'client' && userId === 'me') {
-    return next(new ForbiddenError());
-  }
-
-  let accountOwner;
-
-  if (req.user && req.user.get('type') === 'client') {
-    accountOwner = req.user.get('id');
-  }
-
-  return db.User.getActiveUser(userId, accountOwner).then((user) => {
-    if (!user) {
-      return next(new NotFoundError());
-    }
-
-    req.locals.user = user;
-    return next();
-  }).catch((error) => {
-    next(error);
-  });
-}
-
-/**
- * Verifies a users password
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
-function verifyPasswordLocal(req, res, next) {
-  // req.checkBody({ oldPassword: { nonEmpty: true } });
-  // const errors = req.asyncValidationErrors(true)
-  //
-  // if (errors) {
-  // }
-
-  db.User.find({
-    where: { id: req.locals.user.get('id') }
-  })
-  .then(_user => {
-    const password = req.body.oldPassword;
-
-    _user.authenticate(password, (err, user) => {
-      if (err) return next(err);
-
-      if (!user) {
-        return next(new UnauthorizedError('Incorrect password.'));
-      }
-      req.locals.passwordVerified = true;
-      return next();
-    });
-  });
-}
 
 /**
  * Gets a user account record
@@ -201,43 +128,43 @@ function updateUser(req, res, next) {
   req.checkBody(validator);
 
   req
-    .asyncValidationErrors(true)
-    .then(() => {
-      const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
+  .asyncValidationErrors(true)
+  .then(() => {
+    const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
 
-      // NOTE: This should later removed to add and remove by others endpoints
-      const phone = req.locals.user.get('phoneNumbers')[0];
-      const address = req.locals.user.get('addresses')[0];
-      const password = req.body.oldPassword || req.body.password;
+    // NOTE: This should later removed to add and remove by others endpoints
+    const phone = req.locals.user.get('phoneNumbers')[0];
+    const address = req.locals.user.get('addresses')[0];
+    const password = req.body.oldPassword || req.body.password;
 
-      phone.set('number', req.body.phone);
-      address.set('value', req.body.address);
+    phone.set('number', req.body.phone);
+    address.set('value', req.body.address);
 
-      return Promise.all([
-        req.locals.user.update(body),
-        new Promise((resolve, reject) => {
-          req.locals.user.setPassword(password, (err) => {
-            if (err) return reject(err);
-            return resolve();
-          });
-        }),
-        phone.save(),
-        address.save(),
-      ]);
-    })
-    .then(() => db.User.getActiveUser(req.locals.user.get('id')))
-    .then((user) => {
-      res
-        .status(HTTPStatus.OK)
-        .json({ data: user.toJSON() });
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
+    return Promise.all([
+      req.locals.user.update(body),
+      new Promise((resolve, reject) => {
+        req.locals.user.setPassword(password, (err) => {
+          if (err) return reject(err);
+          return resolve();
+        });
+      }),
+      phone.save(),
+      address.save(),
+    ]);
+  })
+  .then(() => db.User.getActiveUser(req.locals.user.get('id')))
+  .then((user) => {
+    res
+      .status(HTTPStatus.OK)
+      .json({ data: user.toJSON() });
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      return next(new BadRequestError(errors));
+    }
 
-      return next(errors);
-    });
+    return next(errors);
+  });
 }
 
 /**
@@ -248,50 +175,47 @@ function updateUser(req, res, next) {
  * @param {Function} next - the next middleware function
  */
 function updatePatient(req, res, next) {
-  req.checkBody(PATIENT_EDIT);
+  Promise.resolve()
+  .then(() => {
+    const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
 
-  req
-    .asyncValidationErrors(true)
-    .then(() => {
-      const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
+    const mainUser = req.locals.user;
 
-      const mainUser = req.locals.user;
+    const phone = mainUser.get('phoneNumbers')[0];
+    const address = mainUser.get('addresses')[0];
 
-      const phone = mainUser.get('phoneNumbers')[0];
-      const address = mainUser.get('addresses')[0];
+    const where = {};
+    where.id = req.params.patientId;
 
-      const where = {};
-      where.id = req.params.patientId;
+    if (mainUser.get('id') !== parseInt(req.params.patientId, 0)) {
+      where.addedBy = mainUser.get('id');
+    }
 
-      if (mainUser.get('id') !== parseInt(req.params.patientId, 0)) {
-        where.addedBy = mainUser.get('id');
+    return db.User.findOne({ where })
+    .then(patient => {
+      if (!patient) return next(new NotFoundError());
+
+      if (patient.get('id') === mainUser.get('id')) {
+        phone.set('number', req.body.phone);
+        address.set('value', req.body.address);
       }
 
-      return db.User.findOne({ where })
-      .then(patient => {
-        if (!patient) return next(new NotFoundError());
-
-        if (patient.get('id') === mainUser.get('id')) {
-          phone.set('number', req.body.phone);
-          address.set('value', req.body.address);
-        }
-
-        return Promise.all([
-          patient.update(body),
-          phone.save(),
-          address.save()
-        ]);
-      })
-      .then(() => res.json({}))
-      .catch(next);
+      return Promise.all([
+        patient.update(body),
+        phone.save(),
+        address.save()
+      ]);
     })
-    .catch(errors => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
+    .then(() => res.json({}))
+    .catch(next);
+  })
+  .catch(errors => {
+    if (isPlainObject(errors)) {
+      return next(new BadRequestError(errors));
+    }
 
-      return next(errors);
-    });
+    return next(errors);
+  });
 }
 
 /**
@@ -328,35 +252,35 @@ function updateAuth(req, res, next) {
   }
 
   req
-    .asyncValidationErrors(true)
-    .then(() => {
-      const where = { id: req.locals.user.get('id') };
+  .asyncValidationErrors(true)
+  .then(() => {
+    const where = { id: req.locals.user.get('id') };
 
-      return db.User.findOne({ where })
-      .then(patient => {
-        if (!patient) return next(new UnauthorizedError());
-        patient.set('email', req.body.newEmail);
+    return db.User.findOne({ where })
+    .then(patient => {
+      if (!patient) return next(new UnauthorizedError());
+      patient.set('email', req.body.newEmail);
 
-        return new Promise((resolve, reject) => {
-          if (!req.body.newPassword) return resolve(patient);
+      return new Promise((resolve, reject) => {
+        if (!req.body.newPassword) return resolve(patient);
 
-          return patient.setPassword(req.body.newPassword, (err, user) => {
-            if (err) return reject(err);
-            return resolve(user);
-          });
+        return patient.setPassword(req.body.newPassword, (err, user) => {
+          if (err) return reject(err);
+          return resolve(user);
         });
-      })
-      .then(patient => patient.save())
-      .then(() => res.json({}))
-      .catch(next);
+      });
     })
-    .catch(errors => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
+    .then(patient => patient.save())
+    .then(() => res.json({}))
+    .catch(next);
+  })
+  .catch(errors => {
+    if (isPlainObject(errors)) {
+      return next(new BadRequestError(errors));
+    }
 
-      return next(errors);
-    });
+    return next(errors);
+  });
 }
 
 /**
@@ -544,23 +468,23 @@ router
   .route('/:userId')
   .get(
     userRequired,
-    getUserFromParam,
+    injectUser(),
     getUser)
   .put(
     userRequired,
-    getUserFromParam,
+    injectUser(),
     verifyPasswordLocal,
     updateUser)
   .delete(
     userRequired,
-    getUserFromParam,
+    injectUser(),
     deleteUser);
 
 router
   .route('/:userId/change-auth')
   .put(
     userRequired,
-    getUserFromParam,
+    injectUser(),
     verifyPasswordLocal,
     updateAuth);
 
@@ -568,14 +492,15 @@ router
   .route('/:userId/patients/:patientId')
   .put(
     userRequired,
-    getUserFromParam,
+    validateBody(PATIENT_EDIT),
+    injectUser(),
     updatePatient);
 
 router
   .route('/:userId/verify-password')
   .post(
     userRequired,
-    getUserFromParam,
+    injectUser(),
     verifyPasswordLocal,
     verifyPassword);
 
@@ -583,13 +508,14 @@ router
   .route('/:userId/credit-card')
   .get(
     userRequired,
-    getUserFromParam,
+    injectUser(),
     getCardInfo);
 
 router
   .route('/:userId/payments')
   .post(
-    getUserFromParam,
+    userRequired,
+    injectUser(),
     makePayment);
 
 

@@ -8,7 +8,6 @@ import { Router } from 'express';
 import Moment from 'moment';
 import pdf from 'html-pdf';
 import nunjucks from 'nunjucks';
-import moment from 'moment';
 
 import {
   userRequired,
@@ -35,23 +34,23 @@ nunjucks.configure('../../views');
 /**
  * Retrieves a list of URLs for the FE to link to for Report URLs
  *
- * @param {Object<any>} req - the express request
- * @param {Object<any>} res - the express response
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
  */
 function getListOfReportURLs(req, res) {
   // 1. Reports start when dentistOffice was established
-  const left = moment(req.dentist.dentistInfo.createdAt);
+  const left = new Moment(req.locals.office.dentistInfo.createdAt);
   const timeBlocks = [];
 
-  while (left.diff(moment.now()) <= 0) {
-    const month = moment.months()[left.month()];
-    const monthShort = moment.monthsShort()[left.month()];
+  while (left.diff(Moment.now()) <= 0) {
+    const month = Moment.months()[left.month()];
+    const monthShort = Moment.monthsShort()[left.month()];
     const year = left.year();
 
     timeBlocks.push({
       month,
       year,
-      url: `/reports/dentist/${req.dentist.id}/${year}/${monthShort}/general`
+      url: `/reports/dentist/${req.locals.office.id}/${year}/${monthShort}/general`
     });
 
     left.add(1, 'month');
@@ -64,8 +63,8 @@ function getListOfReportURLs(req, res) {
  * Retrieves a PDF report for general membership/costs
  * information about the members of a dentist office
  *
- * @param {Object<any>} req - the express request
- * @param {Object<any>} res - the express response
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
  */
 function getGeneralReport(req, res) {
   const reportEndDate = new Moment();
@@ -239,8 +238,8 @@ function getGeneralReport(req, res) {
 /**
  * Retrieves a master report on all dentist offices
  *
- * @param {Object<any>} req - the express request
- * @param {Object<any>} res - the express response
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
  */
 function getMasterReport(req, res, next) {
   const month = Moment.monthsShort()[req.params.month];
@@ -335,7 +334,7 @@ router.route('/dentist/:officeId/list')
   .get(
     userRequired,
     dentistRequired,
-    injectDentistOffice('officeId'),
+    injectDentistOffice('officeId', 'office'),
     getListOfReportURLs);
 
 router.route('/dentist/:officeId/:year/:month/general')
