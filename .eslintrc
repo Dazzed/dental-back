@@ -1,4 +1,5 @@
-{ "extends": "eslint-config-airbnb-base",
+{
+  "extends": "eslint-config-airbnb-base",
   "env": {
     "browser": true,
     "node": true,
@@ -20,7 +21,7 @@
     "import/prefer-default-export": 0
   },
   "settings": {
-    "import/parser": "babel-eslint",
+    "import/parser": "babel-eslint"
   },
   "globals": {
   }
