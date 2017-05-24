@@ -67,7 +67,7 @@
               "uri": "/api/v1/dentists/8/members",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -132,7 +132,7 @@
               "uri": "/api/v1/dentists/8/reviews",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -197,7 +197,7 @@
               "uri": "/api/v1/dentists/8/reviews/3",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -653,7 +653,7 @@
               "uri": "/api/v1/dentists/me/contact_support",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"name\": \"\",\n\t\"email\": \"\",\n\t\"message\": \"\"\n}"
             },
@@ -719,7 +719,7 @@
               "uri": "/api/v1/dentists",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -784,7 +784,7 @@
               "uri": "/api/v1/dentists/me/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -856,7 +856,7 @@
               "uri": "/api/v1/dentists/me/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"firstName\": \"\",\n\t\"middleName\": \"\",\n\t\"lastName\": \"\",\n\t\"email\": \"\",\n\t\"phoneNumber\": \"\"\n}"
             },
@@ -922,7 +922,7 @@
               "uri": "/api/v1/dentists/12/members",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -996,7 +996,7 @@
               "uri": "/api/v1/dentists/12",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"middleName\": \"XXX\",\n\t\"phoneNumber\": \"(415) 400-8898\"\n}"
             },
@@ -1062,7 +1062,7 @@
               "uri": "/api/v1/users/12/dentist",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -1127,7 +1127,7 @@
               "uri": "/api/v1/dentists/12/no-auth",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -1226,7 +1226,7 @@
               "method": "GET",
               "uri": "/api/v1/reports/dentist/12/list",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -1283,7 +1283,7 @@
               "method": "GET",
               "uri": "/api/v1/reports/dentist/12/general",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -1340,7 +1340,7 @@
               "method": "GET",
               "uri": "/api/v1/reports/dentists/2017/1",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -1405,7 +1405,7 @@
               "uri": "/api/v1/admin/stats/",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -1462,7 +1462,7 @@
               "method": "GET",
               "uri": "/api/v1/pricing",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -1534,7 +1534,7 @@
               "uri": "/api/v1/pricing",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"description\": \"Lorem Ipsum Dolor\",\n\t\"code\": \"0129382\"\n}"
             },
@@ -2200,7 +2200,7 @@
               "uri": "/api/v1/memberships",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -2272,7 +2272,7 @@
               "uri": "/api/v1/memberships",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"name\": \"\",\n\t\"price\": \"\"\n}"
             },
@@ -2338,7 +2338,7 @@
               "uri": "/api/v1/memberships/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -2410,7 +2410,7 @@
               "uri": "/api/v1/memberships/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"name\": \"\",\n\t\"price\": \"\"\n}"
             },
@@ -2474,7 +2474,7 @@
               "uri": "/api/v1/memberships/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -2539,7 +2539,7 @@
               "uri": "/api/v1/memberships/cancel/me",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -2604,7 +2604,7 @@
               "uri": "/api/v1/memberships/deactivate/me",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -2669,7 +2669,7 @@
               "uri": "/api/v1/users/me",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -2741,7 +2741,7 @@
               "uri": "/api/v1/users/me",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"confirmNewPassword\": \"\",\n\t\"email\": \"\",\n\t\"specialtyId\": \"\",\n\t\"newEmail\": \"\",\n\t\"confirmEmail\": \"\",\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"birthDate\": \"\",\n\t\"phone\": \"\",\n\t\"sex\": \"\",\n\t\"address\": \"\",\n\t\"city\": \"\",\n\t\"state\": \"\",\n\t\"zipCode\": \"\",\n\t\"contactMethod\": \"\"\n}"
             },
@@ -2805,7 +2805,7 @@
               "uri": "/api/v1/users/me",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -2879,7 +2879,7 @@
               "uri": "/api/v1/users/me/change-auth",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"newEmail\": \"\"\n}"
             },
@@ -2954,7 +2954,7 @@
               "uri": "/api/v1/users/me/patients/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"phone\": \"\",\n\t\"address\": \"\",\n\t\"city\": \"\",\n\t\"state\": \"\",\n\t\"zipCode\": \"\",\n\t\"contactMethod\": \"\"\n}"
             },
@@ -3029,7 +3029,7 @@
               "uri": "/api/v1/users/me/verify-password",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"oldPassword\": \"\"\n}"
             },
@@ -3095,7 +3095,7 @@
               "uri": "/api/v1/users/me/credit-card",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3160,7 +3160,7 @@
               "uri": "/api/v1/users/me/pending-amount",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3234,7 +3234,7 @@
               "uri": "/api/v1/users/me/charge-bill",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"card\": \"\"\n}"
             },
@@ -3309,7 +3309,7 @@
               "uri": "/api/v1/users/me/payments",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"card\": \"\"\n}"
             },
@@ -3375,7 +3375,7 @@
               "uri": "/api/v1/members",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3440,7 +3440,7 @@
               "uri": "/api/v1/members/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3512,7 +3512,7 @@
               "uri": "/api/v1/members/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"birthDate\": \"\",\n\t\"sex\": \"\",\n\t\"familyRelationship\": \"\"\n}"
             },
@@ -3576,7 +3576,7 @@
               "uri": "/api/v1/members/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3641,7 +3641,7 @@
               "uri": "/api/v1/users/me/messages/2/unread_count",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3706,7 +3706,7 @@
               "uri": "/api/v1/users/me/messages/2/mark_all_read",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3771,7 +3771,7 @@
               "uri": "/api/v1/users/me/messages/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3834,7 +3834,7 @@
               "uri": "/api/v1/users/me/messages/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3899,7 +3899,7 @@
               "uri": "/api/v1/users/me/notifications",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -3964,7 +3964,7 @@
               "uri": "/api/v1/users/me/notifications/unread_count",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -4029,7 +4029,7 @@
               "uri": "/api/v1/users/me/notifications/mark_all_read",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -4094,7 +4094,7 @@
               "uri": "/api/v1/dentists/12/reviews",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -4168,7 +4168,7 @@
               "uri": "/api/v1/dentists/me/review",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"message\": \"\"\n}"
             },
@@ -4243,7 +4243,7 @@
               "uri": "/api/v1/dentists/me/review/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"message\": \"\"\n}"
             },
@@ -4309,7 +4309,7 @@
               "uri": "/api/v1/dentists/12/reviews/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -4383,7 +4383,7 @@
               "uri": "/api/v1/dentists//me/invite_patient",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"email\": \"\"\n}"
             },
@@ -4458,7 +4458,7 @@
               "uri": "/api/v1/dentists//me/patients/2/update-card",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"card\": \"\",\n\t\"periodontalDiseaseWaiver\": \"\",\n\t\"cancellationFeeWaiver\": \"\",\n\t\"reEnrollmentFeeWaiver\": \"\",\n\t\"termsAndConditions\": \"\"\n}"
             },
@@ -4533,7 +4533,7 @@
               "uri": "/api/v1/dentists//me/patients/2/waive-fees",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"cancellationFee\": \"\",\n\t\"reEnrollmentFee\": \"\"\n}"
             },
@@ -4599,7 +4599,7 @@
               "uri": "/api/v1/users/me/dentist-info/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -4671,7 +4671,7 @@
               "uri": "/api/v1/users/me/dentist-info/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               },
               "body": "{\n\t\"user\": \"\",\n\t\"officeInfo\": \"\",\n\t\"officeImages\": \"\",\n\t\"pricing\": \"\",\n\t\"membership\": \"\",\n\t\"childMembership\": \"\",\n\t\"workingHours\": \"\",\n\t\"services\": \"\"\n}"
             },
@@ -4737,7 +4737,7 @@
               "uri": "/api/v1/dentist-specialties",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -4802,7 +4802,7 @@
               "uri": "/api/v1/services",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
@@ -4867,7 +4867,7 @@
               "uri": "/api/v1/offices",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTE2NDY5MH0.rPLpIXJOn8OXs8gk5oFH1MzFSxd3D-ADMRanJc98rNg"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTU2MjQzMH0.3bAVk30RPjTZhqbKrF7DT11SoBs1jHqkVuzZse6OPuQ"
               }
             },
             "expectedResponse": {
