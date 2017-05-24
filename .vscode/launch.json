@@ -11,7 +11,10 @@
             "name": "Launch Program",
             "envFile": "${workspaceRoot}/.env",
             "program": "${workspaceRoot}/index.js",
-            "protocol": "legacy"
+            "protocol": "legacy",
+            "skipFiles": [
+              "<node_internals>/**/*.js"
+            ]
         },
         {
           "type": "node",
@@ -19,7 +22,10 @@
           "name": "Attach to Process",
           "protocol": "legacy",
           "restart": true,
-          "port": 5858
+          "port": 5858,
+          "skipFiles": [
+            "<node_internals>/**/*.js"
+          ]
         }
     ]
 }
