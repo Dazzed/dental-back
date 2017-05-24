@@ -58,6 +58,7 @@
     "pg": "^6.0.3",
     "react-s3-uploader": "^4.0.3",
     "request-promise": "^4.2.1",
+    "rollbar": "^2.0.2",
     "sequelize": "^3.23.6",
     "sequelize-cli": "^2.5.1",
     "stripe": "^4.12.0",
