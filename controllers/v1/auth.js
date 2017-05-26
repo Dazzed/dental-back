@@ -146,18 +146,9 @@ function normalUserSignup(req, res, next) {
       where: { id: data.officeId }
     })
     .then(info => {
-      const membership = data.subscription;
-
       db.Subscription.create({
         startAt: moment(),
-        endAt: null,
-        total: (membership.adultYearlyFeeActivated
-          || membership.childYearlyFeeActivated)
-          ? membership.yearly : membership.monthly,
-        yearly: membership.yearly,
-        monthly: membership.monthly,
-        status: 'inactive',
-        membershipId: membership.id,
+        endAt: moment(),
         clientId: createdUser.id,
         dentistId: info.get('userId'),
       });
