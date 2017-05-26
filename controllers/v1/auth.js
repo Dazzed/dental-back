@@ -6,8 +6,8 @@ import _ from 'lodash';
 import jwt from 'jsonwebtoken';
 import isPlainObject from 'is-plain-object';
 import passport from 'passport';
-import { Router } from 'express';
 import moment from 'moment';
+import { Router } from 'express';
 import db from '../../models';
 
 import {
@@ -140,10 +140,41 @@ function normalUserSignup(req, res, next) {
       });
     });
   })
+  .then((createdUser) => {
+    db.DentistInfo.find({
+      attributes: ['membershipId', 'userId'],
+      where: { id: data.officeId }
+    })
+    .then(info => {
+      const membership = data.subscription;
+
+      db.Subscription.create({
+        startAt: moment(),
+        endAt: null,
+        total: (membership.adultYearlyFeeActivated
+          || membership.childYearlyFeeActivated)
+          ? membership.yearly : membership.monthly,
+        yearly: membership.yearly,
+        monthly: membership.monthly,
+        status: 'inactive',
+        membershipId: membership.id,
+        clientId: createdUser.id,
+        dentistId: info.get('userId'),
+      });
+    });
+    return createdUser;
+  })
   .then((user) => {
     const queries = [
       user,
     ];
+
+    if (req.body.officeId && req.body.membershipId) {
+      queries.push(user.createSubscription({
+        membershipId: req.body.membershipId,
+        dentistId: req.body.officeId,
+      }));
+    }
 
     if (req.body.phone) {
       queries.push(user.createPhoneNumber({ number: req.body.phone || '' }));
