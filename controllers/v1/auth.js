@@ -140,35 +140,9 @@ function normalUserSignup(req, res, next) {
       });
     });
   })
-  .then((createdUser) => {
-    db.DentistInfo.find({
-      attributes: ['membershipId', 'userId'],
-      where: { id: data.officeId }
-    })
-    .then((info) => {
-      const membership = data.subscription;
-      const today = moment();
-
-      db.Subscription.create({
-        startAt: today,
-        endAt: moment(today).add(1, 'months'),
-        total: (membership.adultYearlyFeeActivated
-          || membership.childYearlyFeeActivated)
-          ? membership.yearly : membership.monthly,
-        yearly: membership.yearly,
-        monthly: membership.monthly,
-        status: 'inactive',
-        membershipId: membership.id,
-        clientId: createdUser.id,
-        dentistId: info.get('userId'),
-      });
-    });
-    return createdUser;
-  })
   .then((user) => {
     const queries = [
       user,
-      // This should be created so we can edit values
     ];
 
     if (req.body.phone) {
@@ -193,7 +167,7 @@ function normalUserSignup(req, res, next) {
 
     res
     .status(HTTPStatus.CREATED)
-    .json({ data: [_.omit(user, excludedKeys)] });
+    .json({ data: [_.omit(user.toJSON(), excludedKeys)] });
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
@@ -214,8 +188,6 @@ function normalUserSignup(req, res, next) {
 function dentistUserSignup(req, res, next) {
   req.checkBody('confirmPassword', 'Password does not match').equals(req.body.password);
   req.checkBody('confirmEmail', 'Email does not match').equals(req.body.email);
-
-  req.body = entireBody;
 
   req
   .asyncValidationErrors(true)
