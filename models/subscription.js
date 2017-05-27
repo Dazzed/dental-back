@@ -18,18 +18,10 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.ENUM(SUBSCRIPTION_STATES),
       defaultValue: 'inactive',
     },
-    authorizeSubscriptionId: {
-      type: DataTypes.INTEGER,
+    stripeSubscriptionId: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
-    startAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    endAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    }
   }, {
     tableName: 'subscriptions',
 
