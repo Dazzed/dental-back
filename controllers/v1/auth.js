@@ -37,8 +37,9 @@ import {
  *
  * @param {Object} user - the related user object for the record
  * @param {Object} body - the new dentist info record
+ * @param {Object} transaction - the sequelize transaction object
  */
-function createDentistInfo(user, body) {
+function createDentistInfo(user, body, transaction) {
   const dentistInfo = body.officeInfo;
   const pricing = body.pricing || {};
   const workingHours = body.workingHours || [];
@@ -77,7 +78,8 @@ function createDentistInfo(user, body) {
       Object.assign({
         membershipId: adult.get('id'),
         childMembershipId: child.get('id')
-      }, dentistInfo)
+      }, dentistInfo),
+      { transaction }
     ).then((info) => {
       workingHours.forEach(item => {
         info.createWorkingHour(item);
@@ -86,21 +88,15 @@ function createDentistInfo(user, body) {
       // create service records for the dentist.
       services.forEach(item => {
         info.createService({ serviceId: item })
-          .catch(e => console.log(e));
+        .catch(e => console.log(e));
       });
 
       // create pricing records for the dentist.
-      db.PriceCodes.findAll({}).then(codes => {
-        (pricing.codes || []).forEach(item => {
-          codes.forEach(elem => {
-            if (elem.code === item.code) {
-              db.MembershipItem.create({
-                pricingCode: item.code,
-                price: item.amount,
-                dentistInfoId: info.get('id')
-              });
-            }
-          });
+      (pricing.codes || []).forEach(item => {
+        db.MembershipItem.create({
+          pricingCodeId: item.code,
+          price: item.amount,
+          dentistInfoId: info.get('id')
         });
       });
 
@@ -214,46 +210,44 @@ function dentistUserSignup(req, res, next) {
   req
   .asyncValidationErrors(true)
   .then(() => {
-    const user = _.omit(req.body.user, ['phone']);
-    user.type = 'dentist';
-    user.dentistSpecialtyId = req.body.user.specialtyId;
+    db.sequelize.transaction(t => {
+      const user = _.omit(req.body.user, ['phone']);
+      user.type = 'dentist';
+      user.dentistSpecialtyId = req.body.user.specialtyId;
 
-    return new Promise((resolve, reject) => {
-      db.User.register(user, user.password, (registerError, createdUser) => {
-        if (registerError) {
-          reject(registerError);
-        } else {
-          resolve(createdUser);
-          createDentistInfo(createdUser, req.body);
-          res.mailer.send('auth/dentist/activation_required', {
-            to: user.email,
-            subject: EMAIL_SUBJECTS.client.activation_required,
-            site: process.env.SITE,
-            user: createdUser,
-          }, (err, info) => {
-            if (err) {
-              console.log(err);
-            }
-
-            if (process.env.NODE_ENV === 'development') {
-              console.log(info);
-            }
-          });
-        }
-      });
-    });
-  })
-  .then((user) => (
-    Promise.all([
-      user.createPhoneNumber({ number: req.body.user.phone }),
-      // This should be created so we can edit values
-      user.createAddress({ value: '' }),
-    ])
-  ))
-  .then(() => {
-    res
+      return new Promise((resolve, reject) => {
+        // User reg is not part of the transaction
+        db.User.register(user, user.password, (registerError, createdUser) => {
+          if (registerError) {
+            reject(registerError);
+          } else {
+            resolve(createdUser);
+            // Create the Dentist Office record
+            createDentistInfo(createdUser, req.body);
+            res.mailer.send('auth/dentist/activation_required', {
+              to: user.email,
+              subject: EMAIL_SUBJECTS.client.activation_required,
+              site: process.env.SITE,
+              user: createdUser,
+            }, (err, info) => {
+              if (err) console.log(err);
+            });
+          }
+        });
+      })
+      .then((user) => (
+        Promise.all([
+          user.createPhoneNumber({ number: req.body.user.phone }, { transaction: t }),
+          // This should be created so we can edit values
+          user.createAddress({ value: '' }, { transaction: t }),
+        ])
+      ));
+    })
+    .then(() => {
+      res
       .status(HTTPStatus.CREATED)
       .json({});
+    });
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
