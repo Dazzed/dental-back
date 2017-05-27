@@ -114,6 +114,12 @@ export const SUBSCRIPTION_STATES = [
 ];
 
 
+export const SUBSCRIPTION_TYPES = [
+  'monthly',
+  'annual'
+];
+
+
 export const RECOMMENDED_DISCOUNT = 25;
 
 

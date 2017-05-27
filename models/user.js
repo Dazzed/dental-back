@@ -1,3 +1,4 @@
+/* eslint max-len:0 */
 import passportLocalSequelize from 'passport-local-sequelize';
 
 import { instance, model } from '../orm-methods/users';
@@ -85,14 +86,6 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.ENUM(Object.keys(PREFERRED_CONTACT_METHODS)),
       allowNull: true
     },
-    accountHolder: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    payingMember: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -101,14 +94,6 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.ENUM(Object.keys(USER_TYPES)),
       allowNull: false,
       defaultValue: 'client',
-    },
-    authorizeId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    paymentId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
     },
     familyRelationship: {
       type: new DataTypes.ENUM(Object.keys(MEMBER_RELATIONSHIP_TYPES)),
@@ -147,6 +132,12 @@ export default function (sequelize, DataTypes) {
     waiverCreatedAt: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    accountHolder: {
+      type: DataTypes.VIRTUAL,
+      get: function get() {
+        return !!this.get('primaryPaymentProfile');
+      }
     }
   }, {
     tableName: 'users',
@@ -223,11 +214,10 @@ export default function (sequelize, DataTypes) {
           allowNull: true,
         });
 
-        // penalties relationship
-        User.hasMany(models.Penalties, {
-          foreignKey: 'userId',
-          as: 'penalties',
-          allowNull: true,
+        User.hasOne(models.PaymentProfiles, {
+          foreignKey: 'primaryAccountHolderId',
+          as: 'primaryPaymentProfile',
+          allowNull: true
         });
       },
 

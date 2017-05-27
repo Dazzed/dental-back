@@ -144,8 +144,7 @@ function updateMember(req, res, next) {
         req.locals.member.subscription.membershipId = membership.id;
 
         return db.Subscription.update({
-          total: membership.price,
-          monthly: membership.monthly,
+          amount: membership.price,
           membershipId: membership.id,
         }, {
           where: {

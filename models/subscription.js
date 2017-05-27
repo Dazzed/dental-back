@@ -1,46 +1,39 @@
-import { SUBSCRIPTION_STATES } from '../config/config';
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
+import { SUBSCRIPTION_STATES, SUBSCRIPTION_TYPES } from '../config/constants';
 
 import { instance, model } from '../orm-methods/subscriptions';
 
+// ────────────────────────────────────────────────────────────────────────────────
+// MODEL
 
 export default function (sequelize, DataTypes) {
   const Subscription = sequelize.define('Subscription', {
-    total: {
-      type: new DataTypes.DECIMAL(6, 2),
-      allowNull: false,
-    },
-    monthly: {
-      type: new DataTypes.DECIMAL(6, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-    yearly: {
-      type: new DataTypes.DECIMAL(6, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-    startAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    endAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    paidAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
+    type: {
+      type: new DataTypes.ENUM(SUBSCRIPTION_TYPES),
+      defaultValue: SUBSCRIPTION_TYPES[0],
     },
     status: {
       type: new DataTypes.ENUM(SUBSCRIPTION_STATES),
       defaultValue: 'inactive',
     },
-    chargeID: {
-      type: DataTypes.STRING,
+    authorizeSubscriptionId: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
+    startAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    endAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    }
   }, {
     tableName: 'subscriptions',
+
+    timestamps: false,
 
     instanceMethods: instance,
 
@@ -56,14 +49,26 @@ export default function (sequelize, DataTypes) {
           as: 'client',
         });
 
-        // NOTE: Maybe this is not useful, we can know the dentistId from
-        // membership
         Subscription.belongsTo(models.User, {
           foreignKey: 'dentistId',
           as: 'dentist',
         });
+
+        Subscription.hasOne(models.PaymentProfiles, {
+          foreignKey: 'paymentProfileId',
+          as: 'paymentProfile'
+        });
       }
     }, model),
+
+    hooks: {
+      beforeCreate: (instance, options) => {
+        // Attempt to create a subscription record in authorize.net
+      },
+      beforeUpdate: (instance, options) => {
+        // Update the associated record in authorize.net
+      },
+    }
   });
 
   return Subscription;

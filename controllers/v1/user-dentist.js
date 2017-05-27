@@ -94,9 +94,9 @@ function chargeBill(req, res, next) {
           data
         ).then(transactionId => {
           db.Subscription.update({
-            paidAt: new Date(),
             status: 'active',
-            chargeID: transactionId,
+            // FIXME: Charges should be automatic via subscription plans
+            // chargeID: transactionId,
           }, {
             where: { id: { $in: ids } },
           }).then(() => {

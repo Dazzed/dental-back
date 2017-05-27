@@ -368,9 +368,9 @@ export function injectSubscribedPatient(patientParamName = 'patientId', localVar
       }]
     })
     .then((subscription) => {
-      if (!subscription || !subscription.get('client')) throw new NotFoundError();
+      if (!subscription || !subscription.get('client')) next(new NotFoundError());
       req.locals[localVarName] = subscription.get('client');
-      return next();
+      next();
     })
     .catch(next);
   };
@@ -430,9 +430,10 @@ export function userRequired(req, res, next) {
  */
 export function validateBody(schemaObject = {}, bodyPrepCb = body => body) {
   return (req, res, next) => {
-    console.log(req.body);
+    const temp = req.body;
     req.body = bodyPrepCb(req.body);
     req.checkBody(schemaObject);
+    req.body = temp;
 
     req.asyncValidationErrors(true)
     .then(next, err => {

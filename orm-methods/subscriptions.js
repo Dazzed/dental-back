@@ -37,7 +37,7 @@ export const model = {
     }
 
     return db.Subscription.findAll({
-      attributes: ['monthly', 'id'],
+      attributes: ['id', 'total', 'type'],
       where: subscriptionQuery,
       include: [{
         model: db.User,
@@ -63,9 +63,10 @@ export const model = {
 
       result.forEach((item) => {
         item = item.toJSON();
-        total = total.add(new Change({ dollars: item.monthly }));
+        const monthly = item.type === 'monthly' ? item.total : item.total / 12;
+        total = total.add(new Change({ dollars: monthly }));
         data.members.push({
-          monthly: item.monthly,
+          monthly,
           fullName: `${item.client.firstName} ${item.client.lastName}`
         });
         ids.push(item.id);

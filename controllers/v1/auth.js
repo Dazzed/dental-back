@@ -208,8 +208,8 @@ function normalUserSignup(req, res, next) {
  * @param {Function} next - the next middleware function
  */
 function dentistUserSignup(req, res, next) {
-  req.checkBody('confirmPassword', 'Password does not match').equals(req.body.password);
-  req.checkBody('confirmEmail', 'Email does not match').equals(req.body.email);
+  req.checkBody('user.confirmPassword', 'Password does not match').equals(req.body.user.password);
+  req.checkBody('user.confirmEmail', 'Email does not match').equals(req.body.user.email);
 
   req
   .asyncValidationErrors(true)

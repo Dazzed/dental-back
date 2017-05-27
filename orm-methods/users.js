@@ -26,7 +26,7 @@ export const instance = {
     };
 
     return db.Subscription.findAll({
-      attributes: ['monthly', 'id'],
+      attributes: ['total', 'type', 'id'],
       where: { status: 'inactive' },
       include: [{
         model: db.User,
@@ -191,7 +191,7 @@ export const instance = {
         include: [{
           model: db.Membership,
           as: 'membership',
-          attributes: ['name', 'default', 'monthly'],
+          attributes: ['name', 'default', 'total', 'type'],
         }]
       }, {
         model: db.Review,
@@ -270,12 +270,10 @@ export const instance = {
 
     return db.Subscription.create({
       startAt: today,
-      endAt: today.add(1, 'months'),
-      total: (membership.adultYearlyFeeActivated
+      endAt: null,
+      amount: (membership.adultYearlyFeeActivated
         || membership.childYearlyFeeActivated)
         ? membership.yearly : membership.monthly,
-      yearly: membership.yearly,
-      monthly: membership.monthly,
       status: 'inactive',
       membershipId: membership.id,
       clientId: this.get('id'),
