@@ -248,7 +248,7 @@ export default function (sequelize, DataTypes) {
             model: User.sequelize.models.DentistSpecialty,
             as: 'dentistSpecialty',
           }, {
-            attributes: ['name', 'default', 'monthly'],
+            attributes: ['name'],
             model: User.sequelize.models.Membership,
             as: 'memberships'
           }],

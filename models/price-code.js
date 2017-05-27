@@ -14,7 +14,7 @@ export default function (sequelize, DataTypes) {
     classMethods: Object.assign({
       associate(models) {
         PriceCodes.hasMany(models.MembershipItem, {
-          foreignKey: 'pricingCode',
+          foreignKey: 'pricingCodeId',
           as: 'membershipItems',
         });
       }

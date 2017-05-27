@@ -107,12 +107,12 @@ function updateDentistInfo(req, res, next) {
           }, {
             where: {
               dentistInfoId: info.get('id'),
-              pricingCode: item.code,
+              pricingCodeId: item.code,
             },
           }).then(obj => {
             if (obj[0] === 0) {
               return db.MembershipItem.create({
-                pricingCode: item.code,
+                pricingCodeId: item.code,
                 price: item.amount,
                 dentistInfoId: info.get('id')
               });

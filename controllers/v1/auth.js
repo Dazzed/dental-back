@@ -49,28 +49,14 @@ function createDentistInfo(user, body, transaction) {
   Promise.all([
     user.createMembership({
       name: 'default membership',
-      default: true,
-      isActive: true,
       price: 0,
-      withDiscount: pricing.treatmentDiscount || 0,
       discount: pricing.treatmentDiscount || 0,
-      monthly: pricing.adultMonthlyFee,
-      yearly: pricing.adultYearlyFeeActivated ?
-              pricing.adultYearlyFee || null : null,
-      adultYearlyFeeActivated: pricing.adultYearlyFeeActivated
     }),
 
     user.createMembership({
       name: 'default child membership',
-      default: true,
-      isActive: true,
       price: 0,
-      withDiscount: pricing.treatmentDiscount || 0,
       discount: pricing.treatmentDiscount || 0,
-      monthly: pricing.childMonthlyFee,
-      yearly: pricing.childYearlyFeeActivated ?
-              pricing.childYearlyFee || null : null,
-      childYearlyFeeActivated: pricing.childYearlyFeeActivated
     })
   ])
   .then(([adult, child]) => {

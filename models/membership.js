@@ -1,6 +1,5 @@
 import { updateTotalMembership } from '../utils/helpers';
 
-
 export default function (sequelize, DataTypes) {
   const Membership = sequelize.define('Membership', {
     name: {
