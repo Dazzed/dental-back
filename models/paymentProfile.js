@@ -1,11 +1,7 @@
 export default function (sequelize, DataTypes) {
   const PaymentProfiles = sequelize.define('PaymentProfiles', {
-    authorizeId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    paymentId: {
-      type: DataTypes.INTEGER,
+    stripeCustomerId: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
   }, {
