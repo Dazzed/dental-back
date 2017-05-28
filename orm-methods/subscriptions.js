@@ -35,7 +35,7 @@ export const model = {
     if (dentistId) {
       subscriptionQuery.dentistId = dentistId;
     }
-
+    // TODO: fix method of getting pending amount using Stripe
     return db.Subscription.findAll({
       attributes: ['id', 'total', 'type'],
       where: subscriptionQuery,

@@ -13,6 +13,7 @@ const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey',
 export const instance = {
 
   getSubscriptions() {
+    // TODO: Fix ability to get subscriptions with Stripe
     const where = {
       isDeleted: false,
       $or: [{
@@ -56,7 +57,7 @@ export const instance = {
       },
       include: [{
         model: db.Subscription,
-        as: 'clientSubscriptions',
+        as: 'clientSubscription',
         where: {
           dentistId: this.get('id'),
           status: { $not: 'canceled' },
@@ -71,7 +72,7 @@ export const instance = {
           model: db.Subscription,
           where: { dentistId: this.get('id') },
           as: 'clientSubscription',
-          order: '"createdAt" DESC',
+          order: '"status" DESC',
           limit: 1,
         }, {
           model: db.Phone,
