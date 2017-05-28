@@ -212,7 +212,7 @@ function dentistUserSignup(req, res, next) {
   req
   .asyncValidationErrors(true)
   .then(() => {
-    db.sequelize.transaction(t => {
+    db.sequelize.transaction((t) => {
       const user = _.omit(req.body.user, ['phone']);
       user.type = 'dentist';
       user.dentistSpecialtyId = req.body.user.specialtyId;
@@ -231,17 +231,17 @@ function dentistUserSignup(req, res, next) {
               subject: EMAIL_SUBJECTS.client.activation_required,
               site: process.env.SITE,
               user: createdUser,
-            }, (err, info) => {
+            }, (err) => {
               if (err) console.log(err);
             });
           }
         });
       })
-      .then((user) => (
+      .then(userObj => (
         Promise.all([
-          user.createPhoneNumber({ number: req.body.user.phone }, { transaction: t }),
+          userObj.createPhoneNumber({ number: req.body.user.phone }, { transaction: t }),
           // This should be created so we can edit values
-          user.createAddress({ value: '' }, { transaction: t }),
+          userObj.createAddress({ value: '' }, { transaction: t }),
         ])
       ));
     })
