@@ -154,6 +154,7 @@ export default function (sequelize, DataTypes) {
         User.hasMany(models.Phone, {
           foreignKey: 'userId',
           as: 'phoneNumbers',
+          onDelete: 'cascade',
           allowNull: true
         });
 
@@ -161,6 +162,7 @@ export default function (sequelize, DataTypes) {
         User.hasMany(models.Address, {
           foreignKey: 'userId',
           as: 'addresses',
+          onDelete: 'cascade',
           allowNull: true
         });
 
@@ -168,6 +170,7 @@ export default function (sequelize, DataTypes) {
         User.hasMany(User, {
           foreignKey: 'addedBy',
           as: 'members',
+          onDelete: 'cascade',
           allowNull: true
         });
 
@@ -175,6 +178,7 @@ export default function (sequelize, DataTypes) {
         User.hasMany(models.Membership, {
           foreignKey: 'userId',
           as: 'memberships',
+          onDelete: 'cascade',
           allowNull: true
         });
 
@@ -182,45 +186,53 @@ export default function (sequelize, DataTypes) {
         User.hasOne(models.Subscription, {
           foreignKey: 'dentistId',
           as: 'dentistSubscription',
+          onDelete: 'cascade',
         });
 
         User.hasOne(models.Subscription, {
           foreignKey: 'clientId',
           as: 'clientSubscription',
+          onDelete: 'cascade',
         });
 
         // reviews relationship
         User.hasMany(models.Review, {
           foreignKey: 'dentistId',
           as: 'dentistReviews',
+          onDelete: 'cascade',
         });
 
         User.hasMany(models.Review, {
           foreignKey: 'clientId',
           as: 'clientReviews',
+          onDelete: 'cascade',
         });
 
         User.belongsTo(models.DentistSpecialty, {
           foreignKey: 'dentistSpecialtyId',
           as: 'dentistSpecialty',
+          onDelete: 'cascade',
           allowNull: true,
         });
 
         User.hasOne(models.DentistInfo, {
           foreignKey: 'userId',
           as: 'dentistInfo',
+          onDelete: 'cascade',
         });
 
         // refunds relationship
         User.hasMany(models.Refunds, {
           foreignKey: 'userId',
           as: 'refunds',
+          onDelete: 'cascade',
           allowNull: true,
         });
 
-        User.hasOne(models.PaymentProfiles, {
+        User.hasOne(models.PaymentProfile, {
           foreignKey: 'primaryAccountHolderId',
           as: 'primaryPaymentProfile',
+          onDelete: 'cascade',
           allowNull: true
         });
       },
@@ -259,17 +271,6 @@ export default function (sequelize, DataTypes) {
         });
       }
     }, model),
-
-    hooks: {
-      beforeCreate: (instance, options) => {
-        // Attempt to make Stripe customer
-        if (instance.addedBy === undefined) {
-          // New Customer
-        } else {
-          // To be attached to an existing customer payment profile
-        }
-      }
-    }
   });
 
   passportLocalSequelize.attachToUser(User, {

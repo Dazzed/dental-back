@@ -6,9 +6,10 @@ import _ from 'lodash';
 import jwt from 'jsonwebtoken';
 import isPlainObject from 'is-plain-object';
 import passport from 'passport';
-import moment from 'moment';
 import { Router } from 'express';
 import db from '../../models';
+
+import stripe from '../stripe';
 
 import {
   BadRequestError,
@@ -107,78 +108,93 @@ function normalUserSignup(req, res, next) {
   req.checkBody('confirmEmail', 'Email do not match').equals(req.body.email);
 
   const data = req.body;
+  let userObj = null;
+  let customerId = null;
 
   req
   .asyncValidationErrors(true)
   .then(() => {
     data.verified = true;
-
+    // Create the new user account
     return new Promise((resolve, reject) => {
-      db.User.register(data, data.password, (registerError, createdUser) => {
-        if (registerError) {
-          return reject(registerError);
-        }
-        return resolve(createdUser);
+      db.User.register(data, data.password, (err, user) => {
+        if (err) reject(err);
+        resolve(user);
       });
     });
-  })
-  .then((createdUser) => {
-    db.DentistInfo.find({
-      attributes: ['membershipId', 'userId'],
-      where: { id: data.officeId }
-    })
-    .then(info => {
-      db.Subscription.create({
-        startAt: moment(),
-        endAt: moment(),
-        clientId: createdUser.id,
-        dentistId: info.get('userId'),
-      });
-    });
-    return createdUser;
   })
   .then((user) => {
-    const queries = [
-      user,
-    ];
-
-    if (req.body.officeId && req.body.membershipId) {
-      queries.push(user.createSubscription({
-        membershipId: req.body.membershipId,
-        dentistId: req.body.officeId,
-      }));
-    }
-
-    if (req.body.phone) {
-      queries.push(user.createPhoneNumber({ number: req.body.phone || '' }));
-    }
-
-    if (req.body.address) {
-      queries.push(user.createAddress({ value: req.body.address || '' }));
-    }
-
-    if (req.body.members) {
-      req.body.members.forEach(member => {
-        queries.push(db.User.addMember(member, user));
-      });
-    }
-
-    return Promise.all(queries);
+    userObj = user;
+    return stripe.createCustomer(user.email);
   })
-  .then(([user]) => {
+  .then((customer) => {
+    customerId = customer.id;
+
+    return db.sequelize.transaction((t) => {
+      const queries = [];
+
+      // Add subscription
+      queries.push(
+        db.Subscription.create({
+          clientId: userObj.id,
+          membershipId: req.body.membershipId || null,
+          dentistId: req.body.officeId || null,
+          paymentProfile: {
+            stripeCustomerId: customer.id,
+            primaryAccountHolderId: userObj.id,
+          }
+        }, {
+          transaction: t,
+          include: [{
+            model: db.PaymentProfile,
+            as: 'paymentProfile',
+            include: [{ all: true }]
+          }],
+        })
+      );
+
+      // Add phone number
+      if (req.body.phone) {
+        queries.push(userObj.createPhoneNumber({ number: req.body.phone || '' }, { transaction: t }));
+      }
+
+      // Add address
+      if (req.body.address) {
+        queries.push(userObj.createAddress({ value: req.body.address || '' }, { transaction: t }));
+      }
+
+      // Add family members
+      if (req.body.members) {
+        req.body.members.forEach((member) => {
+          queries.push(db.User.addMember(member, userObj, t));
+        });
+      }
+
+      return Promise.all(queries);
+    });
+  })
+  .then(() => {
     const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
       'paymentId', 'activationKey', 'resetPasswordKey', 'isDeleted'];
 
     res
     .status(HTTPStatus.CREATED)
-    .json({ data: [_.omit(user.toJSON(), excludedKeys)] });
+    .json({ data: [_.omit(userObj.toJSON(), excludedKeys)] });
   })
   .catch((errors) => {
-    if (isPlainObject(errors)) {
-      return next(new BadRequestError(errors));
-    }
+    // Delete the user object that was created
+    db.User.destroy({
+      where: { id: userObj.id }
+    }).then(() => {
+      stripe.deleteCustomer(customerId)
+      .then(() => {
+        if (isPlainObject(errors)) {
+          return next(new BadRequestError(errors));
+        }
 
-    return next(errors);
+        return next(errors);
+      });
+    });
   });
 }
 

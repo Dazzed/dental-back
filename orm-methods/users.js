@@ -260,12 +260,18 @@ export const instance = {
     });
   },
 
-  createSubscription(membership, dentistId) {
+  /**
+   * Creates a new subscription record
+   *
+   * @param {object} membership - the membership to subscribe to
+   * @param {number} dentistId - the ID of the dentist providing the membership
+   * @param {object} t - the sequelize transaction
+   * @returns {Promise<Subscription>}
+   */
+  createSubscription(membership, dentistId, t) {
     if (this.get('type') === 'dentist') {
       throw new Error('Dentist type cannot create subscription');
     }
-
-    const today = moment();
 
     // TODO: Create Stripe Subscription
     return db.Subscription.create({
@@ -273,7 +279,7 @@ export const instance = {
       membershipId: membership.id,
       clientId: this.get('id'),
       dentistId,
-    });
+    }, { transaction: t });
   },
 
   createNotification(data) {
@@ -427,7 +433,15 @@ export const model = {
     });
   },
 
-  addMember(data, user) {
+  /**
+   * Creates an associated member record
+   *
+   * @param {object} data - the information of the new member
+   * @param {object} user - the parent user
+   * @param {object} t - the sequelize transaction object
+   * @returns {Promise<Member>}
+   */
+  addMember(data, user, t = null) {
     const membership = data.subscription;
     let member;
 
@@ -435,33 +449,28 @@ export const model = {
     data.hash = 'NOT_SET';
     data.salt = 'NOT_SET';
     data.type = 'client';
+    // FIXME: Why generate a random email?
     data.email = generateRandomEmail();
 
-    return new Promise((resolve, reject) => {
-      db.User.create(data)
-      .then(_member => {
-        member = _member;
-        return db.Subscription.find({
-          attributes: ['dentistId', 'id'],
-          where: { clientId: user.get('id') },
-          raw: true
-        });
-      })
-      .then(subscription =>
-        member.createSubscription(membership, subscription.dentistId)
-      )
-      .then(subscription => {
-        const response = member.toJSON();
-        response.membership = membership;
-        response.subscription = subscription.toJSON();
+    return Promise.resolve()
+    .then(() => db.User.create(data, { transaction: t }))
+    .then((_member) => {
+      member = _member;
+      return db.Subscription.find({
+        attributes: ['dentistId', 'id'],
+        where: { clientId: user.get('id') },
+        raw: true
+      }, { transaction: t });
+    })
+    .then(subscription => member.createSubscription(membership, subscription.dentistId, t))
+    .then((subscription) => {
+      const response = member.toJSON();
+      response.membership = membership;
+      response.subscription = subscription.toJSON();
 
-        resolve(
-          _.omit(response, ['salt', 'hash', 'dentistSpecialtyId',
-            'authorizeId', 'isDeleted', 'paymentId', 'resetPasswordKey', 'verified'
-          ])
-        );
-      })
-      .catch(error => reject(error));
+      return _.omit(response, ['salt', 'hash', 'verified',
+        'dentistSpecialtyId', 'isDeleted', 'resetPasswordKey'
+      ]);
     });
   }
 };

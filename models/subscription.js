@@ -46,21 +46,12 @@ export default function (sequelize, DataTypes) {
           as: 'dentist',
         });
 
-        Subscription.hasOne(models.PaymentProfiles, {
+        Subscription.belongsTo(models.PaymentProfile, {
           foreignKey: 'paymentProfileId',
           as: 'paymentProfile'
         });
       }
     }, model),
-
-    hooks: {
-      beforeCreate: (instance, options) => {
-        // Attempt to create a subscription record in authorize.net
-      },
-      beforeUpdate: (instance, options) => {
-        // Update the associated record in authorize.net
-      },
-    }
   });
 
   return Subscription;

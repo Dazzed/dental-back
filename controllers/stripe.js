@@ -68,17 +68,71 @@ export default {
    * Creates a new customer profile on Stripe
    *
    * @param {string} email - the user's email address
-   * @param {string} token - the generated stripe token
    * @returns {Promise<Customer>}
    */
-  createCustomer(email, token) {
+  createCustomer(email) {
     return new Promise((resolve, reject) => {
       stripe.customers.create({
+        email,
         description: `Primary Account Holder: ${email}`,
-        source: token
       }, (err, customer) => {
         if (err) reject(verboseError(err));
         resolve(customer);
+      });
+    });
+  },
+
+  /**
+   * Deletes a customer profile on Stripe
+   *
+   * @param {string} custId - the stripe customer id
+   * @returns {Promise<Confirmation>}
+   */
+  deleteCustomer(custId) {
+    return new Promise((resolve, reject) => {
+      stripe.customers.del(custId, (err, confirm) => {
+        if (err) reject(verboseError(err));
+        resolve(confirm);
+      });
+    });
+  },
+
+  /**
+   * Gets details about the customer from Stripe
+   *
+   * @param {string} customerId - the stripe customer id
+   * @returns {Promise<Customer>}
+   */
+  getCustomer(customerId) {
+    return new Promise((resolve, reject) => {
+      stripe.customers.retrieve(
+        customerId,
+        (err, customer) => {
+          if (err) reject(verboseError(err));
+          resolve(customer);
+        }
+      );
+    });
+  },
+
+  /**
+   * Issues a new charge against the customer
+   *
+   * @param {number} amount - the amount to charge
+   * @param {string} chargeToken - the stripe generated charge token
+   * @param {string} description - the description of the charge
+   * @returns {Promise<Charge>}
+   */
+  issueCharge(amount, chargeToken, description) {
+    return new Promise((resolve, reject) => {
+      stripe.charges.create({
+        amount,
+        description,
+        currency: 'usd',
+        source: chargeToken, // obtained with Stripe.js
+      }, (err, charge) => {
+        if (err) reject(verboseError(err));
+        resolve(charge);
       });
     });
   },
