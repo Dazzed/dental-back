@@ -138,6 +138,10 @@ export default function (sequelize, DataTypes) {
       get: function get() {
         return !!this.get('primaryPaymentProfile');
       }
+    },
+    addedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     }
   }, {
     tableName: 'users',
@@ -255,6 +259,17 @@ export default function (sequelize, DataTypes) {
         });
       }
     }, model),
+
+    hooks: {
+      beforeCreate: (instance, options) => {
+        // Attempt to make Stripe customer
+        if (instance.addedBy === undefined) {
+          // New Customer
+        } else {
+          // To be attached to an existing customer payment profile
+        }
+      }
+    }
   });
 
   passportLocalSequelize.attachToUser(User, {
