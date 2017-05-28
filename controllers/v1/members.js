@@ -119,7 +119,7 @@ function updateMember(req, res, next) {
         where: {
           clientId: req.params.memberId,
         },
-        order: '"createdAt" DESC',
+        order: '"status" DESC',
         raw: true,
       }).then(subscription => {
         subscriptionId = subscription.id;

@@ -281,9 +281,6 @@ export const DENTIST_USER_REGISTRATION = {
   zipCode: {
     notEmpty: true,
   },
-  // tos: {
-  //   notEmpty: true,
-  // },
 };
 
 

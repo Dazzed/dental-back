@@ -8,9 +8,7 @@ import {
   generateRandomEmail
 } from '../utils/helpers';
 
-const userFieldsExcluded = ['hash', 'salt', 'activationKey',
-  'resetPasswordKey', 'verified', 'authorizeId', 'paymentId'];
-
+const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified'];
 
 export const instance = {
 
@@ -72,7 +70,7 @@ export const instance = {
         include: [{
           model: db.Subscription,
           where: { dentistId: this.get('id') },
-          as: 'clientSubscriptions',
+          as: 'clientSubscription',
           order: '"createdAt" DESC',
           limit: 1,
         }, {
@@ -91,8 +89,7 @@ export const instance = {
     }).then(result => result.map(item => {
       const parsed = item.toJSON();
 
-      parsed.subscription = parsed.clientSubscriptions[0];
-      delete parsed.clientSubscriptions;
+      parsed.subscription = parsed.clientSubscription;
 
       parsed.reviews = parsed.clientReviews;
       delete parsed.clientReviews;
@@ -131,7 +128,7 @@ export const instance = {
 
     return db.Subscription.find({
       where: query,
-      order: '"createdAt" DESC',
+      order: '"status" DESC',
     });
   },
 
@@ -143,19 +140,19 @@ export const instance = {
           addedBy: this.get('id'),
         }, {
           id: this.get('id'),
-          payingMember: true,
         }],
         isDeleted: false,
       },
       include: [{
-        attributes: ['name', 'default', 'monthly'],
+        // TODO: add monthly cost back from Stripe?
+        attributes: ['name'],
         model: db.Membership,
         as: 'memberships'
       }, {
         model: db.Subscription,
-        as: 'clientSubscriptions',
+        as: 'clientSubscription',
         limit: 1,
-        order: '"createdAt" DESC',
+        order: '"status" DESC',
       }, {
         model: db.Phone,
         as: 'phoneNumbers',
@@ -164,8 +161,7 @@ export const instance = {
     }).then(result => result.map(item => {
       const parsed = item.toJSON();
 
-      parsed.subscription = parsed.clientSubscriptions[0];
-      delete parsed.clientSubscriptions;
+      parsed.subscription = parsed.clientSubscription;
 
       parsed.phone = parsed.phoneNumbers[0] ?
         parsed.phoneNumbers[0].number : undefined;
@@ -186,12 +182,14 @@ export const instance = {
     if (!omitInclude) {
       query.include = [{
         model: db.Subscription,
-        as: 'dentistSubscriptions',
+        as: 'dentistSubscription',
         where: { status: { $not: 'canceled' }, clientId: this.get('id') },
         include: [{
           model: db.Membership,
           as: 'membership',
-          attributes: ['name', 'default', 'total', 'type'],
+          // TODO: need default, total, type?
+          attributes: ['name'],
+          // attributes: ['name', 'default', 'total', 'type'],
         }]
       }, {
         model: db.Review,
@@ -206,13 +204,13 @@ export const instance = {
           model: db.Membership,
           as: 'membership',
           attributes: {
-            exclude: ['isDeleted', 'default', 'userId'],
+            exclude: ['userId'],
           },
         }, {
           model: db.Membership,
           as: 'childMembership',
           attributes: {
-            exclude: ['isDeleted', 'default', 'userId'],
+            exclude: ['userId'],
           },
         }, {
           model: db.DentistInfoService,
@@ -268,12 +266,8 @@ export const instance = {
 
     const today = moment();
 
+    // TODO: Create Stripe Subscription
     return db.Subscription.create({
-      startAt: today,
-      endAt: null,
-      amount: (membership.adultYearlyFeeActivated
-        || membership.childYearlyFeeActivated)
-        ? membership.yearly : membership.monthly,
       status: 'inactive',
       membershipId: membership.id,
       clientId: this.get('id'),
@@ -311,13 +305,13 @@ export const instance = {
             model: db.Membership,
             as: 'membership',
             attributes: {
-              exclude: ['isDeleted', 'default', 'userId'],
+              exclude: ['userId'],
             },
           }, {
             model: db.Membership,
             as: 'childMembership',
             attributes: {
-              exclude: ['isDeleted', 'default', 'userId'],
+              exclude: ['userId'],
             },
           }, {
             model: db.DentistInfoService,
@@ -409,9 +403,9 @@ export const model = {
       },
       include: [{
         model: db.Subscription,
-        as: 'clientSubscriptions',
+        as: 'clientSubscription',
         limit: 1,
-        order: '"createdAt" DESC',
+        order: '"status" DESC',
       }, {
         model: db.Phone,
         as: 'phoneNumbers',
@@ -421,8 +415,7 @@ export const model = {
       const parsed = member ? member.toJSON() : undefined;
 
       if (member) {
-        parsed.subscription = parsed.clientSubscriptions[0];
-        delete parsed.clientSubscriptions;
+        parsed.subscription = parsed.clientSubscription;
 
         parsed.phone = parsed.phoneNumbers[0] ?
           parsed.phoneNumbers[0].number : undefined;

@@ -72,6 +72,7 @@ function getPendingAmount(req, res, next) {
  * @param {Function} next - the next middleware function
  */
 function chargeBill(req, res, next) {
+  // TODO: update the charge bill function using Stripe
   let userId = req.params.userId;
   let dentistId;
 
@@ -95,8 +96,6 @@ function chargeBill(req, res, next) {
         ).then(transactionId => {
           db.Subscription.update({
             status: 'active',
-            // FIXME: Charges should be automatic via subscription plans
-            // chargeID: transactionId,
           }, {
             where: { id: { $in: ids } },
           }).then(() => {
@@ -124,6 +123,7 @@ function chargeBill(req, res, next) {
  * @param {Function} next - the next middleware function
  */
 function ensureCreditCard(req, res, next) {
+  // TODO: Update this function with Stripe.js
   let userId = req.params.userId;
 
   if (userId === 'me') {
@@ -174,6 +174,7 @@ function ensureCreditCard(req, res, next) {
  * @param {Function} next - the next middleware function
  */
 function generateReport(req, res, next) {
+  // FIXME: Generate CSV report linked with Stripe.js
   return db.User.findAll({
     attributes: ['id', 'firstName', 'lastName', 'email',
       'createdAt', 'contactMethod', 'payingMember'],
@@ -185,7 +186,7 @@ function generateReport(req, res, next) {
         status: 'active',
       },
       include: [{
-        attributes: ['name', 'default'],
+        attributes: ['name'],
         model: db.Membership,
       }]
     }, {
@@ -195,7 +196,7 @@ function generateReport(req, res, next) {
       where: { isDeleted: false },
       include: [{
         model: db.MemberSubscription,
-        as: 'subscriptions',
+        as: 'subscription',
         attributes: {
           exclude: ['memberId', 'membershipId', 'subscriptionId']
         },

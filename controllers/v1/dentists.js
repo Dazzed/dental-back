@@ -301,6 +301,7 @@ function waiveCancellationFee(req, res) {
  * @param {Function} next - next middleware function
  */
 function validateCreditCard(req, res, next) {
+  // TODO: Validate credit card using Stripe
   ensureCreditCard(req.locals.client, req.body.card)
     .then(user => {
       req.locals.chargeTo = user;
@@ -340,10 +341,6 @@ function updatePatientCard(req, res, next) {
   })
   .then(() => {
     const client = req.locals.client.toJSON();
-    // updateCreditCard(req.locals.client.get('id'));
-    delete client.authorizeId;
-    delete client.paymentId;
-
     res.json({ data: client });
   }).catch(err => next(new BadRequestError(err)));
 }

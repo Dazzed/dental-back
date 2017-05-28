@@ -320,6 +320,7 @@ export function chargeAuthorize(profileId, paymentId, data) {
   });
 }
 
+// TODO: Replace this function entirely using Stripe
 export function ensureCreditCard(_user, card) {
   return new Promise((resolve, reject) => {
     db.User.find({

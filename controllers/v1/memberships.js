@@ -50,11 +50,10 @@ function getMemberships(req, res, next) {
   }
 
   const query = {
-    attributes: { exclude: ['isDeleted'] },
+    attributes: { exclude: ['stripePlanId'] },
     where: {
-      isDeleted: false,
-    },
-    raw: true
+      stripePlanId: { $not: null },
+    }
   };
 
   // if not admin limit query to related data userId
@@ -77,7 +76,7 @@ function getMemberships(req, res, next) {
  */
 function getMembership(req, res) {
   res.json({
-    data: _.omit(req.locals.membership.toJSON(), ['isDeleted']),
+    data: _.omit(req.locals.membership.toJSON(), ['stripePlanId']),
   });
 }
 
@@ -121,7 +120,7 @@ function addMembership(req, res, next) {
   return db.Membership.create(data).then((membership) => {
     res.status(HTTPStatus.CREATED);
     res.json({
-      data: _.omit(membership.toJSON(), ['isDeleted']),
+      data: _.omit(membership.toJSON(), ['stripePlanId']),
     });
   });
 }
@@ -142,7 +141,7 @@ function updateMembership(req, res) {
 
   return req.locals.membership.update(data).then((membership) => {
     res.json({
-      data: _.omit(membership.toJSON(), ['isDeleted']),
+      data: _.omit(membership.toJSON(), ['stripePlanId']),
     });
   });
 }
@@ -154,7 +153,7 @@ function updateMembership(req, res) {
  * @param {Object} res - the express response
  */
 function deleteMembership(req, res) {
-  req.locals.membership.update({ isDeleted: true }).then(() => res.end());
+  req.locals.membership.update({ stripePlanId: null }).then(() => res.end());
 }
 
 /**

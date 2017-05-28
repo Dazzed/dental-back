@@ -1,7 +1,5 @@
 import HTTPStatus from 'http-status';
 
-// const isProd = process.env.NODE_ENV !== 'development';
-
 // TODO: Hide error stacks in prod
 
 export class ForbiddenError extends Error {

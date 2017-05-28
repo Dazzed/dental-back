@@ -27,7 +27,7 @@ export function adminRequired(req, res, next) {
     return next();
   }
 
-  return res.json({ error: new ForbiddenError() });
+  return res.json({ error: new ForbiddenError('administrative user is required') });
 }
 
 /**
@@ -109,7 +109,7 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
         model: db.Membership,
         as: 'membership',
         attributes: {
-          exclude: ['isDeleted', 'default', 'userId'],
+          exclude: ['userId'],
         },
         // include: [{
         //   model: db.MembershipItem,
@@ -122,7 +122,7 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
         model: db.Membership,
         as: 'childMembership',
         attributes: {
-          exclude: ['isDeleted', 'default', 'userId'],
+          exclude: ['userId'],
         },
         // include: [{
         //   model: db.MembershipItem,

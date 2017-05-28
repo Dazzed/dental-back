@@ -175,14 +175,14 @@ export default function (sequelize, DataTypes) {
         });
 
         // subscription relationship
-        User.hasMany(models.Subscription, {
+        User.hasOne(models.Subscription, {
           foreignKey: 'dentistId',
-          as: 'dentistSubscriptions',
+          as: 'dentistSubscription',
         });
 
-        User.hasMany(models.Subscription, {
+        User.hasOne(models.Subscription, {
           foreignKey: 'clientId',
-          as: 'clientSubscriptions',
+          as: 'clientSubscription',
         });
 
         // reviews relationship
