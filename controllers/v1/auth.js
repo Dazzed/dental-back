@@ -26,9 +26,7 @@ import {
   DENTIST_USER_REGISTRATION
 } from '../../utils/schema-validators';
 
-import {
-  EMAIL_SUBJECTS
-} from '../../config/constants';
+import Mailer from '../mailer';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -68,18 +66,18 @@ function createDentistInfo(user, body, transaction) {
       }, dentistInfo),
       { transaction }
     ).then((info) => {
-      workingHours.forEach(item => {
+      workingHours.forEach((item) => {
         info.createWorkingHour(item);
       });
 
       // create service records for the dentist.
-      services.forEach(item => {
+      services.forEach((item) => {
         info.createService({ serviceId: item })
         .catch(e => console.log(e));
       });
 
       // create pricing records for the dentist.
-      (pricing.codes || []).forEach(item => {
+      (pricing.codes || []).forEach((item) => {
         db.MembershipItem.create({
           pricingCodeId: item.code,
           price: item.amount,
@@ -87,7 +85,7 @@ function createDentistInfo(user, body, transaction) {
         });
       });
 
-      officeImages.forEach(url => {
+      officeImages.forEach((url) => {
         db.DentistInfoPhotos.create({
           url, dentistInfoId: info.get('id')
         });
@@ -226,14 +224,7 @@ function dentistUserSignup(req, res, next) {
             resolve(createdUser);
             // Create the Dentist Office record
             createDentistInfo(createdUser, req.body);
-            res.mailer.send('auth/dentist/activation_required', {
-              to: user.email,
-              subject: EMAIL_SUBJECTS.client.activation_required,
-              site: process.env.SITE,
-              user: createdUser,
-            }, (err) => {
-              if (err) console.log(err);
-            });
+            Mailer.activationRequestEmail(res, createdUser);
           }
         });
       })
@@ -269,36 +260,22 @@ function dentistUserSignup(req, res, next) {
  */
 function activate(req, res, next) {
   db.User.find({ where: { activationKey: req.params.key } })
-    .then((user) => {
-      if (user) {
-        // activate it
-        return user
-          .update({ verified: true, activationKey: null })
-          .then(() => {
-            res.mailer.send('auth/activation_complete', {
-              to: user.email,
-              subject: EMAIL_SUBJECTS.activation_complete,
-              site: process.env.SITE,
-              user,
-            }, (err, info) => {
-              if (err) {
-                console.log(err);
-              }
+  .then((user) => {
+    if (user) {
+      // Activate the User Account
+      user
+      .update({ verified: true, activationKey: null })
+      .then(() => Mailer.activationCompleteEmail(res, user))
+      .then(() => {
+        res.json({});
+      });
+    }
 
-              if (process.env.NODE_ENV === 'development') {
-                console.log(info);
-              }
-            });
-
-            res.json({});
-          });
-      }
-
-      return next(new NotFoundError());
-    })
-    .catch((errors) => {
-      next(errors);
-    });
+    return next(new NotFoundError());
+  })
+  .catch((errors) => {
+    next(errors);
+  });
 }
 
 /**
@@ -384,7 +361,7 @@ router
 router
   .route('/dentist-signup')
   .post(
-    validateBody(DENTIST_USER_REGISTRATION, (body) => body.user),
+    validateBody(DENTIST_USER_REGISTRATION, body => body.user),
     dentistUserSignup);
 
 router
