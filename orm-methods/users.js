@@ -73,71 +73,52 @@ export const instance = {
    * @returns {Promise<User[]>}
    */
   getClients() {
-    return db.User.findAll({
-      attributes: { exclude: userFieldsExcluded },
-      where: {
-        addedBy: null,
-        isDeleted: false,
-      },
-      include: [{
-        model: db.Subscription,
-        as: 'clientSubscription',
-        where: {
-          dentistId: this.get('id'),
-          status: { $not: 'canceled' },
+    const dentistId = this.get('id');
+
+    return new Promise((resolve, reject) => {
+      db.Subscription.findAll({
+        where: { dentistId },
+        attributes: {
+          exclude: ['id', 'stripeSubscriptionId', 'paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
         },
-      }, {
-        model: db.User,
-        as: 'members',
-        required: false,
-        attributes: { exclude: userFieldsExcluded },
-        where: { isDeleted: false },
+        status: { $not: 'canceled' },
         include: [{
-          model: db.Subscription,
-          where: { dentistId: this.get('id') },
-          as: 'clientSubscription'
+          model: db.Membership,
+          as: 'membership',
         }, {
-          model: db.Phone,
-          as: 'phoneNumbers',
-        }],
-      }, {
-        as: 'clientReviews',
-        model: db.Review,
-        attributes: { exclude: ['clientId', 'dentistId'] },
-      }, {
-        model: db.Phone,
-        as: 'phoneNumbers',
-      }],
-      subquery: false,
-    }).then(result => result.map((item) => {
-      const parsed = item.toJSON();
-
-      parsed.subscription = parsed.clientSubscription;
-
-      parsed.reviews = parsed.clientReviews;
-      delete parsed.clientReviews;
-
-      parsed.phone = parsed.phoneNumbers[0] ?
-        parsed.phoneNumbers[0].number : undefined;
-      delete parsed.phoneNumbers;
-
-      parsed.members.forEach((member) => {
-        member.subscription = member.clientSubscriptions[0];
-        delete member.clientSubscriptions;
-        member.phone = member.phoneNumbers[0] ?
-          member.phoneNumbers[0].number : undefined;
-        delete member.phoneNumbers;
-      });
-
-      if (parsed.payingMember) {
-        const self = Object.assign({}, parsed);
-        delete self.clientReviews;
-        delete self.members;
-        parsed.members.splice(0, 0, self);
-      }
-
-      return parsed;
-    }));
+          model: db.User,
+          as: 'client',
+          attributes: {
+            exclude: userFieldsExcluded,
+          },
+          where: { isDeleted: false },
+          include: [{
+            model: db.User,
+            as: 'members',
+            attributes: {
+              exclude: userFieldsExcluded,
+            },
+          }, {
+            model: db.Phone,
+            as: 'phoneNumbers',
+          }, {
+            model: db.Review,
+            as: 'clientReviews',
+            attributes: { exclude: ['clientId', 'dentistId'] },
+          }]
+        }]
+      })
+      .then((subs) => {
+        Promise.all(subs.map(s => s.membership.getPlanCosts()))
+        .then((plans) => {
+          subs = subs.map(s => s.toJSON());
+          subs.forEach((s, i) => (subs[i].membership = plans[i]));
+          resolve(subs);
+        })
+        .catch(reject);
+      })
+      .catch(reject);
+    });
   },
 
   /**

@@ -354,7 +354,7 @@ export function injectSubscribedPatient(patientParamName = 'patientId', localVar
       req.locals[localVarName] = subscription.get('client');
       next();
     })
-    .catch(next);
+    .catch(err => next(new BadRequestError(err)));
   };
 }
 

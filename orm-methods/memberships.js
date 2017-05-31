@@ -18,9 +18,13 @@ export const instance = {
     return new Promise((resolve, reject) => {
       stripe.getMembershipPlan(this.get('stripePlanId'))
       .then((plan) => {
-        const monthlyPrice = (plan.interval === 'month' ? plan.amount : (plan.amount / 12));
-        const annualPrice = (plan.interval === 'month' ? (plan.amount * 12) : plan.amount);
+        let monthlyPrice = (plan.interval === 'month' ? plan.amount : (plan.amount / 12));
+        let annualPrice = (plan.interval === 'month' ? (plan.amount * 12) : plan.amount);
         const type = (plan.interval === 'month' ? 'monthly' : 'annual');
+
+        // Convert to float
+        monthlyPrice = monthlyPrice > 0 ? monthlyPrice / 100 : monthlyPrice;
+        annualPrice = annualPrice > 0 ? annualPrice / 100 : annualPrice;
 
         resolve({
           monthlyPrice,

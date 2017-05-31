@@ -133,12 +133,12 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    accountHolder: {
-      type: DataTypes.VIRTUAL,
-      get: function get() {
-        return !!this.get('primaryPaymentProfile');
-      }
-    },
+    // accountHolder: {
+    //   type: DataTypes.VIRTUAL,
+    //   get: function get() {
+    //     return !!this.get('primaryPaymentProfile');
+    //   }
+    // },
     addedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,

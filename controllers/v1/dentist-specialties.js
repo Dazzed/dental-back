@@ -16,7 +16,11 @@ import db from '../../models';
  * @param {Function} next - express next middleware
  */
 function getDentistSpecialties(req, res, next) {
-  return db.DentistSpecialty.findAll({ raw: true }).then((specialties) =>
+  return db.DentistSpecialty.findAll({
+    attributes: {
+      exclude: ['createdAt', 'updatedAt']
+    },
+  }).then(specialties =>
     res.json({ data: specialties || [] })
   ).catch((error) => {
     next(error);
