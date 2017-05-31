@@ -10,18 +10,14 @@ import stripe from '../controllers/stripe';
 
 export default function (sequelize, DataTypes) {
   const Subscription = sequelize.define('Subscription', {
-    type: {
-      type: new DataTypes.ENUM(SUBSCRIPTION_TYPES),
-      defaultValue: SUBSCRIPTION_TYPES[0],
-    },
     status: {
       type: new DataTypes.ENUM(SUBSCRIPTION_STATES),
       defaultValue: 'inactive',
     },
-    stripeSubscriptionId: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+    // stripeSubscriptionId: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
   }, {
     tableName: 'subscriptions',
 

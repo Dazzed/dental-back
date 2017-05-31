@@ -79,7 +79,7 @@ export const instance = {
       db.Subscription.findAll({
         where: { dentistId },
         attributes: {
-          exclude: ['id', 'stripeSubscriptionId', 'paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
+          exclude: ['id', 'paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
         },
         status: { $not: 'canceled' },
         include: [{
