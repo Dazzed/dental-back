@@ -7,11 +7,12 @@ import db from '../../models';
 
 import {
   userRequired,
-  adminRequired,
+  dentistRequired,
 } from '../middlewares';
 
 import {
-  NotFoundError
+  BadRequestError,
+  NotFoundError,
 } from '../errors';
 
 const userFieldsExcluded = ['hash', 'salt', 'activationKey',
@@ -21,28 +22,39 @@ const userFieldsExcluded = ['hash', 'salt', 'activationKey',
 // ROUTER
 
 /**
- * Gets all members subscribed to the dentist whose ID is set in params.
+ * Gets all members subscribed to the dentist whose id is set in params
+ *
+ * @param {object} req - the express request
+ * @param {object} res - the express response
  */
-function getMembers(req, res, next) {
-  const dentistId = req.params.dentistId;
+function getMembers(req, res) {
+  if (req.params.dentistId === 'me') {
+    req.params.dentistId = req.user.get('id');
+  }
 
-  db.User.find({
-    attributes: { exclude: userFieldsExcluded },
-    where: {
-      id: dentistId,
-      type: 'dentist'
-    }
-  })
-  .then(dentist => {
+  Promise.resolve()
+  .then(() => (
+    db.User.find({
+      attributes: { exclude: userFieldsExcluded },
+      where: {
+        id: req.params.dentistId,
+        type: 'dentist',
+      }
+    })
+  ))
+  .then((dentist) => {
     if (!dentist) {
-      throw new NotFoundError('The dentist account was not found.');
+      return res.json(new NotFoundError('The dentist account was not found'));
     }
 
-    return dentist.getClients().then(members => {
-      res.json({ data: members });
-    });
+    return dentist.getClients();
   })
-  .catch(next);
+  .then((members) => {
+    res.json({ data: members });
+  })
+  .catch((err) => {
+    res.json(new BadRequestError(err));
+  });
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -54,8 +66,7 @@ router
   .route('/')
   .get(
     userRequired,
-    adminRequired,
+    dentistRequired,
     getMembers);
-
 
 export default router;

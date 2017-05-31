@@ -1,17 +1,41 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import changeFactory from 'change-js';
+
 import db from '../models';
+import stripe from '../controllers/stripe';
 
 const Change = changeFactory();
 
+// ────────────────────────────────────────────────────────────────────────────────
+// EXPORTS
 
 export const instance = {
   /**
    * Sets a subscription active or inactive based on a parameter's value.
+   *
    * @param active - if this subscription should be set active.
-   * @return Promise[Subscription]
+   * @return {Promise<Subscription>}
    */
   setActive(active) {
+    active = active || this.get('active');
     return this.update({ status: (active ? 'active' : 'inactive') });
+  },
+
+  /**
+   * Gets details about the subscription from stripe
+   *
+   * @return {Promise<Subscription>}
+   */
+  getStripeDetails() {
+    const stripeId = this.get('stripeSubscriptionId');
+
+    return new Promise((resolve, reject) => {
+      stripe.getSubscription(stripeId)
+      .then(resolve)
+      .catch(reject);
+    });
   }
 };
 

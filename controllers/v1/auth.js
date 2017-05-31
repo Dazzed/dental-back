@@ -349,7 +349,7 @@ router
   .route('/logout')
   .get((req, res) => {
     req.logout();
-    res.end();
+    res.json();
   });
 
 router

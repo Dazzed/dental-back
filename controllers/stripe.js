@@ -11,17 +11,6 @@ const stripe = Stripe(process.env.STRIPE_API_KEY);
 // METHOD
 
 /**
- * Creates a unique plan name
- *
- * @param {string} officeName - the name of the dentist office
- * @param {string} name - the name of the plan
- * @returns {string} - the unique plan name
- */
-function createPlanID(officeName, name) {
-  return `${officeName.split('').join('-')}__${name}`;
-}
-
-/**
  * Creates a more verbose error message from Stripe
  *
  * @param {object} err - the stripe error object
@@ -39,7 +28,7 @@ function verboseError(err) {
       break;
     case 'StripeInvalidRequestError':
       // Invalid parameters were supplied to Stripe's API
-      err.message = 'The server has sent invalid parameters throught the payment portal';
+      err.message = 'The server has sent invalid parameters through the payment portal';
       break;
     case 'StripeAPIError':
       // An error occurred internally with Stripe's API
@@ -63,6 +52,17 @@ function verboseError(err) {
 }
 
 export default {
+
+  /**
+   * Creates a unique id
+   *
+   * @param {string} officeName - the name of the dentist office
+   * @param {string} name - the name of the plan
+   * @returns {string} - the unique plan name
+   */
+  createUniqueID(officeName, name) {
+    return `${officeName}__${name.split(' ').join('-')}`;
+  },
 
   /**
    * Creates a new customer profile on Stripe
@@ -140,22 +140,20 @@ export default {
   /**
    * Creates a new membership plan on Stripe
    *
-   * @param {string} officeName - the name of the office creating the membership
-   * @param {string} name - the name of the membership plan
+   * @param {string} planId - the unique id of the plan
+   * @param {string} name - the name of the plan
    * @param {number} [price=0] - the price of the plan
    * @param {string} [interval='month'] - the interval of how often the plan will be charged
    * @param {number} [trialPeriodDays=0] - the number of days for which the subscriber will not be billed
    * @returns {Promise<Plan>}
    */
-  createMembershipPlan(officeName, name, price = 0, interval = 'month', trialPeriodDays = 0) {
-    const id = createPlanID(officeName, name);
-
+  createMembershipPlan(planId, name, price = 0, interval = 'month', trialPeriodDays = 0) {
     return new Promise((resolve, reject) => {
       stripe.plans.create({
-        id,
+        id: planId,
         interval,
-        name,
-        amount: price,
+        name: planId,
+        amount: price.toString(),
         currency: 'usd',
         interval_count: 1,
         trial_period_days: trialPeriodDays,
@@ -169,15 +167,13 @@ export default {
   /**
    * Gets details for a specific membership plan
    *
-   * @param {string} officeName - the name of the office creating the membership
+   * @param {string} planId - the unique id of the plan
    * @param {string} name - the name of the membership plan
    * @returns {Promise<Plan>}
    */
-  getMembershipPlan(officeName, name) {
-    const id = createPlanID(officeName, name);
-
+  getMembershipPlan(planId) {
     return new Promise((resolve, reject) => {
-      stripe.plans.retrieve(id,
+      stripe.plans.retrieve(planId,
         (err, plan) => {
           if (err) reject(verboseError(err));
           resolve(plan);
@@ -189,15 +185,12 @@ export default {
   /**
    * Deletes an existing membership plan
    *
-   * @param {string} officeName - the name of the office creating the membership
-   * @param {string} name - the name of the membership plan
+   * @param {string} planId - the unique id of the plan
    * @returns {Promise<Confirmation>}
    */
-  deleteMembershipPlan(officeName, name) {
-    const id = createPlanID(officeName, name);
-
+  deleteMembershipPlan(planId) {
     return new Promise((resolve, reject) => {
-      stripe.plans.del(id,
+      stripe.plans.del(planId,
         (err, confirmation) => {
           if (err) reject(verboseError(err));
           // Create the new plan
@@ -211,25 +204,27 @@ export default {
    * Updates the price of the membership plan but related recycles stripe subscriptions
    *
    * @param {any} membershipId - the id of the membership record
-   * @param {string} officeName - the name of the office creating the membership
-   * @param {string} name - the name of the membership plan
+   * @param {string} planId - the unique id of the plan
+   * @param {string} name - the name of the plan
    * @param {number} [price=0] - the price of the plan
    * @param {string} [interval='month'] - the interval of how often the plan will be charged
    * @param {number} [trialPeriodDays=0] - the number of days for which the subscriber will not be billed
    * @returns {Promise<null>}
    */
-  updateMembershipPlanPrice(membershipId, officeName, name, price = 0, interval = 'month', trialPeriodDays = 0) {
+  updateMembershipPlanPrice(membershipId, planId, name, price = 0, interval = 'month', trialPeriodDays = 0) {
+    price *= 100;
+
     return new Promise((resolve, reject) => {
       // Delete the old plan
-      this.deleteMembershipPlan(officeName, name)
+      this.deleteMembershipPlan(planId)
       // Create the new plan
-      .then(() => this.createMembershipPlan(officeName, name, price, interval, trialPeriodDays))
+      .then(() => this.createMembershipPlan(planId, name, price, interval, trialPeriodDays))
       .then((plan) => {
         // Update related subscriptions
         db.Subscription.findAll({
           where: { membershipId },
           attributes: ['stripeSubscriptionId'],
-        }).then((subscriptions) => {
+        }).then((subscriptions = []) => {
           subscriptions.forEach(sub =>
             // Update the old subscriptions with the new plan
             stripe.subscriptions.update(
@@ -253,18 +248,15 @@ export default {
   /**
    * Creates a new subscription
    *
-   * @param {string} officeName - the name of the office creating the membership
-   * @param {string} name - the name of the membership plan
+   * @param {string} subscriptionId - the id of the stripe subscription
    * @param {string} customerId - the id of the customer to subscribe
    * @returns {Promise<Subscription>}
    */
-  createSubscription(officeName, name, customerId) {
-    const id = createPlanID(officeName, name);
-
+  createSubscription(subscriptionId, customerId) {
     return new Promise((resolve, reject) => {
       stripe.subscriptions.create({
         customer: customerId,
-        plan: id,
+        plan: subscriptionId,
       }, (err, subscription) => {
         if (err) reject(verboseError(err));
         resolve(subscription);

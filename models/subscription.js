@@ -2,8 +2,8 @@
 // MODULES
 
 import { SUBSCRIPTION_STATES, SUBSCRIPTION_TYPES } from '../config/constants';
-
 import { instance, model } from '../orm-methods/subscriptions';
+import stripe from '../controllers/stripe';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MODEL

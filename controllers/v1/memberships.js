@@ -153,7 +153,7 @@ function updateMembership(req, res) {
  * @param {Object} res - the express response
  */
 function deleteMembership(req, res) {
-  req.locals.membership.update({ stripePlanId: null }).then(() => res.end());
+  req.locals.membership.update({ stripePlanId: null }).then(() => res.json());
 }
 
 /**
@@ -174,7 +174,7 @@ function cancelMembership(req, res, next) {
       status: 'canceled'
     }, {
       where: { clientId: req.locals.membershipUser.get('id') }
-    }).then(() => res.end());
+    }).then(() => res.json());
   }
 }
 
@@ -196,7 +196,7 @@ function deactivateMembership(req, res, next) {
       status: 'inactive'
     }, {
       where: { clientId: req.locals.membershipUser.get('id') }
-    }).then(() => res.end());
+    }).then(() => res.json());
   }
 }
 

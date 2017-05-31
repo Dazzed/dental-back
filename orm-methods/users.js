@@ -1,41 +1,65 @@
-import moment from 'moment';
+/* eslint max-len:0 */
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import _ from 'lodash';
 import db from '../models';
 
 import { MembershipMethods } from '../orm-methods/memberships';
-
-import {
-  generateRandomEmail
-} from '../utils/helpers';
+import { generateRandomEmail } from '../utils/helpers';
+import stripe from '../controllers/stripe';
 
 const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified'];
 
+// ────────────────────────────────────────────────────────────────────────────────
+// EXPORTS
+
 export const instance = {
 
-  getSubscriptions() {
-    // TODO: Fix ability to get subscriptions with Stripe
-    const where = {
-      isDeleted: false,
-      $or: [{
-        addedBy: this.get('id'),
-      }, {
-        id: this.get('id'),
-        payingMember: true,
-      }],
-    };
+  /**
+   * Retrieves details about the users subscription
+   *
+   * @returns {Promise<SubscriptionDetails>}
+   */
+  getSubscription() {
+    const userId = this.get('id');
+    let subscriptionObj = {};
 
-    return db.Subscription.findAll({
-      attributes: ['total', 'type', 'id'],
-      where: { status: 'inactive' },
-      include: [{
-        model: db.User,
-        as: 'client',
-        attributes: ['id'],
-        where,
-      }]
+    if (this.get('type') === 'dentist') {
+      throw new Error('Dentist cannot have a subscription');
+    }
+
+    return new Promise((resolve, reject) => {
+      db.Subscription.findAll({
+        where: { clientId: userId },
+        include: [{
+          model: db.Membership,
+          as: 'membership'
+        }]
+      })
+      .then((sub) => {
+        if (!sub || !!sub.membership) resolve({});
+        subscriptionObj = sub;
+        return sub.membership.getPlanCosts();
+      })
+      .then((planCosts) => {
+        resolve(Object.assign(
+          {},
+          planCosts,
+          {
+            status: subscriptionObj.status
+          })
+        );
+      })
+      .catch(reject);
     });
   },
 
+  /**
+   * Retrieves reviews made against this dentist user
+   *
+   * @returns {Promise<Review[]>}
+   */
   getDentistReviews() {
     return db.Review.findAll({
       where: { dentistId: this.get('id') },
@@ -44,9 +68,9 @@ export const instance = {
   },
 
   /**
-   * Method that returs all clients and subscriptions
+   * Returns all clients/subscriptions
    *
-   * This parses all clients and return data to be displayed.
+   * @returns {Promise<User[]>}
    */
   getClients() {
     return db.User.findAll({
@@ -71,9 +95,7 @@ export const instance = {
         include: [{
           model: db.Subscription,
           where: { dentistId: this.get('id') },
-          as: 'clientSubscription',
-          order: '"status" DESC',
-          limit: 1,
+          as: 'clientSubscription'
         }, {
           model: db.Phone,
           as: 'phoneNumbers',
@@ -87,7 +109,7 @@ export const instance = {
         as: 'phoneNumbers',
       }],
       subquery: false,
-    }).then(result => result.map(item => {
+    }).then(result => result.map((item) => {
       const parsed = item.toJSON();
 
       parsed.subscription = parsed.clientSubscription;
@@ -99,7 +121,7 @@ export const instance = {
         parsed.phoneNumbers[0].number : undefined;
       delete parsed.phoneNumbers;
 
-      parsed.members.forEach(member => {
+      parsed.members.forEach((member) => {
         member.subscription = member.clientSubscriptions[0];
         delete member.clientSubscriptions;
         member.phone = member.phoneNumbers[0] ?
@@ -118,61 +140,70 @@ export const instance = {
     }));
   },
 
-  getCurrentSubscription() {
-    const query = {};
+  /**
+   * Gets associated members of this primary account
+   *
+   * @returns {Promise<User[]>}
+   */
+  getMyMembers() {
+    return new Promise((resolve, reject) => {
+      db.User.findAll({
+        attributes: { exclude: userFieldsExcluded },
+        where: {
+          $or: [{
+            addedBy: this.get('id'),
+          }, {
+            id: this.get('id'),
+          }],
+          isDeleted: false,
+        },
+        include: [{
+          model: db.Membership,
+          as: 'memberships'
+        }, {
+          model: db.Subscription,
+          as: 'clientSubscription',
+          limit: 1,
+          order: '"status" DESC',
+        }, {
+          model: db.Phone,
+          as: 'phoneNumbers',
+        }],
+        subquery: false,
+      })
+      .then(users => (
+        Promise.all(
+          users.map(userObj => (
+            new Promise((res, rej) => {
+              userObj.getSubscription()
+              .then((subscription) => {
+                const parsed = userObj.toJSON();
 
-    if (this.get('type') === 'dentist') {
-      throw new Error('Dentist cannot have a subscription');
-    } else {
-      query.clientId = this.get('id');
-    }
+                parsed.subscription = subscription;
 
-    return db.Subscription.find({
-      where: query,
-      order: '"status" DESC',
+                parsed.phone = parsed.phoneNumbers[0] ?
+                  parsed.phoneNumbers[0].number : undefined;
+
+                delete parsed.clientSubscription;
+                delete parsed.phoneNumbers;
+
+                res(parsed);
+              })
+              .catch(rej);
+            })
+          ))
+        )
+      ))
+      .catch(reject);
     });
   },
 
-  getMyMembers() {
-    return db.User.findAll({
-      attributes: { exclude: userFieldsExcluded },
-      where: {
-        $or: [{
-          addedBy: this.get('id'),
-        }, {
-          id: this.get('id'),
-        }],
-        isDeleted: false,
-      },
-      include: [{
-        // TODO: add monthly cost back from Stripe?
-        attributes: ['name'],
-        model: db.Membership,
-        as: 'memberships'
-      }, {
-        model: db.Subscription,
-        as: 'clientSubscription',
-        limit: 1,
-        order: '"status" DESC',
-      }, {
-        model: db.Phone,
-        as: 'phoneNumbers',
-      }],
-      subquery: false,
-    }).then(result => result.map(item => {
-      const parsed = item.toJSON();
-
-      parsed.subscription = parsed.clientSubscription;
-
-      parsed.phone = parsed.phoneNumbers[0] ?
-        parsed.phoneNumbers[0].number : undefined;
-      delete parsed.phoneNumbers;
-
-      return parsed;
-    }));
-  },
-
-
+  /**
+   * Gets the associated dentist record for the user
+   *
+   * @param {boolean} omitInclude - flag to omit included properties
+   * @returns {Promise<Dentist>}
+   */
   getMyDentist(omitInclude) {
     const query = {
       attributes: ['id', 'firstName', 'lastName', 'avatar', 'email'],
@@ -187,10 +218,7 @@ export const instance = {
         where: { status: { $not: 'canceled' }, clientId: this.get('id') },
         include: [{
           model: db.Membership,
-          as: 'membership',
-          // TODO: need default, total, type?
-          attributes: ['name'],
-          // attributes: ['name', 'default', 'total', 'type'],
+          as: 'memberships',
         }]
       }, {
         model: db.Review,
@@ -233,8 +261,13 @@ export const instance = {
       }];
     }
 
-    return db.User.find(query).then(dentist => {
-      const parsed = dentist ? dentist.toJSON() : {};
+    let parsed = {};
+    let dentistObj = {};
+
+    return db.User.find(query)
+    .then((dentist) => {
+      parsed = dentist ? dentist.toJSON() : {};
+      dentistObj = dentist;
 
       if (omitInclude) return [parsed, dentist];
 
@@ -251,37 +284,78 @@ export const instance = {
         .filter(review => review.clientId === this.get('id'));
 
       reviews
-        .forEach(review => {
-          delete review.clientId;
-          delete review.dentistId;
-        });
+      .forEach((review) => {
+        delete review.clientId;
+        delete review.dentistId;
+      });
       parsed.dentistReviews = reviews;
-      return [parsed, dentist];
+
+      // Expand membership details from stripe
+      return Promise.all(
+        dentist.dentistInfo.membership.getPlanCosts(),
+        dentist.dentistInfo.childMembership.getPlanCosts(),
+      );
+    })
+    .then((memberships) => {
+      parsed.membership = memberships[0] || {};
+      parsed.childMembership = memberships[1] || {};
+
+      return [parsed, dentistObj];
     });
   },
 
   /**
    * Creates a new subscription record
    *
-   * @param {object} membership - the membership to subscribe to
+   * @param {number} membershipId - the id of the membership to subscribe to
    * @param {number} dentistId - the ID of the dentist providing the membership
-   * @param {object} t - the sequelize transaction
    * @returns {Promise<Subscription>}
    */
-  createSubscription(membership, dentistId, t) {
+  createSubscription(membershipId, dentistId) {
     if (this.get('type') === 'dentist') {
-      throw new Error('Dentist type cannot create subscription');
+      throw new Error('Dentist type cannot have a subscription');
     }
 
-    // TODO: Create Stripe Subscription
-    return db.Subscription.create({
-      status: 'inactive',
-      membershipId: membership.id,
-      clientId: this.get('id'),
-      dentistId,
-    }, { transaction: t });
+    const clientId = this.get('id');
+
+    return new Promise((resolve, reject) => {
+      db.PaymentProfile.find({
+        where: {
+          $or: [{
+            primaryAccountHolderId: this.get('id'),
+          }, {
+            primaryAccountHolderId: this.get('addedBy'),
+          }]
+        }
+      })
+      .then((profile) => {
+        if (!profile) throw new Error('User has no associated payment profile');
+        return stripe.createSubscription(
+          stripe.createUniqueID(clientId, dentistId),
+          profile.get('stripeCustomerId'),
+        );
+      })
+      .then(([id, status]) => {
+        db.Subscription.create({
+          stripeSubscriptionId: id,
+          clientId,
+          membershipId,
+          dentistId,
+          status,
+        })
+        .then(resolve)
+        .catch(reject);
+      })
+      .catch(reject);
+    });
   },
 
+  /**
+   * Creates a notification for the user
+   *
+   * @param {object<Notification>} data - the notification object
+   * @returns {Promise<Notification>}
+   */
   createNotification(data) {
     return db.Notification.create(
       Object.assign(data, {
@@ -290,11 +364,17 @@ export const instance = {
     );
   },
 
+  /**
+   * Gets the complete dentist record
+   *
+   * @param {string} [id=this.get('id')] - the id of the current dentist user
+   * @returns {Promise<FullDentist>}
+   */
   getFullDentist(id = this.get('id')) {
     let d = {};
 
-    return Promise.resolve().then(() => {
-      return db.User.find({
+    return Promise.resolve().then(() => (
+      db.User.find({
         attributes: {
           exclude: userFieldsExcluded
         },
@@ -338,9 +418,9 @@ export const instance = {
             as: 'officeImages'
           }]
         }]
-      });
-    })
-    .then(dentist => {
+      })
+    ))
+    .then((dentist) => {
       if (dentist == null) return Promise.resolve([]);
       d = dentist.toJSON();
       const dentistInfoId = d.dentistInfo ? d.dentistInfo.id : 0;
@@ -353,9 +433,9 @@ export const instance = {
         }]
       });
     })
-    .then(items => {
+    .then((items) => {
       d.dentistInfo = d.dentistInfo || {};
-      d.dentistInfo.priceCodes = items.map(i => {
+      d.dentistInfo.priceCodes = items.map((i) => {
         const temp = i.priceCode.toJSON();
         temp.price = i.get('price');
         return i.priceCode;
@@ -371,8 +451,8 @@ export const instance = {
         d.dentistInfo.childMembership.id,
       ]);
     })
-    .then(fullCosts => {
-      fullCosts.forEach(cost => {
+    .then((fullCosts) => {
+      fullCosts.forEach((cost) => {
         if (d.dentistInfo.membership.id === cost.membershipId) {
           d.dentistInfo.membership.fullCost = cost.fullCost;
           d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
@@ -390,8 +470,18 @@ export const instance = {
         }
       });
     })
-    .then(activeMemberCount => {
+    .then((activeMemberCount) => {
       d.dentistInfo.activeMemberCount = activeMemberCount;
+      // Expand Membership
+      return d.dentistInfo.membership.getPlanCosts();
+    })
+    .then((planCosts) => {
+      d.dentistInfo.membership = planCosts;
+      // Expand Child Membership
+      return d.dentistInfo.childMembership.getPlanCosts();
+    })
+    .then((planCosts) => {
+      d.dentistInfo.childMembership = planCosts;
       return Promise.resolve(d);
     });
   }
@@ -400,7 +490,16 @@ export const instance = {
 
 export const model = {
 
+  /**
+   * Gets the associated member object of the user
+   *
+   * @param {number} addedBy - the id of the user who added the member
+   * @param {number} memberId - the id of the member user
+   * @returns {Promise<Member>}
+   */
   getMyMember(addedBy, memberId) {
+    let parsed = {};
+
     return db.User.find({
       attributes: { exclude: userFieldsExcluded },
       where: {
@@ -409,26 +508,24 @@ export const model = {
         isDeleted: false,
       },
       include: [{
-        model: db.Subscription,
-        as: 'clientSubscription',
-        limit: 1,
-        order: '"status" DESC',
-      }, {
         model: db.Phone,
         as: 'phoneNumbers',
       }],
       subquery: false,
-    }).then(member => {
-      const parsed = member ? member.toJSON() : undefined;
+    })
+    .then((member) => {
+      parsed = member ? member.toJSON() : {};
 
       if (member) {
-        parsed.subscription = parsed.clientSubscription;
-
         parsed.phone = parsed.phoneNumbers[0] ?
-          parsed.phoneNumbers[0].number : undefined;
+          parsed.phoneNumbers[0].number : null;
         delete parsed.phoneNumbers;
       }
 
+      return member.getSubscription();
+    })
+    .then((subscription) => {
+      parsed.subscription = subscription;
       return parsed;
     });
   },
@@ -438,10 +535,9 @@ export const model = {
    *
    * @param {object} data - the information of the new member
    * @param {object} user - the parent user
-   * @param {object} t - the sequelize transaction object
    * @returns {Promise<Member>}
    */
-  addMember(data, user, t = null) {
+  addMember(data, user) {
     const membership = data.subscription;
     let member;
 
@@ -453,16 +549,15 @@ export const model = {
     data.email = generateRandomEmail();
 
     return Promise.resolve()
-    .then(() => db.User.create(data, { transaction: t }))
+    .then(() => db.User.create(data))
     .then((_member) => {
       member = _member;
       return db.Subscription.find({
         attributes: ['dentistId', 'id'],
-        where: { clientId: user.get('id') },
-        raw: true
-      }, { transaction: t });
+        where: { clientId: user.get('id') }
+      });
     })
-    .then(subscription => member.createSubscription(membership, subscription.dentistId, t))
+    .then(subscription => member.createSubscription(membership, subscription.dentistId))
     .then((subscription) => {
       const response = member.toJSON();
       response.membership = membership;

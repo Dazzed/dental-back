@@ -2,10 +2,7 @@
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
-import crypto from 'crypto';
 import passport from 'passport';
-import HTTPStatus from 'http-status';
-import { WEBHOOK_EVENT } from '../utils/schema-validators';
 
 import db from '../models';
 import { instance as UserInstance } from '../orm-methods/users';
@@ -39,6 +36,7 @@ export function adminRequired(req, res, next) {
  * @param {Object} res - the next middleware function
  */
 export function dentistRequired(req, res, next) {
+  console.log(req.user.type);
   if (req.user && (req.user.type === 'dentist' || req.user.type === 'admin')) {
     next();
   } else {
@@ -56,7 +54,7 @@ export function dentistRequired(req, res, next) {
 export function injectDentist(paramName = 'dentistId', localVarName = 'dentist') {
   return (req, res, next) => {
     fetchDentist(req.params[paramName])
-    .then(dentist => {
+    .then((dentist) => {
       req.locals[localVarName] = dentist;
       next();
     })
@@ -111,26 +109,12 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
         attributes: {
           exclude: ['userId'],
         },
-        // include: [{
-        //   model: db.MembershipItem,
-        //   as: 'items',
-        //   attributes: {
-        //     exclude: ['membershipId'],
-        //   },
-        // }],
       }, {
         model: db.Membership,
         as: 'childMembership',
         attributes: {
           exclude: ['userId'],
         },
-        // include: [{
-        //   model: db.MembershipItem,
-        //   as: 'items',
-        //   attributes: {
-        //     exclude: ['membershipId'],
-        //   },
-        // }],
       }, {
         model: db.DentistInfoService,
         as: 'services',
@@ -150,12 +134,10 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
       order: [
         [
           { model: db.Membership, as: 'membership' },
-          // { model: db.MembershipItem, as: 'items' },
           'id', 'asc'
         ],
         [
           { model: db.Membership, as: 'childMembership' },
-          // { model: db.MembershipItem, as: 'items' },
           'id', 'asc'
         ]
       ]
@@ -194,7 +176,7 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
  */
 export function injectDentistOffice(paramName = 'dentistId', localVarName = 'dentist') {
   return (req, res, next) => {
-    UserInstance.getFullDentist(req.params[paramName]).then(dentist => {
+    UserInstance.getFullDentist(req.params[paramName]).then((dentist) => {
       req.locals[localVarName] = dentist;
       next();
     }).catch(err => new BadRequestError(err));
@@ -216,11 +198,11 @@ export function injectSimpleUser(paramName = 'userId', localVarName = 'membershi
 
     Promise.resolve()
     .then(() => db.User.find({ where: { id } }))
-    .then(user => {
+    .then((user) => {
       if (!user || req.params[paramName] !== 'me') next(new BadRequestError());
       req.locals[localVarName] = user;
       next();
-    }).catch(err => {
+    }).catch((err) => {
       console.log(err);
       next(new BadRequestError());
     });
@@ -286,7 +268,7 @@ export function injectMembership(userParamName = 'userId', membershipParamName =
         id: userId,
         addedBy: req.user.get('id')
       }
-    }).then(count => {
+    }).then((count) => {
       const canEdit =
         userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
         req.user.get('type') === 'admin' || count >= 1;
@@ -387,7 +369,7 @@ export function verifyPasswordLocal(paramName = 'oldPassword') {
     db.User.find({
       where: { id: req.locals.user.get('id') }
     })
-    .then(_user => {
+    .then((_user) => {
       const password = req.body[paramName];
 
       _user.authenticate(password, (err, user) => {
@@ -412,7 +394,7 @@ export function verifyPasswordLocal(paramName = 'oldPassword') {
  */
 export function userRequired(req, res, next) {
   passport.authenticate('jwt', { session: false }, (err, user) => {
-    if (err || user == null) {
+    if (err || user == null || user === false) {
       res.json({ data: { error: 'Failed to authenticate' } });
     } else {
       req.user = user;
@@ -436,51 +418,8 @@ export function validateBody(schemaObject = {}, bodyPrepCb = body => body) {
     req.body = temp;
 
     req.asyncValidationErrors(true)
-    .then(next, err => {
+    .then(next, (err) => {
       next(new BadRequestError(err));
     });
   };
-}
-
-/**
- * Tracks the webhook event into the webhooks table
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Object} res - the next middleware function
- */
-export function trackHookEvent(req, res, next) {
-  req.checkBody(WEBHOOK_EVENT);
-
-  req.asyncValidationErrors(true)
-  .then(() => {
-    db.Webhooks.create({
-      webhookId: req.body.webhookId,
-      notificationId: req.body.notificationId,
-      eventType: req.body.eventType,
-      createdAt: req.body.eventDate,
-    }).then(() => {
-      next();
-    }).catch(err => next(new BadRequestError(err)));
-  }, err => next(new BadRequestError(err)));
-}
-
-/**
- * Checks the hook body if it is a valid hook from Authorize.net
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Object} res - the next middleware function
- */
-export function validateHook(req, res, next) {
-  const contents = JSON.stringify(req.body);
-  const hash = crypto.createHmac('sha512', process.env.AUTHORIZE_SIGNATURE_KEY).update(contents);
-  const value = hash.digest('base64');
-
-  if (value === req.get('X-ANET-Signature')) {
-    next();
-  } else {
-    res.status(HTTPStatus.FORBIDDEN);
-    res.send('Forbidden');
-  }
 }

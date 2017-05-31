@@ -413,14 +413,14 @@ function getDentistNoAuth(req, res, next) {
 const router = new Router({ mergeParams: true });
 
 router
-  .route('/:userId/review')
+  .route('/review')
   .post(
     userRequired,
     validateBody(REVIEW),
     addReview);
 
 router
-  .route('/:userId/review/:reviewId')
+  .route('/review/:reviewId')
   .put(
     userRequired,
     validateBody(REVIEW),
@@ -430,7 +430,7 @@ router
     deleteReview);
 
 router
-  .route('/:userId/patients/:patientId/waive-fees')
+  .route('/patients/:patientId/waive-fees')
   .put(
     userRequired,
     injectSubscribedPatient(),
@@ -438,7 +438,7 @@ router
     waiveCancellationFee);
 
 router
-  .route('/:userId/patients/:patientId/update-card')
+  .route('/patients/:patientId/update-card')
   .put(
     userRequired,
     validateBody(PATIENT_CARD_UPDATE),
@@ -447,32 +447,33 @@ router
     updatePatientCard);
 
 router
-  .route('/:userId/no-auth')
+  .route('/no-auth')
   .get(getDentistNoAuth);
 
 router
-  .route('/:userId/invite_patient')
+  .route('/invite_patient')
   .post(
     userRequired,
     validateBody(INVITE_PATIENT),
     invitePatient);
 
 router
-  .route('/:userId/contact_support')
+  .route('/contact_support')
   .post(
     validateBody(CONTACT_SUPPORT_NO_AUTH),
     contactSupportNoAuth);
 
-router
-  .route('/:userId?/:phoneId?')
-  .get(
-    userRequired,
-    adminRequired,
-    listDentists)
-  .put(
-    userRequired,
-    adminRequired,
-    validateBody(UPDATE_DENTIST),
-    updateDentist);
+// FIXME: fix update dentist
+// router
+//   .route('/:phoneId?')
+//   .get(
+//     userRequired,
+//     adminRequired,
+//     listDentists)
+//   .put(
+//     userRequired,
+//     adminRequired,
+//     validateBody(UPDATE_DENTIST),
+//     updateDentist);
 
 export default router;

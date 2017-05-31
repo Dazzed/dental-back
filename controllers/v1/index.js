@@ -20,9 +20,6 @@ import services from './services';
 import stats from './stats';
 import userDentist from './user-dentist';
 import users from './users';
-import webhooks from './webhooks';
-
-import { validateHook, trackHookEvent } from '../middlewares';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
@@ -45,6 +42,8 @@ router.use('/users/:userId/notifications', notifications);
 // ────────────────────────────────────────────────────────────────────────────────
 // DENTIST ENDPOINTS
 
+// FIXME: Need to break apart the `dentists` routes so as
+// to not interfere with other dentist endpoints
 router.use('/dentists', dentists);
 router.use('/dentists/:dentistId/reviews', reviews);
 router.use('/dentists/:dentistId/members', dentistMembers);
@@ -63,8 +62,5 @@ router.use('/services', services);
 router.use('/offices', offices);
 router.use('/pricing', pricing);
 router.use('/reports', reports);
-
-// 3rd Party endpoints
-router.use('/webhooks', validateHook, trackHookEvent, webhooks);
 
 export default router;
