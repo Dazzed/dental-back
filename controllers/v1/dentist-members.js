@@ -12,11 +12,7 @@ import {
 
 import {
   BadRequestError,
-  NotFoundError,
 } from '../errors';
-
-const userFieldsExcluded = ['hash', 'salt', 'activationKey',
-  'resetPasswordKey', 'verified', 'authorizeId', 'paymentId'];
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -34,53 +30,15 @@ function getMembers(req, res) {
 
   db.User.find({
     where: { id: req.params.dentistId },
-  }).then((user) => {
+  })
+  .then((user) => {
     user.getClients()
     .then((members) => {
       res.json({ data: members });
     })
-    .catch((err) => {
-      res.json(new BadRequestError(err));
-    });
-  });
-
-  // Promise.resolve()
-  // .then(() => (
-  //   db.Subscription.findAll({
-  //     where: {
-  //       dentistId: req.params.dentistId,
-  //       status: { $not: 'canceled' },
-  //     },
-  //     include: [{
-  //       model: db.User,
-  //       attributes: { exclude: userFieldsExcluded },
-  //       as: 'client',
-  //       include: [{
-  //         model: db.Phone,
-  //         as: 'phoneNumbers',
-  //       }, {
-  //         model: db.Review,
-  //         as: 'clientReviews',
-  //         attributes: { exclude: ['clientId', 'dentistId'] },
-  //       }]
-  //     }],
-  //   })
-  // ))
-  // .then((subscriptions) => {
-  //   if (!subscriptions) {
-  //     res.json(new NotFoundError('The dentist account has no members'));
-  //   }
-
-  //   Promise.all(subscriptions.map(s => s.client.getMembers()))
-  //   .then((members) => {
-  //     members = members.map((m, i) => Object.assign({}, subscriptions[i].toJSON(), { members: m }));
-  //     return res.json({ data: members });
-  //   })
-  //   .catch((err) => { throw new Error(err); });
-  // })
-  // .catch((err) => {
-  //   res.json(new BadRequestError(err));
-  // });
+    .catch((err) => { throw new Error(err); });
+  })
+  .catch(err => res.json(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
