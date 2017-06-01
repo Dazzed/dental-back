@@ -143,9 +143,7 @@ export const instance = {
           as: 'memberships'
         }, {
           model: db.Subscription,
-          as: 'clientSubscription',
-          limit: 1,
-          order: '"status" DESC',
+          as: 'clientSubscription'
         }, {
           model: db.Phone,
           as: 'phoneNumbers',

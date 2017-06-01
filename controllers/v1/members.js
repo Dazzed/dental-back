@@ -32,9 +32,8 @@ import {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
  */
-function getMembers(req, res, next) {
+function getMembers(req, res) {
   let query;
 
   // Returns all clients grouped by main user.
@@ -44,9 +43,9 @@ function getMembers(req, res, next) {
     query = req.user.getMyMembers();
   }
 
-  return query
-    .then(data => res.json({ data }))
-    .catch(next);
+  query
+  .then(data => res.json({ data }))
+  .catch(err => res.json(new BadRequestError(err)));
 }
 
 /**
@@ -54,9 +53,8 @@ function getMembers(req, res, next) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
  */
-function addMember(req, res, next) {
+function addMember(req, res) {
   Promise.resolve()
   .then(() => {
     const data = _.pick(req.body, ['firstName', 'lastName',
@@ -64,17 +62,37 @@ function addMember(req, res, next) {
 
     return db.User.addMember(data, req.user);
   })
-  .then(response => {
+  .then((response) => {
     res.status(HTTPStatus.CREATED);
     res.json({ data: response });
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
-      return next(new BadRequestError(errors));
+      res.json(new BadRequestError(errors));
     }
 
-    return next(errors);
+    res.json(errors);
   });
+}
+
+/**
+ * Gets a specific member record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
+function getMember(req, res) {
+  const subscription = req.locals.member.subscription;
+  const membershipId = subscription ? subscription.membershipId : 0;
+
+  db.Membership.find({
+    where: { id: membershipId }
+  })
+  .then((membership) => {
+    if (membership) req.locals.member.membership = membership;
+    return res.json({ data: req.locals.member });
+  })
+  .catch(error => res.json(error));
 }
 
 /**
@@ -82,9 +100,8 @@ function addMember(req, res, next) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
  */
-function updateMember(req, res, next) {
+function updateMember(req, res) {
   const data = _.pick(req.body, ['firstName', 'lastName',
     'birthDate', 'familyRelationship', 'sex', 'membershipType']);
 
@@ -94,10 +111,14 @@ function updateMember(req, res, next) {
     userId = req.user.get('id');
   }
 
+  // FIXME: user update does not use a transaction
+
   Promise.resolve()
+  // Fetch the user record to update
   .then(() => db.User.update(data, {
     where: { addedBy: userId, id: req.params.memberId },
   }))
+  // Update the phone number
   .then(() => {
     if (req.body.phone && req.locals.member.phone !== req.body.phone) {
       return db.Phone.update({ number: req.body.phone }, {
@@ -108,87 +129,68 @@ function updateMember(req, res, next) {
     return null;
   })
   .then(() => {
-    const years = moment().diff(req.body.birthDate, 'years', false);
-    const oldYears = moment().diff(
-      req.locals.member.birthDate, 'years', false);
-    let subscriptionId;
+    // let subscriptionId;
 
-    if (years !== oldYears) {
-      return db.Subscription.find({
-        attributes: ['dentistId', 'id'],
-        where: {
-          clientId: req.params.memberId,
-        },
-        order: '"status" DESC',
-        raw: true,
-      }).then(subscription => {
-        subscriptionId = subscription.id;
+    // FIXME: Removed since updating subscriptions by age will be automatic
+    // const years = moment().diff(req.body.birthDate, 'years', false);
+    // const oldYears = moment().diff(req.locals.member.birthDate, 'years', false);
 
-        return db.DentistInfo.find({
-          attributes: ['membershipId', 'childMembershipId'],
-          where: {
-            userId: subscription.dentistId,
-          },
-          raw: true,
-        });
-      }).then(info => {
-        if (years < 13) {
-          return db.Membership.find({
-            where: { id: info.childMembershipId }
-          });
-        }
-        return db.Membership.find({ where: { id: info.membershipId } });
-      }).then(membership => {
-        req.locals.member.subscription.total = membership.price;
-        req.locals.member.subscription.monthly = membership.monthly;
-        req.locals.member.subscription.membershipId = membership.id;
+    // if (years !== oldYears) {
+    //   return db.Subscription.find({
+    //     attributes: ['dentistId', 'id'],
+    //     where: {
+    //       clientId: req.params.memberId,
+    //     },
+    //     order: '"status" DESC',
+    //     raw: true,
+    //   }).then(subscription => {
+    //     subscriptionId = subscription.id;
 
-        return db.Subscription.update({
-          amount: membership.price,
-          membershipId: membership.id,
-        }, {
-          where: {
-            clientId: req.locals.member.id,
-            id: subscriptionId,
-          }
-        });
-      });
-    }
+    //     return db.DentistInfo.find({
+    //       attributes: ['membershipId', 'childMembershipId'],
+    //       where: {
+    //         userId: subscription.dentistId,
+    //       },
+    //       raw: true,
+    //     });
+    //   }).then(info => {
+    //     if (years < 13) {
+    //       return db.Membership.find({
+    //         where: { id: info.childMembershipId }
+    //       });
+    //     }
+    //     return db.Membership.find({ where: { id: info.membershipId } });
+    //   }).then(membership => {
+    //     req.locals.member.subscription.total = membership.price;
+    //     req.locals.member.subscription.monthly = membership.monthly;
+    //     req.locals.member.subscription.membershipId = membership.id;
+
+    //     return db.Subscription.update({
+    //       amount: membership.price,
+    //       membershipId: membership.id,
+    //     }, {
+    //       where: {
+    //         clientId: req.locals.member.id,
+    //         id: subscriptionId,
+    //       }
+    //     });
+    //   });
+    // }
+
     return null;
   })
   .then(() => {
     Object.assign(req.locals.member, data);
     req.locals.member.phone = req.body.phone;
-    return next();
+    res.json();
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
-      return next(new BadRequestError(errors));
+      res.json(new BadRequestError(errors));
     }
 
-    return next(errors);
+    res.json(errors);
   });
-}
-
-/**
- * Gets a specific member record
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
- */
-function getMember(req, res, next) {
-  const subscription = req.locals.member.subscription;
-  const membershipId = subscription ? subscription.membershipId : 0;
-
-  db.Membership.find({
-    where: { id: membershipId }
-  })
-  .then(membership => {
-    if (membership) req.locals.member.membership = membership;
-    return res.json({ data: req.locals.member });
-  })
-  .catch(error => next(error));
 }
 
 /**
@@ -196,7 +198,6 @@ function getMember(req, res, next) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
  */
 function deleteMember(req, res) {
   const delEmail = `DELETED_${req.locals.member.email}`;

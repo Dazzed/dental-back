@@ -26,7 +26,6 @@ import {
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
-// TODO: add pagination and filters?
 /**
  * Gets the list of available memberships
  *
