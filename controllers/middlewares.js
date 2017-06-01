@@ -2,6 +2,8 @@
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
+import _ from 'lodash';
+
 import passport from 'passport';
 
 import db from '../models';
@@ -250,55 +252,28 @@ export function injectUser(paramName = 'userId', localVarName = 'user') {
 /**
  * Injects the user's memnbership record into req.locals for processing
  *
- * @param {string} [userParamName='userId'] - the url param name to find the user id
  * @param {string} [membershipParamName='membershipId'] - the ur param name to find the membership id
  * @param {string} [localVarName='membership'] - where the membership object will be stored in req.locals
  * @returns {Function} - the middleware function
  */
-export function injectMembership(userParamName = 'userId', membershipParamName = 'membershipId', localVarName = 'membership') {
+export function injectMembership(membershipParamName = 'membershipId', localVarName = 'membership') {
   return (req, res, next) => {
-    const userId = req.params[userParamName];
+    let membership = {};
 
-    /*
-    * If user is not admin, or parent of user and try to requests paths not related
-    * to that user will return forbidden.
-    */
-    db.User.count({
-      where: {
-        id: userId,
-        addedBy: req.user.get('id')
-      }
-    }).then((count) => {
-      const canEdit =
-        userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-        req.user.get('type') === 'admin' || count >= 1;
-
-      if (!canEdit) {
-        return next(new ForbiddenError());
-      }
-
-      const query = {
-        where: {
-          id: req.params[membershipParamName],
-        }
-      };
-
-      // if not admin limit query to related data userId
-      if (req.user.get('type') !== 'admin') {
-        query.where.userId = req.user.get('id');
-        query.where.isDeleted = false;  // this to save
-      }
-
-      return db.Membership.find(query);
-    }).then((membership) => {
-      if (!membership) next(new NotFoundError());
-      else {
-        req.locals[localVarName] = membership;
-        next();
-      }
-    }).catch((error) => {
-      next(error);
-    });
+    db.Membership.find({
+      id: req.params[membershipParamName],
+    })
+    .then((mem) => {
+      membership = mem.toJSON();
+      return mem.getPlanCosts();
+    })
+    .then((planCosts) => {
+      membership = Object.assign({}, membership, planCosts);
+      membership = _(membership).omit(['stripePlanId', 'userId', 'price']);
+      req.locals[localVarName] = membership;
+      next();
+    })
+    .catch(err => next(err));
   };
 }
 

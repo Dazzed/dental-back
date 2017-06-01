@@ -25,7 +25,7 @@ function getUnreadCount(req, res, next) {
 
   db.Notification
     .count({ where })
-    .then(count => {
+    .then((count) => {
       res.json({
         data: { unread_count: count }
       });
@@ -61,7 +61,7 @@ function getNotifications(req, res, next) {
 
   db.Notification
   .findAll({ where })
-  .then(notifications => {
+  .then((notifications) => {
     res.json({
       data: notifications
     });

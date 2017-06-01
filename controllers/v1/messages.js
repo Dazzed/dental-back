@@ -61,7 +61,7 @@ function getUnreadCount(req, res, next) {
 
   db.Conversation
     .find({ where })
-    .then(conversation => {
+    .then((conversation) => {
       if (!conversation) {
         return res.json({
           data: { unread_count: 0 }
@@ -76,7 +76,7 @@ function getUnreadCount(req, res, next) {
             userId: req.params.recipientId,
           }
         })
-        .then(count => {
+        .then((count) => {
           res.json({
             data: { unread_count: count }
           });
@@ -101,14 +101,14 @@ function makeAllRead(req, res, next) {
 
   db.Conversation
     .find({ where })
-    .then(conversation => {
+    .then((conversation) => {
       if (!conversation) {
         return next(new NotFoundError());
       }
 
       return conversation.id;
     })
-    .then(conversationId => {
+    .then((conversationId) => {
       db.Message.update({
         isRead: true
       }, {
@@ -149,7 +149,7 @@ function getMessages(req, res, next) {
 
   db.Conversation
     .find(query)
-    .then(conversation => {
+    .then((conversation) => {
       if (!conversation) {
         next(new NotFoundError());
       } else {
@@ -176,7 +176,7 @@ function addMessage(req, res, next) {
 
   return db.Conversation
     .find({ where: data })
-    .then(conversation => {
+    .then((conversation) => {
       if (!conversation) {
         return db.Conversation.create(data);
       }
@@ -189,7 +189,7 @@ function addMessage(req, res, next) {
         userId: req.user.get('id'),
       })
     )
-    .then(message => {
+    .then((message) => {
       res.status(HTTPStatus.CREATED);
       res.json(message.toJSON());
     })
