@@ -1,5 +1,7 @@
 import { Router } from 'express';
 
+import { userRequired, adminRequired } from '../middlewares';
+
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER COMPONENTS
 
@@ -55,12 +57,13 @@ router.use('/dentist-specialties', dentistSpecialties);
 
 // root maybe for admin calls? add adminRequired middleware
 // Maybe also add express validators to request type user
+router.use('/admin', userRequired, adminRequired);
 router.use('/admin/stats', stats);
-router.use('/members', members);
-router.use('/memberships', memberships);
-router.use('/services', services);
-router.use('/offices', offices);
-router.use('/pricing', pricing);
-router.use('/reports', reports);
+router.use('/admin/members', members);
+router.use('/admin/memberships', memberships);
+router.use('/admin/services', services);
+router.use('/admin/offices', offices);
+router.use('/admin/pricing', pricing);
+router.use('/admin/reports', reports);
 
 export default router;

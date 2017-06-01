@@ -17,7 +17,6 @@ import {
 } from '../errors';
 
 import {
-  userRequired,
   injectSimpleUser,
   injectMembership,
   validateBody,
@@ -26,44 +25,35 @@ import {
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
+const excludeMembershipFields = ['stripePlanId', 'userId'];
+
 /**
  * Gets the list of available memberships
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
  */
-function getMemberships(req, res, next) {
-  const userId = req.params.userId;
+function getMemberships(req, res) {
+  let memberships = [];
 
-  /*
-   * If user is not admin and try to requests paths not related
-   * to that user will return forbidden.
-   */
-  const canEdit =
-    userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-    req.user.get('type') === 'admin';
+  return db.Membership.findAll({
+    where: { stripePlanId: { $not: null } },
+  })
+  .then((members) => {
+    memberships = members;
+    return Promise.all(members.map(m => m.getPlanCosts()));
+  })
+  .then((planCosts) => {
+    planCosts.forEach((p, i) => {
+      memberships[i] = Object.assign({}, memberships[i].toJSON(), planCosts[i]);
+    });
 
-  if (!canEdit) {
-    return next(new ForbiddenError());
-  }
+    memberships = memberships.map(m => _.omit(m, excludeMembershipFields));
 
-  const query = {
-    attributes: { exclude: ['stripePlanId'] },
-    where: {
-      stripePlanId: { $not: null },
-    }
-  };
-
-  // if not admin limit query to related data userId
-  if (req.user.get('type') !== 'admin') {
-    query.where.userId = req.user.get('id');
-  }
-
-  return db.Membership.findAll(query).then((members) =>
-    res.json({ data: members || [] })
-  ).catch((error) => {
-    next(error);
+    res.json({ data: memberships || [] });
+  })
+  .catch((error) => {
+    res.json(new BadRequestError(error));
   });
 }
 
@@ -206,11 +196,8 @@ const router = new Router({ mergeParams: true });
 
 router
   .route('/')
-  .get(
-    userRequired,
-    getMemberships)
+  .get(getMemberships)
   .post(
-    userRequired,
     validateBody(MEMBERSHIP),
     addMembership);
 
@@ -218,23 +205,19 @@ router
 router
   .route('/:membershipId')
   .get(
-    userRequired,
     injectMembership(),
     getMembership)
   .put(
-    userRequired,
     validateBody(MEMBERSHIP),
     injectMembership(),
     updateMembership)
   .delete(
-    userRequired,
     injectMembership(),
     deleteMembership);
 
 router
   .route('/cancel/:userId')
   .delete(
-    userRequired,
     injectSimpleUser(),
     cancelMembership
   );
@@ -242,7 +225,6 @@ router
 router
   .route('/deactivate/:userId')
   .delete(
-    userRequired,
     injectSimpleUser(),
     deactivateMembership
   );
