@@ -1,3 +1,4 @@
+/* eslint quote-props: 0 */
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
@@ -37,6 +38,17 @@ export const instance = {
   }
 };
 
+function buildPriceCodes(codes) {
+  return {
+    '1110': codes['1110'] || 0,
+    '0120': codes['0120'] || 0,
+    '0274': codes['0274'] || 0,
+    '0330': codes['0330'] || 0,
+    '0220': codes['0220'] || 0,
+    '0140': codes['0140'] || 0,
+  };
+}
+
 /**
  * Methods related to providing additional information about Memberships
  */
@@ -65,6 +77,8 @@ export const MembershipMethods = {
             obj[pc.code] = pc.membershipItems.shift().price || 0;
             return obj;
           }, {});
+
+          priceCodes = buildPriceCodes(priceCodes);
 
           // Calculate the full cost
           const fullCost =

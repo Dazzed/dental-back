@@ -14,7 +14,6 @@ import { fetchDentist } from '../../orm-methods/dentists';
 
 import {
   userRequired,
-  adminRequired,
   injectSubscribedPatient,
   validateBody,
 } from '../middlewares';
@@ -38,7 +37,6 @@ import {
   CONTACT_SUPPORT,
   WAIVE_CANCELLATION,
   PATIENT_CARD_UPDATE,
-  UPDATE_DENTIST,
 } from '../../utils/schema-validators';
 
 import {
@@ -385,26 +383,27 @@ function updateDentist(req, res, next) {
  *
  * @param {Object} req - express request
  * @param {Object} res - express response
- * @param {Function} next - next middleware function
  */
-function getDentistNoAuth(req, res, next) {
+function getDentistNoAuth(req, res) {
   db.User.findOne({
     attributes: ['id'],
     where: {
-      id: req.params.userId,
-      type: 'dentist'
-    }
+      id: req.params.dentistId,
+      type: 'dentist',
+    },
   })
-  .then(user => {
+  .then((user) => {
     if (user) return user.getFullDentist();
     return null;
   })
-  .then(user => {
+  .then((user) => {
     delete user.dentistInfo.priceCodes;
     delete user.dentistInfo.activeMemberCount;
     res.json({ data: user || {} });
   })
-  .catch(next);
+  .catch((err) => {
+    res.json(new BadRequestError(err));
+  });
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -447,7 +446,7 @@ router
     updatePatientCard);
 
 router
-  .route('/no-auth')
+  .route('/:dentistId/no-auth')
   .get(getDentistNoAuth);
 
 router

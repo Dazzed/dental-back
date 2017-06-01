@@ -364,10 +364,10 @@ export const instance = {
           type: 'dentist'
         },
         include: [{
-          as: 'dentistInfo',
           model: db.DentistInfo,
+          as: 'dentistInfo',
           attributes: {
-            exclude: ['membershipId', 'userId', 'childMembershipId'],
+            exclude: ['membershipId', 'userId', 'childMembershipId', 'createdAt', 'updatedAt'],
           },
           include: [{
             model: db.Membership,
@@ -392,7 +392,10 @@ export const instance = {
             }]
           }, {
             model: db.WorkingHours,
-            as: 'workingHours'
+            as: 'workingHours',
+            attributes: {
+              exclude: ['dentistInfoId', 'createdAt', 'updatedAt'],
+            },
           }, {
             model: db.DentistInfoPhotos,
             attributes: ['url'],
@@ -416,14 +419,18 @@ export const instance = {
     })
     .then((items) => {
       d.dentistInfo = d.dentistInfo || {};
+
       d.dentistInfo.priceCodes = items.map((i) => {
         const temp = i.priceCode.toJSON();
-        temp.price = i.get('price');
-        return i.priceCode;
+        temp.price = parseInt(i.get('price'), 10).toFixed(2);
+        return temp;
       });
 
       d.dentistInfo.membership = d.dentistInfo.membership || {};
       d.dentistInfo.childMembership = d.dentistInfo.childMembership || {};
+
+      // Remap services
+      d.dentistInfo.services = d.dentistInfo.services.map(s => (s.service ? s.service.name || null : ''));
 
       // Calculate membership costs
       return MembershipMethods
@@ -453,14 +460,20 @@ export const instance = {
     })
     .then((activeMemberCount) => {
       d.dentistInfo.activeMemberCount = activeMemberCount;
-      // Expand Membership
-      return d.dentistInfo.membership.getPlanCosts();
+      // Fetch membership object
+      return db.Membership.find({
+        where: { id: d.dentistInfo.membership.id }
+      });
     })
+    .then(membership => membership.getPlanCosts())
     .then((planCosts) => {
       d.dentistInfo.membership = planCosts;
       // Expand Child Membership
-      return d.dentistInfo.childMembership.getPlanCosts();
+      return db.Membership.find({
+        where: { id: d.dentistInfo.childMembership.id }
+      });
     })
+    .then(membership => membership.getPlanCosts())
     .then((planCosts) => {
       d.dentistInfo.childMembership = planCosts;
       return Promise.resolve(d);
