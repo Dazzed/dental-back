@@ -23,9 +23,7 @@ function getOffices(req, res) {
   .then((offices) => {
     res.json({ data: offices });
   })
-  .catch(err => {
-    res.json(new BadRequestError(err));
-  });
+  .catch(err => res.json(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
