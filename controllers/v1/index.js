@@ -1,12 +1,14 @@
 import { Router } from 'express';
 
 import { userRequired, adminRequired } from '../middlewares';
+import { checkUserDentistPermission } from '../../utils/permissions';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER COMPONENTS
 
 import auth from './auth';
 import dentists from './dentists';
+import myDentist from './my-dentist';
 import dentistMembers from './dentist-members';
 import dentistSpecialties from './dentist-specialties';
 import dentistInfo from './dentist-info';
@@ -20,7 +22,6 @@ import reports from './reports';
 import reviews from './reviews';
 import services from './services';
 import stats from './stats';
-import userDentist from './user-dentist';
 import users from './users';
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -34,7 +35,7 @@ router.use('/accounts', auth);
 // USER ENDPOINTS
 
 router.use('/users', users);
-router.use('/users/:userId', userDentist);
+router.use('/users/:userId', userRequired, checkUserDentistPermission, myDentist);
 router.use('/users/:userId/dentist-info', dentistInfo);
 router.use('/users/:userId/members', members);
 router.use('/users/:userId/memberships', memberships);
@@ -55,15 +56,24 @@ router.use('/dentists/:dentistId/members', dentistMembers);
 
 router.use('/dentist-specialties', dentistSpecialties);
 
+// ────────────────────────────────────────────────────────────────────────────────
+// PRICING
+
+router.use('/pricing', pricing);
+
+// ────────────────────────────────────────────────────────────────────────────────
+// SERVICES
+
+router.use('/services', services);
+
 // root maybe for admin calls? add adminRequired middleware
 // Maybe also add express validators to request type user
 router.use('/admin', userRequired, adminRequired);
 router.use('/admin/stats', stats);
 router.use('/admin/members', members);
 router.use('/admin/memberships', memberships);
-router.use('/admin/services', services);
-router.use('/admin/offices', offices);
-router.use('/admin/pricing', pricing);
 router.use('/admin/reports', reports);
+
+router.use('/admin/offices', offices);
 
 export default router;

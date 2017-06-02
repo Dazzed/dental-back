@@ -2,18 +2,10 @@
 // MODULES
 
 import { Router } from 'express';
-import passport from 'passport';
 import changeFactory from 'change-js';
-import isPlainObject from 'is-plain-object';
+
 import db from '../../models';
 import { BadRequestError } from '../errors';
-import { checkUserDentistPermission } from '../../utils/permissions';
-
-import {
-  createCreditCard,
-  updateCreditCard,
-  chargeAuthorize,
-} from '../payments';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -29,11 +21,11 @@ const Change = changeFactory();
  */
 function getDentist(req, res, next) {
   req.user.getMyDentist()
-    .then(([data]) => {
-      delete data.email;
-      res.json({ data });
-    })
-    .catch(next);
+  .then((data) => {
+    delete data.email;
+    res.json({ data });
+  })
+  .catch(next);
 }
 
 /**
@@ -62,108 +54,6 @@ function getPendingAmount(req, res, next) {
       res.json({ data: total });
     })
     .catch(next);
-}
-
-/**
- * Charges the user account record
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
-function chargeBill(req, res, next) {
-  // TODO: update the charge bill function using Stripe
-  let userId = req.params.userId;
-  let dentistId;
-
-  if (userId === 'me' && req.user.get('type') === 'dentist') {
-    next(new BadRequestError('Dentist donnot have subscription'));
-  }
-
-  userId = userId === 'me' ? req.user.get('id') : userId;
-
-  if (req.user.get('type') === 'dentist') {
-    dentistId = req.user.get('id');
-  }
-
-  db.Subscription.getPendingAmount(userId, dentistId)
-    .then(({ total, ids, data, userIds }) => {
-      if (total > 0) {
-        chargeAuthorize(
-          req.locals.chargeTo.authorizeId,
-          req.locals.chargeTo.paymentId,
-          data
-        ).then(transactionId => {
-          db.Subscription.update({
-            status: 'active',
-          }, {
-            where: { id: { $in: ids } },
-          }).then(() => {
-            res.json({ data: userIds });
-          });
-        }).catch(errors => {
-          if (isPlainObject(errors.json)) {
-            return next(new BadRequestError(errors.json));
-          }
-
-          return next(errors);
-        });
-      } else {
-        res.json({ data: ids });
-      }
-    })
-    .catch(next);
-}
-
-/**
- * Validates that the card exists, creates or updates if needed
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
-function ensureCreditCard(req, res, next) {
-  // TODO: Update this function with Stripe.js
-  let userId = req.params.userId;
-
-  if (userId === 'me') {
-    userId = req.user.get('id');
-  }
-
-  db.User.find({
-    where: { id: userId },
-    attributes: ['authorizeId', 'id', 'email', 'paymentId'],
-    raw: true,
-  }).then((user) => {
-    if (!user.authorizeId) {
-      return createCreditCard(user, req.body.card)
-        .then(([authorizeId, paymentId]) => {
-          db.User.update({
-            authorizeId,
-            paymentId,
-          }, {
-            where: { id: userId }
-          });
-          user.authorizeId = authorizeId;
-          user.paymentId = paymentId;
-          return user;
-        });
-    } else if (req.body.card) {
-      return updateCreditCard(user.authorizeId, user.paymentId, req.body.card)
-        .then(() => user);
-    }
-    return user;
-  }).then((user) => {
-    req.locals.chargeTo = user;
-    next();
-  })
-    .catch((errors) => {
-      if (isPlainObject(errors.json)) {
-        return next(new BadRequestError(errors.json));
-      }
-
-      return next(errors);
-    });
 }
 
 /**
@@ -206,11 +96,11 @@ function generateReport(req, res, next) {
       model: db.Phone,
     }],
     subquery: false,
-  }).then(clients => {
+  }).then((clients) => {
     const result = [];
     let total = new Change({ cents: 0 });
 
-    clients.forEach(client => {
+    clients.forEach((client) => {
       const item = client.toJSON();
 
       result.push({
@@ -228,7 +118,7 @@ function generateReport(req, res, next) {
         }));
       }
 
-      item.familyMembers.forEach(member => {
+      item.familyMembers.forEach((member) => {
         result.push({
           '': 'Family Member',
           Name: `${member.lastName}, ${member.firstName}`,
@@ -266,33 +156,14 @@ const router = new Router({ mergeParams: true });
 
 router
   .route('/dentist')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    checkUserDentistPermission,
-    getDentist);
-
+  .get(getDentist);
 
 router
   .route('/pending-amount')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    checkUserDentistPermission,
-    getPendingAmount);
-
-router
-  .route('/charge-bill')
-  .post(
-    passport.authenticate('jwt', { session: false }),
-    checkUserDentistPermission,
-    ensureCreditCard,
-    chargeBill);
+  .get(getPendingAmount);
 
 router
   .route('/reports')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    checkUserDentistPermission,
-    generateReport);
-
+  .get(generateReport);
 
 export default router;

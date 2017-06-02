@@ -77,7 +77,7 @@ function getGeneralReport(req, res) {
       { model: db.Membership, as: 'childMembership' },
       { model: db.Membership, as: 'membership' }
     ]
-  }).then(office => {
+  }).then((office) => {
     if (!office) {
       res.json(new ForbiddenError('Requested Dentist Office does not access or user does not have appropriate access'));
     }
@@ -93,9 +93,9 @@ function getGeneralReport(req, res) {
           model: db.Membership,
           as: 'membership',
         }],
-      }).then(members => {
+      }).then((members) => {
         // Prepare the members model
-        members = members.map(m => {
+        members = members.map((m) => {
           m = m.toJSON();
           // Determine if they are new to the dentist's office
           m.isNew = (new Moment(m.startAt).isAfter(reportEndDate));
@@ -104,7 +104,7 @@ function getGeneralReport(req, res) {
           return m;
         });
 
-        const totalNewMembers = members.reduce((sum, m) => (m.isNew ? sum++ : sum), 0);
+        const totalNewMembers = members.reduce((sum, m) => (m.isNew ? sum + 1 : sum), 0);
         const totalExternal = members.filter(m => m.client.origin === 'external').length;
         const totalNewExternal = members.filter(m => m.isNew && m.client.origin === 'external').length;
         const totalInternal = members.filter(m => m.client.origin === 'internal').length;
@@ -148,7 +148,7 @@ function getGeneralReport(req, res) {
         }, {});
 
         // Nest child records of family owners
-        memberRecords.filter(m => !isNaN(parseInt(m.member.client.addedBy, 10))).forEach(m => {
+        memberRecords.filter(m => !isNaN(parseInt(m.member.client.addedBy, 10))).forEach((m) => {
           const parent = parentMemberRecords[m.member.client.addedBy];
           if (parent !== undefined) {
             parentMemberRecords[m.member.client.addedBy].family.push(m);
@@ -156,7 +156,7 @@ function getGeneralReport(req, res) {
         });
 
         // Calculate family totals
-        Object.keys(parentMemberRecords).forEach(prId => {
+        Object.keys(parentMemberRecords).forEach((prId) => {
           const temp = {
             membershipFeeTotal: 0,
             penaltiesTotal: 0,
@@ -170,7 +170,7 @@ function getGeneralReport(req, res) {
           temp.netTotal += parentMemberRecords[prId].net;
 
           // Loop through family as well
-          parentMemberRecords[prId].family.forEach(m => {
+          parentMemberRecords[prId].family.forEach((m) => {
             temp.membershipFeeTotal += m.fee;
             temp.penaltiesTotal += m.penalties;
             temp.refundsTotal += m.refunds;
@@ -250,7 +250,7 @@ function getMasterReport(req, res, next) {
       { model: db.Membership, as: 'childMembership' },
       { model: db.Membership, as: 'membership' }
     ]
-  }).then(offices => {
+  }).then((offices) => {
     // Collect office reports
     Promise.all(offices.map(office => new Promise((resolve, reject) => {
       // Validate the current user has the proper authorization to see this report
@@ -263,7 +263,7 @@ function getMasterReport(req, res, next) {
           model: db.Membership,
           as: 'membership',
         }],
-      }).then(members => {
+      }).then((members) => {
         // Calculate gross revenue and prepare member records
         const gross = members.reduce((sum, m) => {
           let fee = 0;
@@ -283,7 +283,7 @@ function getMasterReport(req, res, next) {
 
         resolve({ officeName: office.officeName, gross, managementFee, net: (gross - managementFee) });
       }).catch(err => reject(err));
-    }))).then(officeReports => {
+    }))).then((officeReports) => {
       // Calculate totals
       const totals = officeReports.reduce((t, office) => {
         t.gross += office.gross;

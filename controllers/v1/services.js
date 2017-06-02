@@ -5,6 +5,10 @@ import { Router } from 'express';
 
 import db from '../../models';
 
+import {
+  BadRequestError,
+} from '../errors';
+
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -13,15 +17,11 @@ import db from '../../models';
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
  */
-function getServices(req, res, next) {
-  return db.Service.findAll({ raw: true, orderBy: 'createdAt' })
-  .then((services) =>
-    res.json({ data: services || [] })
-  ).catch((error) => {
-    next(error);
-  });
+function getServices(req, res) {
+  return db.Service.findAll({ orderBy: 'createdAt', attributes: ['id', 'name'] })
+  .then(services => res.json({ data: services || [] }))
+  .catch((error) => { res.json(new BadRequestError(error)); });
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

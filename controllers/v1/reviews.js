@@ -46,7 +46,7 @@ function getReviews(req, res, next) {
       }]
     }]
   })
-  .then(user => {
+  .then((user) => {
     res.json({ data: user.get('dentistReviews') });
   })
   .catch(next);
@@ -66,7 +66,7 @@ function deleteReview(req, res, next) {
       dentistId: req.params.dentistId
     }
   })
-  .then(review => {
+  .then((review) => {
     if (!review) {
       throw new NotFoundError('The review was not found.');
     }
