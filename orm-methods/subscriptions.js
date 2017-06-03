@@ -2,11 +2,10 @@
 // MODULES
 
 import changeFactory from 'change-js';
+import Moment from 'moment';
 
 import db from '../models';
 import stripe from '../controllers/stripe';
-
-const Change = changeFactory();
 
 // ────────────────────────────────────────────────────────────────────────────────
 // EXPORTS
@@ -36,7 +35,7 @@ export const instance = {
       .then(resolve)
       .catch(reject);
     });
-  }
+  },
 };
 
 
@@ -51,56 +50,58 @@ export const model = {
     });
   },
 
-  getPendingAmount(userId, dentistId) {
-    const subscriptionQuery = {
-      status: 'inactive',
-    };
+  /**
+   * Gets the remaining bill cost for the user in this subscription
+   *
+   * @param {number} userId - the id of the user/member
+   * @returns {Promise<number>}
+   */
+  getPendingAmount(userId) {
+    const nextMonthStart = new Moment();
+    nextMonthStart.add(1, 'months');
+    nextMonthStart.startOf('month');
 
-    if (dentistId) {
-      subscriptionQuery.dentistId = dentistId;
-    }
-    // TODO: fix method of getting pending amount using Stripe
-    return db.Subscription.findAll({
-      attributes: ['id', 'total', 'type'],
-      where: subscriptionQuery,
-      include: [{
-        model: db.User,
-        as: 'client',
-        attributes: ['firstName', 'lastName', 'id'],
-        where: {
-          isDeleted: false,
-          $or: [{
-            addedBy: userId,
-          }, {
-            id: userId,
-            payingMember: true,
-          }],
-        },
-      }],
-    }).then((result) => {
-      let total = new Change({ cents: 0 });
-      const ids = [];
-      const userIds = [];
-      const data = {
-        members: [],
-      };
+    // 1. Find payment profile of subscription
+    return db.Subscription.find({
+      where: { clientId: userId }
+    })
+    // 2. Find all other subscriptions with the same payment profile
+    .then(s => (
+      db.Subscription.findAll({
+        paymentProfileId: s.paymentProfileId
+      })
+    ))
+    // 3. Get stripe details on all subscriptions
+    .then((subscriptions) => {
+      if (!subscriptions) throw new Error('User has no subscription');
+      return Promise.all(subscriptions.map(s => s.getStripeDetails()));
+    })
+    .then(details => (
+      // 4. Find subs that are ending sometime this month
+      details.filter(d => (
+        Moment(d.current_period_end).isBefore(nextMonthStart)
+        &&
+        Moment(d.trial_end).isBefore(nextMonthStart)
+      ))
+      // 5. Reduce them to a sum
+      .reduce((sum, sub) => {
+        let pendingCost = sum;
+        const taxPercent = sub.tax_percent || 1;
 
-      result.forEach((item) => {
-        item = item.toJSON();
-        const monthly = item.type === 'monthly' ? item.total : item.total / 12;
-        total = total.add(new Change({ dollars: monthly }));
-        data.members.push({
-          monthly,
-          fullName: `${item.client.firstName} ${item.client.lastName}`
-        });
-        ids.push(item.id);
-        userIds.push(item.client.id);
-      });
+        // 5a. Add the pending monthly cost
+        if (sub.plan.interval === 'month') {
+          pendingCost += (((sub.plan.amount / 100) * sub.quantity) * taxPercent);
+        }
 
-      total = total.dollars().toFixed(2);
-      data.total = total;
+        // Ignore annual since these are fully paid at start
 
-      return { ids, total, data, userIds };
-    });
+        // 5b. Subtract the discount if one exists
+        if (sub.discount) {
+          pendingCost -= sub.discount;
+        }
+
+        return pendingCost;
+      }, 0)
+    ));
   }
 };

@@ -291,6 +291,7 @@ function updateAuth(req, res, next) {
  * @param {Function} next - the next middleware function
  */
 function getCardInfo(req, res, next) {
+  // FIXME: Should get card info from Stripe
   const queries = [
     db.Subscription.getPendingAmount(req.locals.user.get('id')),
   ];
@@ -406,7 +407,7 @@ function verifyPassword(req, res) {
  * @param {Function} next - the next middleware function
  */
 function makePayment(req, res, next) {
-  // TODO: completely rebuild this functionality using Stripe
+  // FIXME: completely rebuild this functionality using Stripe
   ensureCreditCard(req.locals.user, req.body.card).then(user => {
     db.Subscription.getPendingAmount(user.id).then(data => {
       if (parseInt(data.total, 10) !== 0) {

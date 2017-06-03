@@ -17,43 +17,39 @@ const Change = changeFactory();
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
  */
-function getDentist(req, res, next) {
+function getDentist(req, res) {
   req.user.getMyDentist()
   .then((data) => {
     delete data.email;
     res.json({ data });
   })
-  .catch(next);
+  .catch(err => res.json(new BadRequestError(err)));
 }
 
 /**
- * Gets the remaining amount to be paid for the user
+ * Gets the remaining amount to be paid for the user in the current month.
+ * Amount is aware of family billings and not including annual bills.
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
  */
-function getPendingAmount(req, res, next) {
+function getPendingAmount(req, res) {
   let userId = req.params.userId;
-  let dentistId;
 
   if (userId === 'me' && req.user.get('type') === 'dentist') {
-    next(new BadRequestError('Dentist donnot have subscription'));
+    return res.json(new BadRequestError('A Dentist cannot have a subscription'));
   }
 
   userId = userId === 'me' ? req.user.get('id') : userId;
 
-  if (req.user.get('type') === 'dentist') {
-    dentistId = req.user.get('id');
-  }
-
-  db.Subscription.getPendingAmount(userId, dentistId)
-    .then(({ total }) => {
-      res.json({ data: total });
-    })
-    .catch(next);
+  return db.Subscription.getPendingAmount(userId)
+  .then((total) => {
+    res.json({ data: total });
+  })
+  .catch((err) => {
+    res.json(new BadRequestError(err));
+  });
 }
 
 /**

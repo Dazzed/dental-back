@@ -193,105 +193,12 @@ export const instance = {
         where: { id: subscription.dentistId },
       });
     })
-    .then(d => d.getFullDentist());
-
-    // const query = {
-    //   attributes: ['id', 'firstName', 'lastName', 'avatar', 'email'],
-    //   subquery: false,
-    //   loggin: console.log,
-    // };
-
-    // if (!omitInclude) {
-    //   query.include = [{
-    //     model: db.Subscription,
-    //     as: 'dentistSubscription',
-    //     where: { status: { $not: 'canceled' }, clientId: this.get('id') },
-    //     include: [{
-    //       model: db.Membership,
-    //       as: 'memberships',
-    //     }]
-    //   }, {
-    //     model: db.Review,
-    //     as: 'dentistReviews'
-    //   }, {
-    //     as: 'dentistInfo',
-    //     model: db.DentistInfo,
-    //     attributes: {
-    //       exclude: ['membershipId', 'userId', 'childMembershipId'],
-    //     },
-    //     include: [{
-    //       model: db.Membership,
-    //       as: 'membership',
-    //       attributes: {
-    //         exclude: ['userId'],
-    //       },
-    //     }, {
-    //       model: db.Membership,
-    //       as: 'childMembership',
-    //       attributes: {
-    //         exclude: ['userId'],
-    //       },
-    //     }, {
-    //       model: db.DentistInfoService,
-    //       as: 'services',
-    //       attributes: ['dentistInfoId', 'serviceId'],
-    //       include: [{
-    //         model: db.Service,
-    //         attributes: ['name'],
-    //         as: 'service'
-    //       }]
-    //     }, {
-    //       model: db.WorkingHours,
-    //       as: 'workingHours'
-    //     }, {
-    //       model: db.DentistInfoPhotos,
-    //       as: 'officeImages',
-    //       attributes: ['url']
-    //     }]
-    //   }];
-    // }
-
-    // let parsed = {};
-    // let dentistObj = {};
-
-    // return db.User.find(query)
-    // .then((dentist) => {
-    //   parsed = dentist ? dentist.toJSON() : {};
-    //   dentistObj = dentist;
-
-    //   if (omitInclude) return [parsed, dentist];
-
-    //   delete parsed.dentistSubscriptions;
-
-    //   const dentistReviews = parsed.dentistReviews || [];
-
-    //   // add all the review ratings.
-    //   const totalRating = _.sumBy(
-    //     dentistReviews, review => review.rating);
-    //   // average the ratings.
-    //   parsed.rating = totalRating / dentistReviews.length;
-    //   const reviews = dentistReviews
-    //     .filter(review => review.clientId === this.get('id'));
-
-    //   reviews
-    //   .forEach((review) => {
-    //     delete review.clientId;
-    //     delete review.dentistId;
-    //   });
-    //   parsed.dentistReviews = reviews;
-
-    //   // Expand membership details from stripe
-    //   return Promise.all(
-    //     dentist.dentistInfo.membership.getPlanCosts(),
-    //     dentist.dentistInfo.childMembership.getPlanCosts(),
-    //   );
-    // })
-    // .then((memberships) => {
-    //   parsed.membership = memberships[0] || {};
-    //   parsed.childMembership = memberships[1] || {};
-
-    //   return [parsed, dentistObj];
-    // });
+    .then(d => d.getFullDentist())
+    .then((dentist) => {
+      // Add all review ratings
+      dentist.rating = (_(dentist.dentistReviews).sumBy(r => r.rating) || 0) / dentist.dentistReviews.length;
+      return dentist;
+    });
   },
 
   /**
@@ -414,6 +321,19 @@ export const instance = {
             attributes: ['url'],
             as: 'officeImages'
           }]
+        }, {
+          model: db.Review,
+          as: 'dentistReviews',
+          attributes: {
+            exclude: ['createdAt', 'updatedAt', 'dentistId'],
+          },
+          include: [{
+            model: db.User,
+            as: 'client',
+            attributes: {
+              exclude: userFieldsExcluded
+            },
+          }],
         }]
       })
     ))
@@ -441,6 +361,13 @@ export const instance = {
 
       d.dentistInfo.membership = d.dentistInfo.membership || {};
       d.dentistInfo.childMembership = d.dentistInfo.childMembership || {};
+
+      // Hide anonymous reviews
+      d.dentistReviews = d.dentistReviews.map((r) => {
+        delete r.clientId;
+        if (r.isAnonymous) delete r.client;
+        return r;
+      });
 
       // Remap services
       d.dentistInfo.services = d.dentistInfo.services.map(s => ({

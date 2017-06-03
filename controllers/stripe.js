@@ -17,6 +17,7 @@ const stripe = Stripe(process.env.STRIPE_API_KEY);
  * @returns {string} - the verbose message
  */
 function verboseError(err) {
+  console.error(err);
   switch (err.type) {
     case 'StripeCardError':
       // A declined card error
