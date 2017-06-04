@@ -21,13 +21,13 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.changeColumn(
-      'membershipItems',
-      'pricingCode',
-      {
-        type: Sequelize.STRING,
-        allowNull: false
-      }
+    return queryInterface.sequelize.query(
+      `
+      ALTER TABLE "membershipItems"
+        DROP CONSTRAINT "fk__membershipItems_pricingCode",
+        ALTER COLUMN "pricingCode" DROP NOT NULL;
+        ALTER COLUMN "pricingCode" TYPE VARCHAR(150) USING "pricingCode":VARCHAR(150),
+      `
     );
   }
 };
