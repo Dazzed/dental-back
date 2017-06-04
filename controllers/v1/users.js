@@ -31,8 +31,6 @@ import {
 } from '../../config/messages';
 
 import {
-  userRequired,
-  injectUser,
   verifyPasswordLocal,
   validateBody,
 } from '../middlewares';
@@ -57,15 +55,18 @@ import {
 function getUser(req, res) {
   let userReq = null;
 
-  if (req.user.get('type') === 'dentist') {
+  if (req.locals.user.get('type') === 'dentist') {
     // Get full dentist
-    userReq = req.user.getFullDentist();
-  } else {
+    userReq = req.locals.user.getFullDentist();
+  } else if (req.locals.user.get('type' === 'client')) {
     // Get full user
-    userReq = req.user.getFullClient();
+    userReq = req.locals.user.getFullClient();
+  } else {
+    res.status(HTTPStatus.BAD_REQUEST);
+    return res.json(new BadRequestError('Requested user is not a valid user type for this call'));
   }
 
-  userReq
+  return userReq
   .then(data => res.json({ data }))
   .catch(err => res.json(new BadRequestError(err)));
 }
@@ -77,20 +78,17 @@ function getUser(req, res) {
  * @param {Object} res - the express response
  */
 function deleteUser(req, res) {
-  const delEmail = `DELETED_${req.locals.user.email}`;
-  req.locals.user.update({ email: delEmail, isDeleted: true }).then(() => res.json({}));
+  req.locals.user.update({ isDeleted: true }).then(() => res.json({}));
 }
 
-
-// TODO: maybe later add avatar support?? or another endpoint
 /**
  * Updates a user record account
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
  */
-function updateUser(req, res, next) {
+function updateUser(req, res) {
+  // TODO: maybe later add avatar support?? or another endpoint
   // const validator = Object.assign({}, req.locals.user.type === 'client' ?
   //   NORMAL_USER_EDIT : DENTIST_USER_EDIT);
   const validator = NORMAL_USER_EDIT;
@@ -111,7 +109,7 @@ function updateUser(req, res, next) {
   .then(() => {
     const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
 
-    // NOTE: This should later removed to add and remove by others endpoints
+    // TODO: This should later removed to add and remove by others endpoints
     const phone = req.locals.user.get('phoneNumbers')[0];
     const address = req.locals.user.get('addresses')[0];
     const password = req.body.oldPassword || req.body.password;
@@ -139,10 +137,10 @@ function updateUser(req, res, next) {
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
-      return next(new BadRequestError(errors));
+      return res.json(new BadRequestError(errors));
     }
 
-    return next(errors);
+    return res.json(new BadRequestError(errors));
   });
 }
 
@@ -151,9 +149,8 @@ function updateUser(req, res, next) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
  */
-function updatePatient(req, res, next) {
+function updatePatient(req, res) {
   Promise.resolve()
   .then(() => {
     const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
@@ -171,8 +168,8 @@ function updatePatient(req, res, next) {
     }
 
     return db.User.findOne({ where })
-    .then(patient => {
-      if (!patient) return next(new NotFoundError());
+    .then((patient) => {
+      if (!patient) return res.json(new NotFoundError());
 
       if (patient.get('id') === mainUser.get('id')) {
         phone.set('number', req.body.phone);
@@ -186,14 +183,14 @@ function updatePatient(req, res, next) {
       ]);
     })
     .then(() => res.json({}))
-    .catch(next);
+    .catch(err => res.json(new BadRequestError(err)));
   })
-  .catch(errors => {
+  .catch((errors) => {
     if (isPlainObject(errors)) {
-      return next(new BadRequestError(errors));
+      return res.json(new BadRequestError(errors));
     }
 
-    return next(errors);
+    return res.json(new BadRequestError(errors));
   });
 }
 
@@ -236,7 +233,7 @@ function updateAuth(req, res, next) {
     const where = { id: req.locals.user.get('id') };
 
     return db.User.findOne({ where })
-    .then(patient => {
+    .then((patient) => {
       if (!patient) return next(new UnauthorizedError());
       patient.set('email', req.body.newEmail);
 
@@ -253,7 +250,7 @@ function updateAuth(req, res, next) {
     .then(() => res.json({}))
     .catch(next);
   })
-  .catch(errors => {
+  .catch((errors) => {
     if (isPlainObject(errors)) {
       return next(new BadRequestError(errors));
     }
@@ -267,9 +264,8 @@ function updateAuth(req, res, next) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
  */
-function getCardInfo(req, res, next) {
+function getCardInfo(req, res) {
   // FIXME: Should get card info from Stripe
   const queries = [
     db.Subscription.getPendingAmount(req.locals.user.get('id')),
@@ -287,7 +283,7 @@ function getCardInfo(req, res, next) {
 
   Promise.all(queries).then(([{ data }, info]) => {
     res.json({ data: { info, details: data } });
-  }).catch(next);
+  }).catch(err => res.json(new BadRequestError(err)));
 }
 
 // const aws = require('aws-sdk');
@@ -447,58 +443,38 @@ function makePayment(req, res, next) {
 const router = new Router({ mergeParams: true });
 
 router
-  .route('/:userId')
-  .get(
-    userRequired,
-    injectUser(),
-    getUser)
+  .route('/')
+  .get(getUser)
   .put(
-    userRequired,
-    injectUser(),
     verifyPasswordLocal,
     updateUser)
-  .delete(
-    userRequired,
-    injectUser(),
-    deleteUser);
+  .delete(deleteUser);
 
 router
-  .route('/:userId/change-auth')
+  .route('/change-auth')
   .put(
-    userRequired,
-    injectUser(),
     verifyPasswordLocal,
     updateAuth);
 
 router
-  .route('/:userId/patients/:patientId')
+  .route('/patients/:patientId')
   .put(
-    userRequired,
     validateBody(PATIENT_EDIT),
-    injectUser(),
     updatePatient);
 
 router
-  .route('/:userId/verify-password')
+  .route('/verify-password')
   .post(
-    userRequired,
-    injectUser(),
     verifyPasswordLocal,
     verifyPassword);
 
 router
-  .route('/:userId/credit-card')
-  .get(
-    userRequired,
-    injectUser(),
-    getCardInfo);
+  .route('/credit-card')
+  .get(getCardInfo);
 
 router
-  .route('/:userId/payments')
-  .post(
-    userRequired,
-    injectUser(),
-    makePayment);
+  .route('/payments')
+  .post(makePayment);
 
 
 export default router;

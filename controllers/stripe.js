@@ -117,6 +117,22 @@ export default {
   },
 
   /**
+   * Updates a customer record from Stripe
+   *
+   * @param {string} customerId - the stripe customer id
+   * @returns {Promise<Customer>}
+   */
+  updateCustomer(customerId, details) {
+    return new Promise((resolve, reject) => {
+      stripe.customers.update(customerId, details,
+      (err, customer) => {
+        if (err) reject(verboseError(err));
+        resolve(customer);
+      });
+    });
+  },
+
+  /**
    * Issues a new charge against the customer
    *
    * @param {number} amount - the amount to charge

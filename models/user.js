@@ -1,4 +1,7 @@
 /* eslint max-len:0 */
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import passportLocalSequelize from 'passport-local-sequelize';
 
 import { instance, model } from '../orm-methods/users';
@@ -11,10 +14,14 @@ import {
   USER_ORIGIN_OPTIONS
 } from '../config/constants';
 
+import stripe from '../controllers/stripe';
+
 export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'salt',
   'activationKey', 'resetPasswordKey', 'verified', 'updatedAt',
   'phone', 'address', 'isDeleted', 'authorizeId', 'paymentId'];
 
+// ────────────────────────────────────────────────────────────────────────────────
+// MODEL
 
 export default function (sequelize, DataTypes) {
   const User = sequelize.define('User', {
@@ -259,6 +266,25 @@ export default function (sequelize, DataTypes) {
         });
       }
     }, model),
+
+    hooks: {
+      beforeUpdate: (user) => {
+        // Update email in associated Stripe records
+        user.getPaymentProfile()
+        .then((profile) => {
+          if (profile.primaryAccountHolder) {
+            return stripe.updateCustomer(profile.stripeCustomerId, {
+              email: user.get('email'),
+            });
+          }
+
+          return Promise.resolve({});
+        })
+        .catch(() => {
+          throw new Error('Failed to update user record on Stripe');
+        });
+      },
+    },
   });
 
   passportLocalSequelize.attachToUser(User, {

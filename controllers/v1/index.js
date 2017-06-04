@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { userRequired, adminRequired } from '../middlewares';
+import { userRequired, adminRequired, injectUser } from '../middlewares';
 import { checkUserDentistPermission } from '../../utils/permissions';
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -34,8 +34,8 @@ router.use('/accounts', auth);
 // ────────────────────────────────────────────────────────────────────────────────
 // USER ENDPOINTS
 
-router.use('/users', users);
-router.use('/users/:userId', userRequired, checkUserDentistPermission, myDentist);
+router.use('/users/:userId/account', userRequired, injectUser(), users);
+router.use('/users/:userId/my-dentist', userRequired, checkUserDentistPermission, myDentist);
 router.use('/users/:userId/dentist-info', dentistInfo);
 router.use('/users/:userId/members', members);
 router.use('/users/:userId/memberships', memberships);

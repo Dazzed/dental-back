@@ -151,7 +151,7 @@ function generateReport(req, res, next) {
 const router = new Router({ mergeParams: true });
 
 router
-  .route('/dentist')
+  .route('/')
   .get(getDentist);
 
 router

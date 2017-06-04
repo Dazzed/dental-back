@@ -469,6 +469,25 @@ export const instance = {
       d.dentistInfo.childMembership = planCosts;
       return Promise.resolve(d);
     });
+  },
+
+  /**
+   * Gets the related payment profile of the user
+   *
+   * @returns {Promise<PaymentProfile>}
+   */
+  getPaymentProfile() {
+    const userId = this.get('id');
+    // 1. Find the subscription of the user
+    return db.Subscription.find({
+      where: { clientId: this.get('id') }
+    })
+    // 2. Get the payment profile
+    .then(sub => db.PaymentProfile.find({ where: { id: sub.paymentProfileId } }))
+    .then(profile => ({
+      primaryAccountHolder: (userId === profile.primaryAccountHolderId),
+      stripeCustomerId: profile.stripeCustomerId,
+    }));
   }
 };
 
