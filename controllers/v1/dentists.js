@@ -457,7 +457,7 @@ router
     validateBody(CONTACT_SUPPORT_NO_AUTH),
     contactSupportNoAuth);
 
-// FIXME: fix update dentist
+// FIXME: fix endpoints, need prefix in URL name otherwise they block other endpoints
 // router
 //   .route('/:phoneId?')
 //   .get(

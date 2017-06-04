@@ -38,7 +38,6 @@ router.use('/users/:userId/account', userRequired, injectUser(), users);
 router.use('/users/:userId/my-dentist', userRequired, checkUserDentistPermission, myDentist);
 router.use('/users/:userId/dentist-info', dentistInfo);
 router.use('/users/:userId/members', members);
-router.use('/users/:userId/memberships', memberships);
 router.use('/users/:userId/messages', messages);
 router.use('/users/:userId/notifications', notifications);
 
@@ -62,6 +61,11 @@ router.use('/dentist-specialties', dentistSpecialties);
 router.use('/pricing', pricing);
 
 // ────────────────────────────────────────────────────────────────────────────────
+// MEMBERSHIPS
+
+router.use('/memberships', memberships);
+
+// ────────────────────────────────────────────────────────────────────────────────
 // SERVICES
 
 router.use('/services', services);
@@ -69,11 +73,12 @@ router.use('/services', services);
 // root maybe for admin calls? add adminRequired middleware
 // Maybe also add express validators to request type user
 router.use('/admin', userRequired, adminRequired);
-router.use('/admin/stats', stats);
-router.use('/admin/members', members);
-router.use('/admin/memberships', memberships);
-router.use('/admin/reports', reports);
 
-router.use('/admin/offices', offices);
+router.use('/admin/stats', stats);
+router.use('/admin/dentists/members', members);
+router.use('/admin/dentists/memberships', memberships);
+router.use('/admin/dentists/reports', reports);
+
+router.use('/admin/dentists/offices', offices);
 
 export default router;
