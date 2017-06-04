@@ -262,6 +262,53 @@ export const instance = {
   },
 
   /**
+   * Gets the complete user record
+   *
+   *
+   * @param {string} [id=this.get('id')]
+   */
+  getFullClient(id = this.get('id')) {
+    let user = {};
+
+    return Promise.resolve()
+    .then(() => (
+      db.User.find({
+        where: {
+          id,
+          type: 'client',
+        },
+        attributes: {
+          exclude: userFieldsExcluded
+        },
+        include: [{
+          model: db.Review,
+          as: 'clientReviews',
+          attributes: {
+            exclude: ['createdAt', 'updatedAt', 'dentistId'],
+          },
+          include: [{
+            model: db.User,
+            as: 'dentist',
+            attributes: {
+              exclude: userFieldsExcluded
+            },
+          }],
+        }]
+      })
+    ))
+    .then((userObj) => {
+      // Get the user's subscription
+      if (!userObj) throw new Error('User does not exist');
+      user = userObj.toJSON();
+      return userObj.getSubscription();
+    })
+    .then((sub) => {
+      user.subscription = sub;
+      return user;
+    });
+  },
+
+  /**
    * Gets the complete dentist record
    *
    * @param {string} [id=this.get('id')] - the id of the current dentist user
@@ -270,11 +317,9 @@ export const instance = {
   getFullDentist(id = this.get('id')) {
     let d = {};
 
-    return Promise.resolve().then(() => (
+    return Promise.resolve()
+    .then(() => (
       db.User.find({
-        attributes: {
-          exclude: userFieldsExcluded
-        },
         where: {
           id,
           $or: [{
@@ -282,6 +327,9 @@ export const instance = {
           }, {
             type: 'admin',
           }],
+        },
+        attributes: {
+          exclude: userFieldsExcluded
         },
         include: [{
           model: db.DentistInfo,

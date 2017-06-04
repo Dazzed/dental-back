@@ -60,7 +60,7 @@ function getPendingAmount(req, res) {
  * @param {Function} next - the next middleware function
  */
 function generateReport(req, res, next) {
-  // FIXME: Generate CSV report linked with Stripe.js
+  // FIXME: Generate CSV report linked with Stripe.js ? or rather not sure what this is for
   return db.User.findAll({
     attributes: ['id', 'firstName', 'lastName', 'email',
       'createdAt', 'contactMethod', 'payingMember'],

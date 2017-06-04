@@ -53,42 +53,21 @@ import {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
  */
-function getUser(req, res, next) {
+function getUser(req, res) {
+  let userReq = null;
+
   if (req.user.get('type') === 'dentist') {
-    return req.locals.user
-      .getDentistReviews()
-      .then(dentistReviews => {
-        // add all the review ratings.
-        const totalRating = _.sumBy(
-          dentistReviews, review => review.rating);
-
-        const user = req.locals.user.toJSON();
-        // average the ratings.
-        user.rating = totalRating / dentistReviews.length;
-        // dentistReviews
-        //   .forEach(review => {
-        //     delete review.clientId;
-        //     delete review.dentistId;
-        //   });
-        // user.reviews = dentistReviews;
-
-        delete user.memberships;
-        return res.json({ data: user });
-      })
-      .catch(next);
+    // Get full dentist
+    userReq = req.user.getFullDentist();
+  } else {
+    // Get full user
+    userReq = req.user.getFullClient();
   }
 
-  return req.locals.user
-    .getCurrentSubscription()
-    .then(subscription => {
-      const user = req.locals.user.toJSON();
-      user.subscription = subscription;
-
-      return res.json({ data: user });
-    })
-    .catch(next);
+  userReq
+  .then(data => res.json({ data }))
+  .catch(err => res.json(new BadRequestError(err)));
 }
 
 /**
