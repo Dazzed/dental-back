@@ -12,6 +12,7 @@ import nunjucks from 'nunjucks';
 import {
   userRequired,
   dentistRequired,
+  injectDentistOffice,
   adminRequired,
 } from '../middlewares';
 
@@ -31,19 +32,39 @@ nunjucks.configure('../../views');
 // ROUTES
 
 /**
- * Retrieves a PDF report for a dentist
+ * Retrieves a list of URLs for the FE to link to for Report URLs
  *
- * @param {Object<any>} req - the express request
- * @param {Object<any>} res - the express response
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
  */
-function getDentistReport(req, res) {}
+function getListOfReportURLs(req, res) {
+  // 1. Reports start when dentistOffice was established
+  const left = new Moment(req.locals.office.dentistInfo.createdAt);
+  const timeBlocks = [];
+
+  while (left.diff(Moment.now()) <= 0) {
+    const month = Moment.months()[left.month()];
+    const monthShort = Moment.monthsShort()[left.month()];
+    const year = left.year();
+
+    timeBlocks.push({
+      month,
+      year,
+      url: `/reports/dentist/${req.locals.office.id}/${year}/${monthShort}/general`
+    });
+
+    left.add(1, 'month');
+  }
+
+  res.json({ data: timeBlocks });
+}
 
 /**
  * Retrieves a PDF report for general membership/costs
  * information about the members of a dentist office
  *
- * @param {Object<any>} req - the express request
- * @param {Object<any>} res - the express response
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
  */
 function getGeneralReport(req, res) {
   const reportEndDate = new Moment();
@@ -56,7 +77,7 @@ function getGeneralReport(req, res) {
       { model: db.Membership, as: 'childMembership' },
       { model: db.Membership, as: 'membership' }
     ]
-  }).then(office => {
+  }).then((office) => {
     if (!office) {
       res.json(new ForbiddenError('Requested Dentist Office does not access or user does not have appropriate access'));
     }
@@ -72,9 +93,9 @@ function getGeneralReport(req, res) {
           model: db.Membership,
           as: 'membership',
         }],
-      }).then(members => {
+      }).then((members) => {
         // Prepare the members model
-        members = members.map(m => {
+        members = members.map((m) => {
           m = m.toJSON();
           // Determine if they are new to the dentist's office
           m.isNew = (new Moment(m.startAt).isAfter(reportEndDate));
@@ -83,7 +104,7 @@ function getGeneralReport(req, res) {
           return m;
         });
 
-        const totalNewMembers = members.reduce((sum, m) => (m.isNew ? sum++ : sum), 0);
+        const totalNewMembers = members.reduce((sum, m) => (m.isNew ? sum + 1 : sum), 0);
         const totalExternal = members.filter(m => m.client.origin === 'external').length;
         const totalNewExternal = members.filter(m => m.isNew && m.client.origin === 'external').length;
         const totalInternal = members.filter(m => m.client.origin === 'internal').length;
@@ -127,7 +148,7 @@ function getGeneralReport(req, res) {
         }, {});
 
         // Nest child records of family owners
-        memberRecords.filter(m => !isNaN(parseInt(m.member.client.addedBy, 10))).forEach(m => {
+        memberRecords.filter(m => !isNaN(parseInt(m.member.client.addedBy, 10))).forEach((m) => {
           const parent = parentMemberRecords[m.member.client.addedBy];
           if (parent !== undefined) {
             parentMemberRecords[m.member.client.addedBy].family.push(m);
@@ -135,7 +156,7 @@ function getGeneralReport(req, res) {
         });
 
         // Calculate family totals
-        Object.keys(parentMemberRecords).forEach(prId => {
+        Object.keys(parentMemberRecords).forEach((prId) => {
           const temp = {
             membershipFeeTotal: 0,
             penaltiesTotal: 0,
@@ -149,7 +170,7 @@ function getGeneralReport(req, res) {
           temp.netTotal += parentMemberRecords[prId].net;
 
           // Loop through family as well
-          parentMemberRecords[prId].family.forEach(m => {
+          parentMemberRecords[prId].family.forEach((m) => {
             temp.membershipFeeTotal += m.fee;
             temp.penaltiesTotal += m.penalties;
             temp.refundsTotal += m.refunds;
@@ -173,7 +194,6 @@ function getGeneralReport(req, res) {
 
         /**
          * Total Gross Revenue
-         * Refunds
          * Membership Fee per User
          * Penalties per User - ???
          * Refunds per User - ???
@@ -218,8 +238,8 @@ function getGeneralReport(req, res) {
 /**
  * Retrieves a master report on all dentist offices
  *
- * @param {Object<any>} req - the express request
- * @param {Object<any>} res - the express response
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
  */
 function getMasterReport(req, res, next) {
   const month = Moment.monthsShort()[req.params.month];
@@ -230,7 +250,7 @@ function getMasterReport(req, res, next) {
       { model: db.Membership, as: 'childMembership' },
       { model: db.Membership, as: 'membership' }
     ]
-  }).then(offices => {
+  }).then((offices) => {
     // Collect office reports
     Promise.all(offices.map(office => new Promise((resolve, reject) => {
       // Validate the current user has the proper authorization to see this report
@@ -243,7 +263,7 @@ function getMasterReport(req, res, next) {
           model: db.Membership,
           as: 'membership',
         }],
-      }).then(members => {
+      }).then((members) => {
         // Calculate gross revenue and prepare member records
         const gross = members.reduce((sum, m) => {
           let fee = 0;
@@ -263,7 +283,7 @@ function getMasterReport(req, res, next) {
 
         resolve({ officeName: office.officeName, gross, managementFee, net: (gross - managementFee) });
       }).catch(err => reject(err));
-    }))).then(officeReports => {
+    }))).then((officeReports) => {
       // Calculate totals
       const totals = officeReports.reduce((t, office) => {
         t.gross += office.gross;
@@ -297,7 +317,6 @@ function getMasterReport(req, res, next) {
       // Send PDF file
       pdf.create(report, { format: 'Letter' }).toBuffer((err, resp) => {
         if (err) { res.json(new BadRequestError(err)); }
-        // res.setHeader('Content-disposition', `attachment; filename=${downloadFilename}`);
         res.writeHead(200, { 'Content-Type': 'application/pdf' });
         res.write(resp);
         res.end();
@@ -311,8 +330,23 @@ function getMasterReport(req, res, next) {
 
 const router = new Router({ mergeParams: true });
 
-router.route('/dentist/:officeId').get(userRequired, dentistRequired, getDentistReport);
-router.route('/dentist/:officeId/:year/:month/general').get(userRequired, adminRequired, getGeneralReport);
-router.route('/dentists/:year/:month').get(userRequired, adminRequired, getMasterReport);
+router.route('/dentist/:officeId/list')
+  .get(
+    userRequired,
+    dentistRequired,
+    injectDentistOffice('officeId', 'office'),
+    getListOfReportURLs);
+
+router.route('/dentist/:officeId/:year/:month/general')
+  .get(
+    userRequired,
+    dentistRequired,
+    getGeneralReport);
+
+router.route('/dentists/:year/:month')
+  .get(
+    userRequired,
+    adminRequired,
+    getMasterReport);
 
 export default router;

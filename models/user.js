@@ -1,3 +1,7 @@
+/* eslint max-len:0 */
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import passportLocalSequelize from 'passport-local-sequelize';
 
 import { instance, model } from '../orm-methods/users';
@@ -10,10 +14,14 @@ import {
   USER_ORIGIN_OPTIONS
 } from '../config/constants';
 
+import stripe from '../controllers/stripe';
+
 export const EXCLUDE_FIELDS_LIST = ['tos', 'hash', 'salt',
   'activationKey', 'resetPasswordKey', 'verified', 'updatedAt',
   'phone', 'address', 'isDeleted', 'authorizeId', 'paymentId'];
 
+// ────────────────────────────────────────────────────────────────────────────────
+// MODEL
 
 export default function (sequelize, DataTypes) {
   const User = sequelize.define('User', {
@@ -85,14 +93,6 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.ENUM(Object.keys(PREFERRED_CONTACT_METHODS)),
       allowNull: true
     },
-    accountHolder: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    payingMember: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -101,14 +101,6 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.ENUM(Object.keys(USER_TYPES)),
       allowNull: false,
       defaultValue: 'client',
-    },
-    authorizeId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    paymentId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
     },
     familyRelationship: {
       type: new DataTypes.ENUM(Object.keys(MEMBER_RELATIONSHIP_TYPES)),
@@ -147,6 +139,16 @@ export default function (sequelize, DataTypes) {
     waiverCreatedAt: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    // accountHolder: {
+    //   type: DataTypes.VIRTUAL,
+    //   get: function get() {
+    //     return !!this.get('primaryPaymentProfile');
+    //   }
+    // },
+    addedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     }
   }, {
     tableName: 'users',
@@ -159,39 +161,39 @@ export default function (sequelize, DataTypes) {
         User.hasMany(models.Phone, {
           foreignKey: 'userId',
           as: 'phoneNumbers',
-          allowNull: true
+          allowNull: true,
         });
 
         // Addresses relationship
         User.hasMany(models.Address, {
           foreignKey: 'userId',
           as: 'addresses',
-          allowNull: true
+          allowNull: true,
         });
 
         // FamilyMember relationship
         User.hasMany(User, {
           foreignKey: 'addedBy',
           as: 'members',
-          allowNull: true
+          allowNull: true,
         });
 
         // Membership relationship
         User.hasMany(models.Membership, {
           foreignKey: 'userId',
           as: 'memberships',
-          allowNull: true
+          allowNull: true,
         });
 
         // subscription relationship
-        User.hasMany(models.Subscription, {
+        User.hasOne(models.Subscription, {
           foreignKey: 'dentistId',
-          as: 'dentistSubscriptions',
+          as: 'dentistSubscription',
         });
 
-        User.hasMany(models.Subscription, {
+        User.hasOne(models.Subscription, {
           foreignKey: 'clientId',
-          as: 'clientSubscriptions',
+          as: 'clientSubscription',
         });
 
         // reviews relationship
@@ -208,12 +210,25 @@ export default function (sequelize, DataTypes) {
         User.belongsTo(models.DentistSpecialty, {
           foreignKey: 'dentistSpecialtyId',
           as: 'dentistSpecialty',
-          allowNull: true
+          allowNull: true,
         });
 
         User.hasOne(models.DentistInfo, {
           foreignKey: 'userId',
           as: 'dentistInfo',
+        });
+
+        // refunds relationship
+        User.hasMany(models.Refunds, {
+          foreignKey: 'userId',
+          as: 'refunds',
+          allowNull: true,
+        });
+
+        User.hasOne(models.PaymentProfile, {
+          foreignKey: 'primaryAccountHolderId',
+          as: 'primaryPaymentProfile',
+          allowNull: true,
         });
       },
 
@@ -244,13 +259,32 @@ export default function (sequelize, DataTypes) {
             model: User.sequelize.models.DentistSpecialty,
             as: 'dentistSpecialty',
           }, {
-            attributes: ['name', 'default', 'monthly'],
+            attributes: ['name'],
             model: User.sequelize.models.Membership,
             as: 'memberships'
           }],
         });
       }
     }, model),
+
+    hooks: {
+      beforeUpdate: (user) => {
+        // Update email in associated Stripe records
+        user.getPaymentProfile()
+        .then((profile) => {
+          if (profile.primaryAccountHolder) {
+            return stripe.updateCustomer(profile.stripeCustomerId, {
+              email: user.get('email'),
+            });
+          }
+
+          return Promise.resolve({});
+        })
+        .catch(() => {
+          throw new Error('Failed to update user record on Stripe');
+        });
+      },
+    },
   });
 
   passportLocalSequelize.attachToUser(User, {

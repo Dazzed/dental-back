@@ -1,5 +1,12 @@
-import { updateTotalMembership } from '../utils/helpers';
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
 
+import stripe from '../controllers/stripe';
+
+import { instance } from '../orm-methods/memberships';
+
+// ────────────────────────────────────────────────────────────────────────────────
+// MODEL
 
 export default function (sequelize, DataTypes) {
   const Membership = sequelize.define('Membership', {
@@ -7,76 +14,86 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: false
     },
-    price: {
-      type: new DataTypes.DECIMAL(6, 2),
-      allowNull: false,
-    },
-    monthly: {
-      type: new DataTypes.DECIMAL(6, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-    yearly: {
-      type: new DataTypes.DECIMAL(6, 2),
-      allowNull: true
-    },
-    withDiscount: {
-      type: new DataTypes.DECIMAL(6, 2),
-      defaultValue: 0,
-      allowNull: false,
-    },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
       defaultValue: '',
     },
-    isDeleted: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    activationCode: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    price: {
+      type: DataTypes.NUMERIC(6, 2),
+      defaultValue: 0,
+      allowNull: false,
     },
     discount: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    recommendedFee: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    default: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    adultYearlyFeeActivated: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    childYearlyFeeActivated: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
+    stripePlanId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    }
   }, {
     tableName: 'memberships',
-    hooks: {
-      beforeCreate: updateTotalMembership,
-      beforeUpdate: updateTotalMembership,
-      beforeSave: updateTotalMembership,
-    },
+
+    timestamps: false,
+
+    instanceMethods: instance,
+
     classMethods: {
       associate(models) {
-        Membership.belongsTo(models.User, { foreignKey: 'userId' });
-        // Membership.hasMany(models.MembershipItem, {
-        //   foreignKey: 'membershipId',
-        //   as: 'items',
-        // });
+        Membership.belongsTo(models.User, {
+          foreignKey: 'userId',
+          as: 'owner'
+        });
+
+        Membership.hasOne(models.DentistInfo, {
+          foreignKey: 'membershipId',
+          as: 'dentistInfo',
+        });
+
+        Membership.hasOne(models.DentistInfo, {
+          foreignKey: 'childMembershipId',
+          as: 'childDentistInfo',
+        });
       }
+    },
+
+    hooks: {
+      beforeCreate: membership => (
+        // Create record in Stripe
+        new Promise((resolve) => {
+          stripe.createMembershipPlan(
+            stripe.createUniqueID(membership.userId, membership.name),
+            membership.price
+          ).then((plan) => {
+            membership.stripePlanId = plan.id;
+            resolve();
+          }).catch(() => { throw new Error('Failed to create membership plan'); });
+        })
+      ),
+      // Only called on .save() or with { individualHooks: true }
+      beforeUpdate: membership => (
+        new Promise((resolve) => {
+          stripe.updateMembershipPlanPrice(
+            membership.id,
+            membership.stripePlanId,
+            membership.name,
+            membership.price,
+          ).then(() => {
+            resolve();
+          }).catch(() => { throw new Error('Failed to update membership plan'); });
+        })
+      ),
+      // Only called on .save() or with { individualHooks: true }
+      beforeDestroy: membership => (
+        new Promise((resolve) => {
+          stripe.deleteMembershipPlan(
+            membership.stripePlanId,
+          ).then(() => {
+            resolve();
+          }).catch(() => { throw new Error('Failed to update membership plan'); });
+        })
+      ),
     }
   });
 

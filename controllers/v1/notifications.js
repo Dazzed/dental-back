@@ -1,12 +1,22 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
+import {
+  userRequired,
+} from '../middlewares';
 
 import db from '../../models';
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
-const router = new Router({ mergeParams: true });
-
-
+/**
+ * Gets the count of unread notifications
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function getUnreadCount(req, res, next) {
   const where = {
     recipientId: req.user.get('id'),
@@ -15,7 +25,7 @@ function getUnreadCount(req, res, next) {
 
   db.Notification
     .count({ where })
-    .then(count => {
+    .then((count) => {
       res.json({
         data: { unread_count: count }
       });
@@ -23,6 +33,12 @@ function getUnreadCount(req, res, next) {
     .catch(next);
 }
 
+/**
+ * Marks all notifications for a user as read
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function makeAllRead(req, res, next) {
   const where = { recipientId: req.user.get('id') };
 
@@ -34,36 +50,46 @@ function makeAllRead(req, res, next) {
     .catch(next);
 }
 
+/**
+ * Gets a list of notifications for a user record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function getNotifications(req, res, next) {
   const where = { recipientId: req.user.get('id') };
 
   db.Notification
-    .findAll({ where })
-    .then(notifications => {
-      res.json({
-        data: notifications
-      });
-    })
-    .catch(next);
+  .findAll({ where })
+  .then((notifications) => {
+    res.json({
+      data: notifications
+    });
+  })
+  .catch(next);
 }
+
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/unread_count')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getUnreadCount);
 
 router
   .route('/mark_all_read')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     makeAllRead);
 
 router
   .route('/')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     getNotifications);
-
 
 export default router;

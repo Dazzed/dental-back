@@ -1,53 +1,56 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
 
 import db from '../../models';
+
 import {
-  adminRequired,
+  userRequired,
+  dentistRequired,
 } from '../middlewares';
 
 import {
-  NotFoundError
+  BadRequestError,
 } from '../errors';
 
-const userFieldsExcluded = ['hash', 'salt', 'activationKey',
-  'resetPasswordKey', 'verified', 'authorizeId', 'paymentId'];
-
-const router = new Router({ mergeParams: true });
-
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
 /**
- * Gets all members subscribed to the dentist whose ID is set in params.
+ * Gets all members subscribed to the dentist whose id is set in params
+ *
+ * @param {object} req - the express request
+ * @param {object} res - the express response
  */
-function getMembers(req, res, next) {
-  const dentistId = req.params.dentistId;
+function getMembers(req, res) {
+  if (req.params.dentistId === 'me') {
+    req.params.dentistId = req.user.get('id');
+  }
 
   db.User.find({
-    attributes: { exclude: userFieldsExcluded },
-    where: {
-      id: dentistId,
-      type: 'dentist'
-    }
+    where: { id: req.params.dentistId },
   })
-  .then(dentist => {
-    if (!dentist) {
-      throw new NotFoundError('The dentist account was not found.');
-    }
-
-    return dentist.getClients().then(members => {
+  .then((user) => {
+    user.getClients()
+    .then((members) => {
       res.json({ data: members });
-    });
+    })
+    .catch((err) => { throw new Error(err); });
   })
-  .catch(next);
+  .catch(err => res.json(new BadRequestError(err)));
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/')
   .get(
-    passport.authenticate('jwt', { session: false }),
-    adminRequired,
+    userRequired,
+    dentistRequired,
     getMembers);
-
 
 export default router;

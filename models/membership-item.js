@@ -1,9 +1,5 @@
 export default function (sequelize, DataTypes) {
   const MembershipItem = sequelize.define('MembershipItem', {
-    pricingCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     price: {
       type: new DataTypes.DECIMAL(6, 2),
       allowNull: false,
@@ -17,7 +13,7 @@ export default function (sequelize, DataTypes) {
           foreignKey: 'dentistInfoId'
         });
         MembershipItem.belongsTo(models.PriceCodes, {
-          foreignKey: 'pricingCode',
+          foreignKey: 'pricingCodeId',
           as: 'priceCode',
         });
       }

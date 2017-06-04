@@ -1,3 +1,10 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
+import { instance, model } from '../orm-methods/dentist-info';
+
+// ────────────────────────────────────────────────────────────────────────────────
+
 export default function (sequelize, DataTypes) {
   const DentistInfo = sequelize.define('DentistInfo', {
     officeName: {
@@ -67,10 +74,10 @@ export default function (sequelize, DataTypes) {
     },
   }, {
     tableName: 'dentistInfos',
-    classMethods: {
+    instanceMethods: instance,
+    classMethods: Object.assign({
       associate(models) {
         DentistInfo.hasMany(models.DentistInfoService, {
-          // through: 'dentistInfoService',
           foreignKey: 'dentistInfoId',
           as: 'services'
         });
@@ -105,7 +112,7 @@ export default function (sequelize, DataTypes) {
           as: 'user'
         });
       }
-    }
+    }, model)
   });
 
   return DentistInfo;

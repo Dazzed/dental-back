@@ -7,15 +7,25 @@
         {
             "type": "node",
             "request": "launch",
+            "sourceMaps": true,
             "name": "Launch Program",
-            "program": "${workspaceRoot}/index.js"
+            "envFile": "${workspaceRoot}/.env",
+            "program": "${workspaceRoot}/index.js",
+            "protocol": "legacy",
+            "skipFiles": [
+              "<node_internals>/**/*.js"
+            ]
         },
         {
-            "type": "node",
-            "request": "attach",
-            "name": "Attach to Port",
-            "address": "localhost",
-            "port": 5858
+          "type": "node",
+          "request": "attach",
+          "name": "Attach to Process",
+          "protocol": "legacy",
+          "restart": true,
+          "port": 5858,
+          "skipFiles": [
+            "<node_internals>/**/*.js"
+          ]
         }
     ]
 }

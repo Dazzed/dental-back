@@ -1,16 +1,17 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
 import isPlainObject from 'is-plain-object';
 import HTTPStatus from 'http-status';
-// import aws from 'aws-sdk';
-// import multer from 'multer';
-// import multerS3 from 'multer-s3';
 import _ from 'lodash';
 
 import db from '../../models';
+import stripe from '../stripe';
 import { EXCLUDE_FIELDS_LIST } from '../../models/user';
+import { CARD_EXCLUDE_FIELDS_LIST } from '../../models/payment-profile';
+
 import {
-  getCreditCardInfo,
   ensureCreditCard,
   chargeAuthorize
 } from '../payments';
@@ -31,126 +32,79 @@ import {
   patientMessages
 } from '../../config/messages';
 
+import {
+  verifyPasswordLocal,
+  validateBody,
+} from '../middlewares';
+
 import { mailer } from '../../services/mailer';
 
 import {
   BadRequestError,
   NotFoundError,
-  ForbiddenError,
   UnauthorizedError
 } from '../errors';
 
 
-const router = new Router();
+// ────────────────────────────────────────────────────────────────────────────────
+// MIDDLEWARE
 
 /**
- * Fill req.locals.user with the requested used on url params and
- * call next middleware if allowed.
+ * Verifies a user account password
  *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
  */
-export function getUserFromParam(req, res, next) {
-  const userId = req.params.userId;
-
-  if (userId === 'me' ||
-      (req.user && req.user.get('id') === parseInt(userId, 10))) {
-    req.locals.user = req.user;
-    return next();
-  }
-
-  if (req.user && req.user.get('type') === 'client' && userId === 'me') {
-    return next(new ForbiddenError());
-  }
-
-  let accountOwner;
-
-  if (req.user && req.user.get('type') === 'client') {
-    accountOwner = req.user.get('id');
-  }
-
-  return db.User.getActiveUser(userId, accountOwner).then((user) => {
-    if (!user) {
-      return next(new NotFoundError());
-    }
-
-    req.locals.user = user;
-    return next();
-  }).catch((error) => {
-    next(error);
-  });
+function verifyPassword(req, res) {
+  res.json({ passwordVerified: req.locals.passwordVerified });
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
-function verifyPasswordLocal(req, res, next) {
-  // req.checkBody({ oldPassword: { nonEmpty: true } });
-  // const errors = req.asyncValidationErrors(true)
-  //
-  // if (errors) {
-  // }
+/**
+ * Gets a user account record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
+function getUser(req, res) {
+  let userReq = null;
 
-  db.User.find({
-    where: { id: req.locals.user.get('id') }
-  })
-  .then(_user => {
-    const password = req.body.oldPassword;
-
-    _user.authenticate(password, (err, user) => {
-      if (err) return next(err);
-
-      if (!user) {
-        return next(new UnauthorizedError('Incorrect password.'));
-      }
-      req.locals.passwordVerified = true;
-      return next();
-    });
-  });
-}
-
-
-function getUser(req, res, next) {
-  if (req.user.get('type') === 'dentist') {
-    return req.locals.user
-      .getDentistReviews()
-      .then(dentistReviews => {
-        // add all the review ratings.
-        const totalRating = _.sumBy(
-          dentistReviews, review => review.rating);
-
-        const user = req.locals.user.toJSON();
-        // average the ratings.
-        user.rating = totalRating / dentistReviews.length;
-        // dentistReviews
-        //   .forEach(review => {
-        //     delete review.clientId;
-        //     delete review.dentistId;
-        //   });
-        // user.reviews = dentistReviews;
-
-        delete user.memberships;
-        return res.json({ data: user });
-      })
-      .catch(next);
+  if (req.locals.user.get('type') === 'dentist') {
+    // Get full dentist
+    userReq = req.locals.user.getFullDentist();
+  } else if (req.locals.user.get('type' === 'client')) {
+    // Get full user
+    userReq = req.locals.user.getFullClient();
+  } else {
+    res.status(HTTPStatus.BAD_REQUEST);
+    return res.json(new BadRequestError('Requested user is not a valid user type for this call'));
   }
 
-  return req.locals.user
-    .getCurrentSubscription()
-    .then(subscription => {
-      const user = req.locals.user.toJSON();
-      user.subscription = subscription;
-
-      return res.json({ data: user });
-    })
-    .catch(next);
+  return userReq
+  .then(data => res.json({ data }))
+  .catch(err => res.json(new BadRequestError(err)));
 }
 
-
+/**
+ * Deletes a user account record (soft delete)
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
 function deleteUser(req, res) {
-  const delEmail = `DELETED_${req.locals.user.email}`;
-  req.locals.user.update({ email: delEmail, isDeleted: true }).then(() => res.json({}));
+  req.locals.user.update({ isDeleted: true }).then(() => res.json({}));
 }
 
-
-// TODO: maybe later add avatar support?? or another endpoint
-function updateUser(req, res, next) {
+/**
+ * Updates a user record account
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
+function updateUser(req, res) {
+  // TODO: maybe later add avatar support?? or another endpoint
   // const validator = Object.assign({}, req.locals.user.type === 'client' ?
   //   NORMAL_USER_EDIT : DENTIST_USER_EDIT);
   const validator = NORMAL_USER_EDIT;
@@ -167,94 +121,102 @@ function updateUser(req, res, next) {
   req.checkBody(validator);
 
   req
-    .asyncValidationErrors(true)
-    .then(() => {
-      const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
+  .asyncValidationErrors(true)
+  .then(() => {
+    const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
 
-      // NOTE: This should later removed to add and remove by others endpoints
-      const phone = req.locals.user.get('phoneNumbers')[0];
-      const address = req.locals.user.get('addresses')[0];
-      const password = req.body.oldPassword || req.body.password;
+    // TODO: This should later removed to add and remove by others endpoints
+    const phone = req.locals.user.get('phoneNumbers')[0];
+    const address = req.locals.user.get('addresses')[0];
+    const password = req.body.oldPassword || req.body.password;
 
-      phone.set('number', req.body.phone);
-      address.set('value', req.body.address);
+    phone.set('number', req.body.phone);
+    address.set('value', req.body.address);
+
+    return Promise.all([
+      req.locals.user.update(body),
+      new Promise((resolve, reject) => {
+        req.locals.user.setPassword(password, (err) => {
+          if (err) return reject(err);
+          return resolve();
+        });
+      }),
+      phone.save(),
+      address.save(),
+    ]);
+  })
+  .then(() => db.User.getActiveUser(req.locals.user.get('id')))
+  .then((user) => {
+    res
+      .status(HTTPStatus.OK)
+      .json({ data: user.toJSON() });
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      return res.json(new BadRequestError(errors));
+    }
+
+    return res.json(new BadRequestError(errors));
+  });
+}
+
+/**
+ * Updates a patient account record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
+function updatePatient(req, res) {
+  Promise.resolve()
+  .then(() => {
+    const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
+
+    const mainUser = req.locals.user;
+
+    const phone = mainUser.get('phoneNumbers')[0];
+    const address = mainUser.get('addresses')[0];
+
+    const where = {};
+    where.id = req.params.patientId;
+
+    if (mainUser.get('id') !== parseInt(req.params.patientId, 0)) {
+      where.addedBy = mainUser.get('id');
+    }
+
+    return db.User.findOne({ where })
+    .then((patient) => {
+      if (!patient) return res.json(new NotFoundError());
+
+      if (patient.get('id') === mainUser.get('id')) {
+        phone.set('number', req.body.phone);
+        address.set('value', req.body.address);
+      }
 
       return Promise.all([
-        req.locals.user.update(body),
-        new Promise((resolve, reject) => {
-          req.locals.user.setPassword(password, (err) => {
-            if (err) return reject(err);
-            return resolve();
-          });
-        }),
+        patient.update(body),
         phone.save(),
-        address.save(),
+        address.save()
       ]);
     })
-    .then(() => db.User.getActiveUser(req.locals.user.get('id')))
-    .then((user) => {
-      res
-        .status(HTTPStatus.OK)
-        .json({ data: user.toJSON() });
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
+    .then(() => res.json({}))
+    .catch(err => res.json(new BadRequestError(err)));
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      return res.json(new BadRequestError(errors));
+    }
 
-      return next(errors);
-    });
+    return res.json(new BadRequestError(errors));
+  });
 }
 
-
-function updatePatient(req, res, next) {
-  req.checkBody(PATIENT_EDIT);
-
-  req
-    .asyncValidationErrors(true)
-    .then(() => {
-      const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
-
-      const mainUser = req.locals.user;
-
-      const phone = mainUser.get('phoneNumbers')[0];
-      const address = mainUser.get('addresses')[0];
-
-      const where = {};
-      where.id = req.params.patientId;
-
-      if (mainUser.get('id') !== parseInt(req.params.patientId, 0)) {
-        where.addedBy = mainUser.get('id');
-      }
-
-      return db.User.findOne({ where })
-      .then(patient => {
-        if (!patient) return next(new NotFoundError());
-
-        if (patient.get('id') === mainUser.get('id')) {
-          phone.set('number', req.body.phone);
-          address.set('value', req.body.address);
-        }
-
-        return Promise.all([
-          patient.update(body),
-          phone.save(),
-          address.save()
-        ]);
-      })
-      .then(() => res.json({}))
-      .catch(next);
-    })
-    .catch(errors => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
-
-      return next(errors);
-    });
-}
-
-
+/**
+ * Updates the user account authorization (i.e. Password)
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function updateAuth(req, res, next) {
   let validator = {};
 
@@ -282,255 +244,88 @@ function updateAuth(req, res, next) {
   }
 
   req
-    .asyncValidationErrors(true)
-    .then(() => {
-      const where = { id: req.locals.user.get('id') };
+  .asyncValidationErrors(true)
+  .then(() => {
+    const where = { id: req.locals.user.get('id') };
 
-      return db.User.findOne({ where })
-      .then(patient => {
-        if (!patient) return next(new UnauthorizedError());
-        patient.set('email', req.body.newEmail);
+    return db.User.findOne({ where })
+    .then((patient) => {
+      if (!patient) return next(new UnauthorizedError());
+      patient.set('email', req.body.newEmail);
 
-        return new Promise((resolve, reject) => {
-          if (!req.body.newPassword) return resolve(patient);
+      return new Promise((resolve, reject) => {
+        if (!req.body.newPassword) return resolve(patient);
 
-          return patient.setPassword(req.body.newPassword, (err, user) => {
-            if (err) return reject(err);
-            return resolve(user);
-          });
+        return patient.setPassword(req.body.newPassword, (err, user) => {
+          if (err) return reject(err);
+          return resolve(user);
         });
-      })
-      .then(patient => patient.save())
-      .then(() => res.json({}))
-      .catch(next);
+      });
     })
-    .catch(errors => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
-
-      return next(errors);
-    });
-}
-
-
-function getCardInfo(req, res, next) {
-  const queries = [
-    db.Subscription.getPendingAmount(req.locals.user.get('id')),
-  ];
-
-  if (req.locals.user.get('authorizeId') && req.locals.user.get('paymentId')) {
-    queries.push(
-      getCreditCardInfo(
-        req.locals.user.get('authorizeId'),
-        req.locals.user.get('paymentId')
-      )
-    );
-  }
-
-  Promise.all(queries).then(([{ data }, info]) => {
-    res.json({ data: { info, details: data } });
-  }).catch(next);
-}
-
-// const aws = require('aws-sdk');
-// const multer = require('multer');
-// const multerS3 = require('multer-s3');
-//
-// aws.config.update({
-//   accessKeyId: process.env.S3_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.S3_ACCESS_KEY,
-//   region: process.env.S3_REGION,
-// });
-// const s3 = new aws.S3();
-// const upload = multer({
-//   storage: multerS3({
-//     s3,
-//     bucket: process.env.S3_BUCKET || 'dentalmarket',
-//     contentType: multerS3.AUTO_CONTENT_TYPE,
-//     acl: 'public-read',
-//     metadata(_req, file, cb) {
-//       cb(null, { fieldName: file.fieldname });
-//     },
-//     key(_req, file, cb) {
-//       cb(null, `${new Date().getTime()}.jpg`);
-//     },
-//   }),
-// });
-
-
-// function createS3Bucket(req, res, next) {
-//   s3.createBucket({ Bucket: process.env.S3_BUCKET }, (err) => {
-//     if (err) next(err);
-//     else next();
-//   });
-// }
-//
-// function signS3Upload(req, res) {
-//   const files = req.files.map(file => _.omit(file,
-//     ['metadata', 'storageClass', 'acl', 'etag',
-//       'bucket', 'fieldname', 'encoding', 'contentDisposition']));
-//   res.json({ data: files });
-// }
-
-
-// function signS3(req, res, next) {
-//   const fileName = req.query.file_name;
-//   const fileType = req.query.file_type;
-//   const key = process.env.S3_ACCESS_KEY;
-//
-//   const s3Params = {
-//     Bucket: process.env.S3_BUCKET,
-//     Key: key,
-//     Expires: 60,
-//     ContentType: fileType,
-//     ACL: 'public-read'
-//   };
-//
-//   s3.getSignedUrl('putObject', s3Params, (err, data) => {
-//     if (err) {
-//       return next(err);
-//     }
-//     console.log(data);
-//
-//     const location = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${key}`;
-//     const avatar = {
-//       location,
-//       type: fileType,
-//       originalName: fileName,
-//     };
-//
-//     // req.locals.user.update({ avatar });
-//
-//     const returnData = {
-//       signedRequest: data,
-//       avatar,
-//     };
-//
-//     return res.json(returnData);
-//   });
-// }
-
-
-function verifyPassword(req, res) {
-  res.json({ passwordVerified: req.locals.passwordVerified });
-}
-
-
-function makePayment(req, res, next) {
-  ensureCreditCard(req.locals.user, req.body.card).then(user => {
-    db.Subscription.getPendingAmount(user.id).then(data => {
-      if (parseInt(data.total, 10) !== 0) {
-        chargeAuthorize(user.authorizeId, user.paymentId, data).then(() => {
-          req.locals.user.getSubscriptions().then(subscriptions => {
-            Promise.all(subscriptions.map(
-              subscription => subscription.setActive(true)
-            ));
-          });
-
-          // send welcome email to patient.
-          mailer.sendEmail(res.mailer, {
-            template: 'auth/client/welcome',
-            subject: EMAIL_SUBJECTS.client.welcome,
-            user
-          }, {
-            emailBody: patientMessages.welcome.body
-          });
-
-          // send email to patient's dentist.
-          req.locals.user.getMyDentist(true).then(([dentist, rawDentist]) => {
-            mailer.sendEmail(res.mailer, {
-              template: 'dentists/new_patient',
-              subject: EMAIL_SUBJECTS.dentist.new_patient,
-              user: dentist
-            }, {
-              emailBody: dentistMessages.new_patient.body
-            });
-
-            // create a new notification for the dentist about new patient.
-            rawDentist.createNotification({
-              title: dentistMessages.new_patient.title,
-              body: dentistMessages.new_patient.body
-            });
-          });
-
-          // add notification.
-
-          // TODO: keep transaction log and/or implement webhook with Authorize.
-          res.json({
-            data: _.omit(user, ['authorizeId', 'paymentId'])
-          });
-        })
-        .catch(errors => next(errors));
-      } else {
-        res.json({
-          data: _.omit(user, ['authorizeId', 'paymentId'])
-        });
-      }
-    });
+    .then(patient => patient.save())
+    .then(() => res.json({}))
+    .catch(next);
   })
-  .catch(errors => next(errors));
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      return next(new BadRequestError(errors));
+    }
+
+    return next(errors);
+  });
 }
 
+/**
+ * Gets the user account payment card info
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
+function getPaymentSources(req, res) {
+  req.locals.user.getPaymentProfile()
+  .then(profile => stripe.getPaymentMethods(profile.stripeCustomerId))
+  .then((resp) => {
+    let cards = resp.data;
+    // Clean the cards objects
+    cards = cards.map(c => _(c).omit(CARD_EXCLUDE_FIELDS_LIST));
+    res.json(cards);
+  })
+  .catch(err => res.json(new BadRequestError(err)));
+}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
-  .route('/:userId')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    getUserFromParam,
-    getUser)
-  .delete(
-    passport.authenticate('jwt', { session: false }),
-    getUserFromParam,
-    deleteUser)
+  .route('/')
+  .get(getUser)
   .put(
-    passport.authenticate('jwt', { session: false }),
-    getUserFromParam,
     verifyPasswordLocal,
-    updateUser);
+    updateUser)
+  .delete(deleteUser);
 
 router
-  .route('/:userId/change-auth')
+  .route('/change-auth')
   .put(
-    passport.authenticate('jwt', { session: false }),
-    getUserFromParam,
     verifyPasswordLocal,
     updateAuth);
 
 router
-  .route('/:userId/patients/:patientId')
+  .route('/patients/:patientId')
   .put(
-    passport.authenticate('jwt', { session: false }),
-    getUserFromParam,
+    validateBody(PATIENT_EDIT),
     updatePatient);
 
-// router
-//   .route('/upload-photos')
-//   .post(
-//     createS3Bucket,
-//     upload.array('photos', 10),
-//     signS3Upload);
-
 router
-  .route('/:userId/verify-password')
+  .route('/verify-password')
   .post(
-    passport.authenticate('jwt', { session: false }),
-    getUserFromParam,
     verifyPasswordLocal,
     verifyPassword);
 
 router
-  .route('/:userId/credit-card')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    getUserFromParam,
-    getCardInfo);
-
-router
-  .route('/:userId/payments')
-  .post(
-    getUserFromParam,
-    makePayment);
-
+  .route('/payment-details')
+  .get(getPaymentSources);
 
 export default router;
