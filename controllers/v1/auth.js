@@ -139,7 +139,7 @@ function normalUserSignup(req, res, next) {
           dentistId: req.body.officeId || null,
           paymentProfile: {
             stripeCustomerId: customer.id,
-            primaryAccountHolderId: userObj.id,
+            primaryAccountHolder: userObj.id,
           }
         }, {
           transaction: t,
