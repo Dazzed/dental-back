@@ -1,11 +1,8 @@
-// ────────────────────────────────────────────────────────────────────────────────
-// MODULES
-
 import { Router } from 'express';
+import passport from 'passport';
 
 import db from '../../models';
 import {
-  userRequired,
   adminRequired,
 } from '../middlewares';
 
@@ -13,15 +10,12 @@ import {
   NotFoundError
 } from '../errors';
 
-// ────────────────────────────────────────────────────────────────────────────────
-// ROUTER
+
+const router = new Router({ mergeParams: true });
+
 
 /**
- * Gets all related reviews for the associated dentist
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
+ * Gets all reviews related to the dentist whose ID is set in params.
  */
 function getReviews(req, res, next) {
   const dentistId = req.params.dentistId;
@@ -46,18 +40,15 @@ function getReviews(req, res, next) {
       }]
     }]
   })
-  .then((user) => {
+  .then(user => {
     res.json({ data: user.get('dentistReviews') });
   })
   .catch(next);
 }
 
+
 /**
- * Deletes a review by id
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
+ * Deletes a review by id.
  */
 function deleteReview(req, res, next) {
   db.Review.destroy({
@@ -66,7 +57,7 @@ function deleteReview(req, res, next) {
       dentistId: req.params.dentistId
     }
   })
-  .then((review) => {
+  .then(review => {
     if (!review) {
       throw new NotFoundError('The review was not found.');
     }
@@ -76,23 +67,20 @@ function deleteReview(req, res, next) {
   .catch(next);
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
-// ENDPOINTS
-
-const router = new Router({ mergeParams: true });
 
 router
   .route('/')
   .get(
-    userRequired,
+    passport.authenticate('jwt', { session: false }),
     adminRequired,
     getReviews);
 
 router
   .route('/:reviewId')
   .delete(
-    userRequired,
+    passport.authenticate('jwt', { session: false }),
     adminRequired,
     deleteReview);
+
 
 export default router;

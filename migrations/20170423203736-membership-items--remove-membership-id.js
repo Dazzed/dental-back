@@ -3,7 +3,7 @@
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return Promise.all([
-      // queryInterface.removeColumn('membershipItems', 'membershipId'),
+      queryInterface.removeColumn('membershipItems', 'membershipId'),
       queryInterface.addColumn('membershipItems', 'dentistInfoId', {
         type: Sequelize.INTEGER,
         allowNull: true,
@@ -16,17 +16,17 @@ module.exports = {
     ]);
   },
 
-  down: function (queryInterface) {
+  down: function (queryInterface, Sequelize) {
     return Promise.all([
-      // queryInterface.addColumn('membershipItems', 'membershipId', {
-      //   type: Sequelize.INTEGER,
-      //   allowNull: true,
-      //   onDelete: 'CASCADE',
-      //   references: {
-      //     model: 'memberships',
-      //     key: 'id',
-      //   }
-      // }),
+      queryInterface.addColumn('membershipItems', 'membershipId', {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        onDelete: 'CASCADE',
+        references: {
+          model: 'memberships',
+          key: 'id',
+        }
+      }),
       queryInterface.removeColumn('membershipItems', 'dentistInfoId')
     ]);
   }

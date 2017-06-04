@@ -94,6 +94,7 @@ export function createCreditCard(user, card) {
   });
 }
 
+
 export function updateCreditCard(profileId, paymentId, card) {
   const authentication = getAuthentication();
 
@@ -159,6 +160,7 @@ export function updateCreditCard(profileId, paymentId, card) {
   });
 }
 
+
 export function validateCreditCard(profileId, paymentId, cvc) {
   const authentication = getAuthentication();
 
@@ -204,6 +206,7 @@ export function validateCreditCard(profileId, paymentId, cvc) {
     });
   });
 }
+
 
 export function chargeAuthorize(profileId, paymentId, data) {
   const authentication = getAuthentication();
@@ -320,7 +323,7 @@ export function chargeAuthorize(profileId, paymentId, data) {
   });
 }
 
-// TODO: Replace this function entirely using Stripe
+
 export function ensureCreditCard(_user, card) {
   return new Promise((resolve, reject) => {
     db.User.find({
@@ -343,6 +346,10 @@ export function ensureCreditCard(_user, card) {
             return user;
           });
       }
+      // else if (card) {
+      //   return updateCreditCard(user.authorizeId, user.paymentId, card)
+      //     .then(() => user);
+      // }
       return user;
     })
     .then((user) => resolve(user))
@@ -355,6 +362,7 @@ export function ensureCreditCard(_user, card) {
     });
   });
 }
+
 
 export function getCreditCardInfo(profileId, paymentId) {
   const authentication = getAuthentication();
@@ -417,38 +425,6 @@ export function getCreditCardInfo(profileId, paymentId) {
         }
       } else {
         reject(new Error('No content'));
-      }
-    });
-  });
-}
-
-export function getTransactionDetails(transId) {
-  const merchantAuthenticationType = new APIContracts.MerchantAuthenticationType();
-  merchantAuthenticationType.setName(Constants.apiLoginKey);
-  merchantAuthenticationType.setTransactionKey(Constants.transactionKey);
-
-  const getRequest = new APIContracts.GetTransactionDetailsRequest();
-  getRequest.setMerchantAuthentication(merchantAuthenticationType);
-  getRequest.setTransId(transId);
-
-  const ctrl = new APIControllers.GetTransactionDetailsController(getRequest.getJSON());
-
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new APIContracts.GetTransactionDetailsResponse(apiResponse);
-
-      if (response != null) {
-        if (response.getMessages().getResultCode() === APIContracts.MessageTypeEnum.OK) {
-          resolve({
-            authorizeId: response.getTransaction().getCustomer().getId(),
-            transaction: response.getJSON(),
-          });
-        } else {
-          reject(response.getJSON());
-        }
-      } else {
-        reject('No transaction details found!');
       }
     });
   });

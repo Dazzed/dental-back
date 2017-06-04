@@ -1,15 +1,11 @@
-// ────────────────────────────────────────────────────────────────────────────────
-// MODULES
-
 import HTTPStatus from 'http-status';
 import _ from 'lodash';
 import jwt from 'jsonwebtoken';
 import isPlainObject from 'is-plain-object';
 import passport from 'passport';
 import { Router } from 'express';
+import moment from 'moment';
 import db from '../../models';
-
-import stripe from '../stripe';
 
 import {
   BadRequestError,
@@ -18,27 +14,21 @@ import {
 } from '../errors';
 
 import {
-  validateBody,
-} from '../middlewares';
-
-import {
   NORMAL_USER_REGISTRATION,
   DENTIST_USER_REGISTRATION
 } from '../../utils/schema-validators';
 
-import Mailer from '../mailer';
+import {
+  EMAIL_SUBJECTS
+} from '../../config/constants';
 
-// ────────────────────────────────────────────────────────────────────────────────
-// ROUTER
 
-/**
- * Creates a dentist info record
- *
- * @param {Object} user - the related user object for the record
- * @param {Object} body - the new dentist info record
- * @param {Object} transaction - the sequelize transaction object
- */
-function createDentistInfo(user, body, transaction) {
+const router = new Router();
+
+
+// util methods
+
+function createDentistInfo(user, body) {
   const dentistInfo = body.officeInfo;
   const pricing = body.pricing || {};
   const workingHours = body.workingHours || [];
@@ -48,14 +38,28 @@ function createDentistInfo(user, body, transaction) {
   Promise.all([
     user.createMembership({
       name: 'default membership',
+      default: true,
+      isActive: true,
       price: 0,
+      withDiscount: pricing.treatmentDiscount || 0,
       discount: pricing.treatmentDiscount || 0,
+      monthly: pricing.adultMonthlyFee,
+      yearly: pricing.adultYearlyFeeActivated ?
+              pricing.adultYearlyFee || null : null,
+      adultYearlyFeeActivated: pricing.adultYearlyFeeActivated
     }),
 
     user.createMembership({
       name: 'default child membership',
+      default: true,
+      isActive: true,
       price: 0,
+      withDiscount: pricing.treatmentDiscount || 0,
       discount: pricing.treatmentDiscount || 0,
+      monthly: pricing.childMonthlyFee,
+      yearly: pricing.childYearlyFeeActivated ?
+              pricing.childYearlyFee || null : null,
+      childYearlyFeeActivated: pricing.childYearlyFeeActivated
     })
   ])
   .then(([adult, child]) => {
@@ -63,29 +67,34 @@ function createDentistInfo(user, body, transaction) {
       Object.assign({
         membershipId: adult.get('id'),
         childMembershipId: child.get('id')
-      }, dentistInfo),
-      { transaction }
+      }, dentistInfo)
     ).then((info) => {
-      workingHours.forEach((item) => {
+      workingHours.forEach(item => {
         info.createWorkingHour(item);
       });
 
       // create service records for the dentist.
-      services.forEach((item) => {
+      services.forEach(item => {
         info.createService({ serviceId: item })
-        .catch(e => console.log(e));
+          .catch(e => console.log(e));
       });
 
       // create pricing records for the dentist.
-      (pricing.codes || []).forEach((item) => {
-        db.MembershipItem.create({
-          pricingCodeId: item.code,
-          price: item.amount,
-          dentistInfoId: info.get('id')
+      db.PriceCodes.findAll({}).then(codes => {
+        (pricing.codes || []).forEach(item => {
+          codes.forEach(elem => {
+            if (elem.code === item.code) {
+              db.MembershipItem.create({
+                pricingCode: elem.get('id'),
+                price: item.amount,
+                dentistInfoId: info.get('id')
+              });
+            }
+          });
         });
       });
 
-      officeImages.forEach((url) => {
+      officeImages.forEach(url => {
         db.DentistInfoPhotos.create({
           url, dentistInfoId: info.get('id')
         });
@@ -94,197 +103,213 @@ function createDentistInfo(user, body, transaction) {
   });
 }
 
-/**
- * Registers a new user account
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
+// Middlewares
+
 function normalUserSignup(req, res, next) {
+  req.checkBody(NORMAL_USER_REGISTRATION);
   req.checkBody('confirmPassword', 'Password do not match').equals(req.body.password);
   req.checkBody('confirmEmail', 'Email do not match').equals(req.body.email);
 
   const data = req.body;
-  let userObj = null;
-  let customerId = null;
 
   req
-  .asyncValidationErrors(true)
-  .then(() => {
-    data.verified = true;
-    // Create the new user account
-    return new Promise((resolve, reject) => {
-      db.User.register(data, data.password, (err, user) => {
-        if (err) reject(err);
-        resolve(user);
-      });
-    });
-  })
-  .then((user) => {
-    userObj = user;
-    return stripe.createCustomer(user.email);
-  })
-  .then((customer) => {
-    customerId = customer.id;
+    .asyncValidationErrors(true)
+    .then(() => {
+      data.verified = true;
 
-    return db.sequelize.transaction((t) => {
-      const queries = [];
-
-      // Add subscription
-      queries.push(
-        db.Subscription.create({
-          clientId: userObj.id,
-          membershipId: req.body.membershipId || null,
-          dentistId: req.body.officeId || null,
-          paymentProfile: {
-            stripeCustomerId: customer.id,
-            primaryAccountHolder: userObj.id,
+      return new Promise((resolve, reject) => {
+        db.User.register(data, data.password, (registerError, createdUser) => {
+          if (registerError) {
+            return reject(registerError);
           }
-        }, {
-          transaction: t,
-          include: [{
-            model: db.PaymentProfile,
-            as: 'paymentProfile',
-            include: [{ all: true }]
-          }],
-        })
-      );
+          return resolve(createdUser);
+        });
+      });
+    })
+    // .then((__user) => new Promise((resolve, reject) => {
+    //   if (data.card) {
+    //     return ensureCreditCard(__user, data.card)
+    //       .then(user => {
+    //         chargeAuthorize(user.authorizeId, user.paymentId, data)
+    //           .then(() => resolve(__user))
+    //           .catch(errors => {
+    //             db.User.destroy({ where: { id: __user.id } });
+    //             reject(errors);
+    //           });
+    //       })
+    //       .catch((errors) => {
+    //         // delete the user, account couldn't be charged successfully.
+    //         db.User.destroy({ where: { id: __user.id } });
+    //         reject(errors);
+    //       });
+    //   }
+    //   return resolve(__user);
+    // }))
+    .then((createdUser) => {
+      db.DentistInfo.find({
+        attributes: ['membershipId', 'userId'],
+        where: { id: data.officeId }
+      })
+      .then((info) => {
+        const membership = data.subscription;
+        const today = moment();
 
-      // Add phone number
+        db.Subscription.create({
+          startAt: today,
+          endAt: moment(today).add(1, 'months'),
+          total: (membership.adultYearlyFeeActivated
+            || membership.childYearlyFeeActivated)
+            ? membership.yearly : membership.monthly,
+          yearly: membership.yearly,
+          monthly: membership.monthly,
+          status: 'inactive',
+          membershipId: membership.id,
+          clientId: createdUser.id,
+          dentistId: info.get('userId'),
+        });
+      });
+      return createdUser;
+    })
+    .then((user) => {
+      const queries = [
+        user,
+        // This should be created so we can edit values
+      ];
+
       if (req.body.phone) {
-        queries.push(userObj.createPhoneNumber({ number: req.body.phone || '' }, { transaction: t }));
+        queries.push(user.createPhoneNumber({ number: req.body.phone || '' }));
       }
 
-      // Add address
       if (req.body.address) {
-        queries.push(userObj.createAddress({ value: req.body.address || '' }, { transaction: t }));
+        queries.push(user.createAddress({ value: req.body.address || '' }));
       }
 
-      // Add family members
       if (req.body.members) {
-        req.body.members.forEach((member) => {
-          queries.push(db.User.addMember(member, userObj, t));
+        req.body.members.forEach(member => {
+          queries.push(db.User.addMember(member, user));
         });
       }
 
       return Promise.all(queries);
-    });
-  })
-  .then(() => {
-    const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
-      'paymentId', 'activationKey', 'resetPasswordKey', 'isDeleted'];
+    })
+    .then(([user]) => {
+      const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
+        'paymentId', 'activationKey', 'resetPasswordKey', 'isDeleted'];
 
-    res
-    .status(HTTPStatus.CREATED)
-    .json({ data: [_.omit(userObj.toJSON(), excludedKeys)] });
-  })
-  .catch((errors) => {
-    // Delete the user object that was created
-    db.User.destroy({
-      where: { id: userObj.id }
-    }).then(() => {
-      stripe.deleteCustomer(customerId)
-      .then(() => {
-        if (isPlainObject(errors)) {
-          return next(new BadRequestError(errors));
-        }
+      res
+        .status(HTTPStatus.CREATED)
+        .json({ data: [_.omit(user, excludedKeys)] });
+    })
+    .catch((errors) => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
+      }
 
-        return next(errors);
-      });
+      return next(errors);
     });
-  });
 }
 
-/**
- * Registers a new dentist user account
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
+
 function dentistUserSignup(req, res, next) {
-  req.checkBody('user.confirmPassword', 'Password does not match').equals(req.body.user.password);
-  req.checkBody('user.confirmEmail', 'Email does not match').equals(req.body.user.email);
+  const entireBody = req.body;
+  req.body = entireBody.user;
+  req.checkBody(DENTIST_USER_REGISTRATION);
+  req.checkBody('confirmPassword', 'Password do not match').equals(req.body.password);
+  req.checkBody('confirmEmail', 'Email do not match').equals(req.body.email);
+
+  req.body = entireBody;
+
+  // console.log(entireBody);
 
   req
-  .asyncValidationErrors(true)
-  .then(() => {
-    db.sequelize.transaction((t) => {
+    .asyncValidationErrors(true)
+    .then(() => {
       const user = _.omit(req.body.user, ['phone']);
       user.type = 'dentist';
       user.dentistSpecialtyId = req.body.user.specialtyId;
 
       return new Promise((resolve, reject) => {
-        // User reg is not part of the transaction
         db.User.register(user, user.password, (registerError, createdUser) => {
           if (registerError) {
             reject(registerError);
           } else {
             resolve(createdUser);
-            // Create the Dentist Office record
             createDentistInfo(createdUser, req.body);
-            Mailer.activationRequestEmail(res, createdUser);
+            res.mailer.send('auth/dentist/activation_required', {
+              to: user.email,
+              subject: EMAIL_SUBJECTS.client.activation_required,
+              site: process.env.SITE,
+              user: createdUser,
+            }, (err, info) => {
+              if (err) {
+                console.log(err);
+              }
+
+              if (process.env.NODE_ENV === 'development') {
+                console.log(info);
+              }
+            });
           }
         });
-      })
-      .then(userObj => (
-        Promise.all([
-          userObj.createPhoneNumber({ number: req.body.user.phone }, { transaction: t }),
-          // This should be created so we can edit values
-          userObj.createAddress({ value: '' }, { transaction: t }),
-        ])
-      ));
+      });
     })
+    .then((user) => (
+      Promise.all([
+        user.createPhoneNumber({ number: req.body.user.phone }),
+        // This should be created so we can edit values
+        user.createAddress({ value: '' }),
+      ])
+    ))
     .then(() => {
       res
-      .status(HTTPStatus.CREATED)
-      .json({});
-    });
-  })
-  .catch((errors) => {
-    if (isPlainObject(errors)) {
-      return next(new BadRequestError(errors));
-    }
+        .status(HTTPStatus.CREATED)
+        .json({});
+    })
+    .catch((errors) => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
+      }
 
-    return next(errors);
-  });
+      return next(errors);
+    });
 }
 
-/**
- * Activates a user account
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
+
 function activate(req, res, next) {
   db.User.find({ where: { activationKey: req.params.key } })
-  .then((user) => {
-    if (user) {
-      // Activate the User Account
-      user
-      .update({ verified: true, activationKey: null })
-      .then(() => Mailer.activationCompleteEmail(res, user))
-      .then(() => {
-        res.json({});
-      });
-    }
+    .then((user) => {
+      if (user) {
+        // activate it
+        return user
+          .update({ verified: true, activationKey: null })
+          .then(() => {
+            res.mailer.send('auth/activation_complete', {
+              to: user.email,
+              subject: EMAIL_SUBJECTS.activation_complete,
+              site: process.env.SITE,
+              user,
+            }, (err, info) => {
+              if (err) {
+                console.log(err);
+              }
 
-    return next(new NotFoundError());
-  })
-  .catch((errors) => {
-    next(errors);
-  });
+              if (process.env.NODE_ENV === 'development') {
+                console.log(info);
+              }
+            });
+
+            res.json({});
+          });
+      }
+
+      return next(new NotFoundError());
+    })
+    .catch((errors) => {
+      next(errors);
+    });
 }
 
-/**
- * Attempts to login as a user account and provide a session token
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
+
 function login(req, res, next) {
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err) {
@@ -313,9 +338,9 @@ function login(req, res, next) {
 /**
  * Attempts to login as an administrator
  *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
+ * @param {Object} req - the express request object
+ * @param {Object} res - the express response object
+ * @param {Function} next - call to begin the next phase of the filter chain
  */
 function adminLogin(req, res, next) {
   passport.authenticate('local', { session: false }, (err, user, info) => {
@@ -332,11 +357,7 @@ function adminLogin(req, res, next) {
   })(req, res, next);
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
-// ENDPOINTS
-
-const router = new Router({ mergeParams: true });
-
+// Bind with routes
 router
   .route('/login')
   .post(login);
@@ -348,24 +369,33 @@ router
 router
   .route('/logout')
   .get((req, res) => {
-    req.logout();
-    res.json();
+    res.end();
   });
 
 router
   .route('/signup')
-  .post(
-    validateBody(NORMAL_USER_REGISTRATION),
-    normalUserSignup);
+  .post(normalUserSignup);
+
+// router
+//   .route('/complete-signup')
+//   .post(
+//     passport.authenticate('jwt', { session: false }),
+//     completeNormalUserSignup);
 
 router
   .route('/dentist-signup')
-  .post(
-    validateBody(DENTIST_USER_REGISTRATION, body => body.user),
-    dentistUserSignup);
+  .post(dentistUserSignup);
 
 router
   .route('/activate/:key')
   .get(activate);
 
-export default router;
+
+module.exports = {
+  auth: router,
+  login,
+  logout: (req, res) => res.end(),
+  signup: normalUserSignup,
+  dentistUserSignup,
+  activate
+};

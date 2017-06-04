@@ -1,23 +1,14 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    Promise.resolve()
-    .then(() => (
-      queryInterface.sequelize.query('ALTER TABLE "membershipItems" ALTER COLUMN "pricingCode" SET DATA TYPE integer USING "pricingCode"::integer;')
-    ))
-    .then(() => (
-      queryInterface.changeColumn(
-        'membershipItems',
-        'pricingCode',
-        {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-          references: {
-            model: 'priceCodes',
-            key: 'id'
-          }
-        }
-      )
-    ))
+    return queryInterface.sequelize.query(
+      `
+      ALTER TABLE "membershipItems"
+        ALTER COLUMN "pricingCode" TYPE INT USING "pricingCode"::INT,
+        ALTER COLUMN "pricingCode" SET NOT NULL,
+        ADD CONSTRAINT "fk__membershipItems_pricingCode"
+          FOREIGN KEY ("pricingCode") REFERENCES "priceCodes" (id);
+      `
+    );
   },
 
   down: (queryInterface, Sequelize) => {

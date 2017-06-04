@@ -1,36 +1,20 @@
-// ────────────────────────────────────────────────────────────────────────────────
-// MODULES
-
 import { Router } from 'express';
+import _ from 'lodash';
 
 import db from '../../models';
 
-// ────────────────────────────────────────────────────────────────────────────────
-// ROUTER
 
-/**
- * Gets a list of dentist specialties
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - express next middleware
- */
+const router = new Router({ mergeParams: true });
+
+
 function getDentistSpecialties(req, res, next) {
-  return db.DentistSpecialty.findAll({
-    attributes: {
-      exclude: ['createdAt', 'updatedAt']
-    },
-  }).then(specialties =>
+  return db.DentistSpecialty.findAll({ raw: true }).then((specialties) =>
     res.json({ data: specialties || [] })
   ).catch((error) => {
     next(error);
   });
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
-// ROUTER ENDPOINTS
-
-const router = new Router({ mergeParams: true });
 
 router
   .route('/')
@@ -38,3 +22,4 @@ router
 
 
 export default router;
+

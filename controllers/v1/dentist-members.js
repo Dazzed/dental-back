@@ -1,56 +1,53 @@
-// ────────────────────────────────────────────────────────────────────────────────
-// MODULES
-
 import { Router } from 'express';
+import passport from 'passport';
 
 import db from '../../models';
-
 import {
-  userRequired,
-  dentistRequired,
+  adminRequired,
 } from '../middlewares';
 
 import {
-  BadRequestError,
+  NotFoundError
 } from '../errors';
 
-// ────────────────────────────────────────────────────────────────────────────────
-// ROUTER
-
-/**
- * Gets all members subscribed to the dentist whose id is set in params
- *
- * @param {object} req - the express request
- * @param {object} res - the express response
- */
-function getMembers(req, res) {
-  if (req.params.dentistId === 'me') {
-    req.params.dentistId = req.user.get('id');
-  }
-
-  db.User.find({
-    where: { id: req.params.dentistId },
-  })
-  .then((user) => {
-    user.getClients()
-    .then((members) => {
-      res.json({ data: members });
-    })
-    .catch((err) => { throw new Error(err); });
-  })
-  .catch(err => res.json(new BadRequestError(err)));
-}
-
-// ────────────────────────────────────────────────────────────────────────────────
-// ROUTER ENDPOINTS
+const userFieldsExcluded = ['hash', 'salt', 'activationKey',
+  'resetPasswordKey', 'verified', 'authorizeId', 'paymentId'];
 
 const router = new Router({ mergeParams: true });
+
+
+/**
+ * Gets all members subscribed to the dentist whose ID is set in params.
+ */
+function getMembers(req, res, next) {
+  const dentistId = req.params.dentistId;
+
+  db.User.find({
+    attributes: { exclude: userFieldsExcluded },
+    where: {
+      id: dentistId,
+      type: 'dentist'
+    }
+  })
+  .then(dentist => {
+    if (!dentist) {
+      throw new NotFoundError('The dentist account was not found.');
+    }
+
+    return dentist.getClients().then(members => {
+      res.json({ data: members });
+    });
+  })
+  .catch(next);
+}
+
 
 router
   .route('/')
   .get(
-    userRequired,
-    dentistRequired,
+    passport.authenticate('jwt', { session: false }),
+    adminRequired,
     getMembers);
+
 
 export default router;

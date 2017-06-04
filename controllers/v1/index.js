@@ -1,84 +1,52 @@
 import { Router } from 'express';
 
-import { userRequired, adminRequired, injectUser } from '../middlewares';
-import { checkUserDentistPermission } from '../../utils/permissions';
-
-// ────────────────────────────────────────────────────────────────────────────────
-// ROUTER COMPONENTS
-
-import auth from './auth';
-import dentists from './dentists';
-import myDentist from './my-dentist';
-import dentistMembers from './dentist-members';
-import dentistSpecialties from './dentist-specialties';
-import dentistInfo from './dentist-info';
-import members from './members';
+import { auth } from './auth';
+import users from './users';
 import memberships from './memberships';
+import members from './members';
+import services from './services';
+import dentistSpecialties from './dentist-specialties';
 import messages from './messages';
 import notifications from './notifications';
+import { dentists } from './dentists';
+import userDentist from './user-dentist';
 import offices from './offices';
 import pricing from './pricing';
 import reports from './reports';
 import reviews from './reviews';
-import services from './services';
+import dentistMembers from './dentist-members';
 import stats from './stats';
-import users from './users';
 
-// ────────────────────────────────────────────────────────────────────────────────
-// MIDDLEWARE
+// just one to one resources
+import dentistInfo from './dentist-info';
 
 const router = new Router({ mergeParams: true });
 
 router.use('/accounts', auth);
 
-// ────────────────────────────────────────────────────────────────────────────────
-// USER ENDPOINTS
-
-router.use('/users/:userId/account', userRequired, injectUser(), users);
-router.use('/users/:userId/my-dentist', userRequired, checkUserDentistPermission, myDentist);
-router.use('/users/:userId/dentist-info', dentistInfo);
+router.use('/users', users);
 router.use('/users/:userId/members', members);
+router.use('/users/:userId/memberships', memberships);
 router.use('/users/:userId/messages', messages);
 router.use('/users/:userId/notifications', notifications);
-
-// ────────────────────────────────────────────────────────────────────────────────
-// DENTIST ENDPOINTS
-
-// FIXME: Need to break apart the `dentists` routes so as
-// to not interfere with other dentist endpoints
-router.use('/dentists', dentists);
+router.use('/users/:userId', userDentist);
 router.use('/dentists/:dentistId/reviews', reviews);
 router.use('/dentists/:dentistId/members', dentistMembers);
+router.use('/dentists', dentists);
 
-// ────────────────────────────────────────────────────────────────────────────────
-// DENTIST SPECIALTIES
+// just one to one resources
+router.use('/users/:userId/dentist-info', dentistInfo);
 
 router.use('/dentist-specialties', dentistSpecialties);
 
-// ────────────────────────────────────────────────────────────────────────────────
-// PRICING
-
-router.use('/pricing', pricing);
-
-// ────────────────────────────────────────────────────────────────────────────────
-// MEMBERSHIPS
-
-router.use('/memberships', memberships);
-
-// ────────────────────────────────────────────────────────────────────────────────
-// SERVICES
-
-router.use('/services', services);
-
 // root maybe for admin calls? add adminRequired middleware
 // Maybe also add express validators to request type user
-router.use('/admin', userRequired, adminRequired);
-
 router.use('/admin/stats', stats);
-router.use('/admin/dentists/members', members);
-router.use('/admin/dentists/memberships', memberships);
-router.use('/admin/dentists/reports', reports);
-
-router.use('/admin/dentists/offices', offices);
+router.use('/members', members);
+router.use('/memberships', memberships);
+router.use('/services', services);
+router.use('/offices', offices);
+router.use('/pricing', pricing);
+router.use('/reports', reports);
 
 export default router;

@@ -1,6 +1,3 @@
-// ────────────────────────────────────────────────────────────────────────────────
-// MODULES
-
 import passport from 'passport';
 import {
   ExtractJwt,
@@ -9,19 +6,18 @@ import {
 
 import db from '../models';
 
-// ────────────────────────────────────────────────────────────────────────────────
-// PASSPORT
-
 passport.use(db.User.createStrategy());
 
 passport.serializeUser(db.User.serializeUser());
 passport.deserializeUser(db.User.deserializeUser());
+
 
 // Setup options for JWT strategy
 const jwtOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeader(),
   secretOrKey: process.env.JWT_SECRET
 };
+
 
 // Create JWT strategy
 const jwtLogin = new JwtStrategy(jwtOptions, (payload, done) => {
@@ -37,5 +33,6 @@ const jwtLogin = new JwtStrategy(jwtOptions, (payload, done) => {
     done(err);
   });
 });
+
 
 passport.use(jwtLogin);

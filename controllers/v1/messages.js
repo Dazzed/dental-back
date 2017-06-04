@@ -1,7 +1,5 @@
-// ────────────────────────────────────────────────────────────────────────────────
-// MODULES
-
 import { Router } from 'express';
+import passport from 'passport';
 import HTTPStatus from 'http-status';
 
 import db from '../../models';
@@ -12,56 +10,37 @@ import {
 
 import {
   NotFoundError,
+  BadRequestError,
 } from '../errors';
 
-import {
-  userRequired,
-  validateBody,
-} from '../middlewares';
+
+const router = new Router({ mergeParams: true });
 
 
-// ────────────────────────────────────────────────────────────────────────────────
-// ROUTER
-
-/**
- * Prepares a query for finding a user record
- *
- * @param {String} userType - the type of user to look for
- * @param {Number} userId - the id of the user record to find
- * @param {Number} recipientId - the id of the recipient account
- * @returns {Object} - the where clause of the query
- */
-function userQueryHelper(userType, userId, recipientId) {
+function userQueryHelper(userType, userId, recipentId) {
   const where = {};
 
   if (userType === 'client') {
     where.clientId = userId;
-    where.dentistId = recipientId;
+    where.dentistId = recipentId;
   } else if (userType === 'dentist') {
-    where.clientId = recipientId;
+    where.clientId = recipentId;
     where.dentistId = userId;
   }
 
   return where;
 }
 
-/**
- * Counts the number of unread messages that exist
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
- */
 function getUnreadCount(req, res, next) {
   const where = userQueryHelper(
     req.user.get('type'),
     req.user.get('id'),
-    req.params.recipientId
+    req.params.recipentId
   );
 
   db.Conversation
     .find({ where })
-    .then((conversation) => {
+    .then(conversation => {
       if (!conversation) {
         return res.json({
           data: { unread_count: 0 }
@@ -73,10 +52,10 @@ function getUnreadCount(req, res, next) {
           where: {
             isRead: false,
             conversationId: conversation.id,
-            userId: req.params.recipientId,
+            userId: req.params.recipentId,
           }
         })
-        .then((count) => {
+        .then(count => {
           res.json({
             data: { unread_count: count }
           });
@@ -85,37 +64,30 @@ function getUnreadCount(req, res, next) {
     .catch(next);
 }
 
-/**
- * Marks all messages as read
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
- */
 function makeAllRead(req, res, next) {
   const where = userQueryHelper(
     req.user.get('type'),
     req.user.get('id'),
-    req.params.recipientId
+    req.params.recipentId
   );
 
   db.Conversation
     .find({ where })
-    .then((conversation) => {
+    .then(conversation => {
       if (!conversation) {
         return next(new NotFoundError());
       }
 
       return conversation.id;
     })
-    .then((conversationId) => {
+    .then(conversationId => {
       db.Message.update({
         isRead: true
       }, {
         where: {
           isRead: false,
           conversationId,
-          userId: req.params.recipientId,
+          userId: req.params.recipentId,
         }
       })
       .then(() => {
@@ -125,13 +97,6 @@ function makeAllRead(req, res, next) {
     .catch(next);
 }
 
-/**
- * Gets the messages for the user record requested
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
- */
 function getMessages(req, res, next) {
   const query = {
     where: {},
@@ -144,12 +109,12 @@ function getMessages(req, res, next) {
   query.where = userQueryHelper(
     req.user.get('type'),
     req.user.get('id'),
-    req.params.recipientId
+    req.params.recipentId
   );
 
   db.Conversation
     .find(query)
-    .then((conversation) => {
+    .then(conversation => {
       if (!conversation) {
         next(new NotFoundError());
       } else {
@@ -160,23 +125,25 @@ function getMessages(req, res, next) {
     }).catch(next);
 }
 
-/**
- * Adds a new message record
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Object} next - the next middleware function
- */
+
 function addMessage(req, res, next) {
+  req.checkBody(MESSAGE);
+
+  const errors = req.validationErrors(true);
+
+  if (errors) {
+    return next(new BadRequestError(errors));
+  }
+
   const data = userQueryHelper(
     req.user.get('type'),
     req.user.get('id'),
-    req.params.recipientId
+    req.params.recipentId
   );
 
   return db.Conversation
     .find({ where: data })
-    .then((conversation) => {
+    .then(conversation => {
       if (!conversation) {
         return db.Conversation.create(data);
       }
@@ -189,38 +156,33 @@ function addMessage(req, res, next) {
         userId: req.user.get('id'),
       })
     )
-    .then((message) => {
+    .then(message => {
       res.status(HTTPStatus.CREATED);
       res.json(message.toJSON());
     })
     .catch(next);
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
-// ENDPOINTS
-
-const router = new Router({ mergeParams: true });
-
 router
-  .route('/:recipientId/unread_count')
+  .route('/:recipentId/unread_count')
   .get(
-    userRequired,
+    passport.authenticate('jwt', { session: false }),
     getUnreadCount);
 
 router
-  .route('/:recipientId/mark_all_read')
+  .route('/:recipentId/mark_all_read')
   .get(
-    userRequired,
+    passport.authenticate('jwt', { session: false }),
     makeAllRead);
 
 router
-  .route('/:recipientId')
+  .route('/:recipentId')
   .get(
-    userRequired,
+    passport.authenticate('jwt', { session: false }),
     getMessages)
   .post(
-    userRequired,
-    validateBody(MESSAGE),
+    passport.authenticate('jwt', { session: false }),
     addMessage);
+
 
 export default router;

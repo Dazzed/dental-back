@@ -16,51 +16,38 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 
 
 // Main starting point of the application
-const aws = require('aws-sdk');
-const bodyParser = require('body-parser');
 const express = require('express');
-const expressValidator = require('express-validator');
 const http = require('http');
-const mailer = require('express-mailer');
+const bodyParser = require('body-parser');
 const morgan = require('morgan');
-const nunjucks = require('nunjucks');
-const Rollbar = require('rollbar');
 const router = require('./router');
-const swaggerTools = require('swagger-tools');
-
+const expressValidator = require('express-validator');
 const validators = require('./utils/express-validators');
-const swaggerDoc = require('./docs/DentalHQ.json');
+const mailer = require('express-mailer');
+const nunjucks = require('nunjucks');
+const aws = require('aws-sdk');
+const swaggerTools = require('swagger-tools');
+const swaggerDoc = require('./config/swagger.json');
 
 const app = express();
-
-// ────────────────────────────────────────────────────────────────────────────────
-// ADD CORS
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,PATCH,POST,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', '*');
-  // 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, ' +
-  // 'Content-Length, Content-MD5, Content-Type, Date');
+      // 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, ' +
+      // 'Content-Length, Content-MD5, Content-Type, Date');
   res.header('Access-Control-Allow-Credentials', true);
   next();
 });
-
-// ────────────────────────────────────────────────────────────────────────────────
-// ADD ROLLBAR FOR ERROR TRACKING
-
-const rollbar = new Rollbar(process.env.ROLLBAR_API_KEY);
 
 // require models
 require('./models');
 require('csv-express');
 
-// ────────────────────────────────────────────────────────────────────────────────
-// APP SETUP
-
+// App Setup
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(isDevelopment ? 'dev' : 'combined'));
-  app.use(rollbar.errorHandler());
 }
 
 aws.config.update({
