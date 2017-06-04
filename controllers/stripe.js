@@ -133,6 +133,22 @@ export default {
   },
 
   /**
+   * Gets the list of payment methods registered for the user account
+   *
+   * @param {string} customerId - the stripe customer id
+   * @returns {Promise<Card[]>}
+   */
+  getPaymentMethods(customerId) {
+    return new Promise((resolve, reject) => {
+      stripe.customers.listCards(customerId,
+      (err, response) => {
+        if (err) reject(verboseError(err));
+        resolve(response);
+      });
+    });
+  },
+
+  /**
    * Issues a new charge against the customer
    *
    * @param {number} amount - the amount to charge

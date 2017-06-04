@@ -7,9 +7,11 @@ import HTTPStatus from 'http-status';
 import _ from 'lodash';
 
 import db from '../../models';
+import stripe from '../stripe';
 import { EXCLUDE_FIELDS_LIST } from '../../models/user';
+import { CARD_EXCLUDE_FIELDS_LIST } from '../../models/payment-profile';
+
 import {
-  getCreditCardInfo,
   ensureCreditCard,
   chargeAuthorize
 } from '../payments';
@@ -42,6 +44,20 @@ import {
   NotFoundError,
   UnauthorizedError
 } from '../errors';
+
+
+// ────────────────────────────────────────────────────────────────────────────────
+// MIDDLEWARE
+
+/**
+ * Verifies a user account password
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ */
+function verifyPassword(req, res) {
+  res.json({ passwordVerified: req.locals.passwordVerified });
+}
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -265,113 +281,16 @@ function updateAuth(req, res, next) {
  * @param {Object} req - the express request
  * @param {Object} res - the express response
  */
-function getCardInfo(req, res) {
-  // FIXME: Should get card info from Stripe
-  const queries = [
-    db.Subscription.getPendingAmount(req.locals.user.get('id')),
-  ];
-
-  // TODO: Update call to get credit card info
-  if (req.locals.user.get('authorizeId') && req.locals.user.get('paymentId')) {
-    queries.push(
-      getCreditCardInfo(
-        req.locals.user.get('authorizeId'),
-        req.locals.user.get('paymentId')
-      )
-    );
-  }
-
-  Promise.all(queries).then(([{ data }, info]) => {
-    res.json({ data: { info, details: data } });
-  }).catch(err => res.json(new BadRequestError(err)));
-}
-
-// const aws = require('aws-sdk');
-// const multer = require('multer');
-// const multerS3 = require('multer-s3');
-//
-// aws.config.update({
-//   accessKeyId: process.env.S3_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.S3_ACCESS_KEY,
-//   region: process.env.S3_REGION,
-// });
-// const s3 = new aws.S3();
-// const upload = multer({
-//   storage: multerS3({
-//     s3,
-//     bucket: process.env.S3_BUCKET || 'dentalmarket',
-//     contentType: multerS3.AUTO_CONTENT_TYPE,
-//     acl: 'public-read',
-//     metadata(_req, file, cb) {
-//       cb(null, { fieldName: file.fieldname });
-//     },
-//     key(_req, file, cb) {
-//       cb(null, `${new Date().getTime()}.jpg`);
-//     },
-//   }),
-// });
-
-
-// function createS3Bucket(req, res, next) {
-//   s3.createBucket({ Bucket: process.env.S3_BUCKET }, (err) => {
-//     if (err) next(err);
-//     else next();
-//   });
-// }
-//
-// function signS3Upload(req, res) {
-//   const files = req.files.map(file => _.omit(file,
-//     ['metadata', 'storageClass', 'acl', 'etag',
-//       'bucket', 'fieldname', 'encoding', 'contentDisposition']));
-//   res.json({ data: files });
-// }
-
-
-// function signS3(req, res, next) {
-//   const fileName = req.query.file_name;
-//   const fileType = req.query.file_type;
-//   const key = process.env.S3_ACCESS_KEY;
-//
-//   const s3Params = {
-//     Bucket: process.env.S3_BUCKET,
-//     Key: key,
-//     Expires: 60,
-//     ContentType: fileType,
-//     ACL: 'public-read'
-//   };
-//
-//   s3.getSignedUrl('putObject', s3Params, (err, data) => {
-//     if (err) {
-//       return next(err);
-//     }
-//     console.log(data);
-//
-//     const location = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${key}`;
-//     const avatar = {
-//       location,
-//       type: fileType,
-//       originalName: fileName,
-//     };
-//
-//     // req.locals.user.update({ avatar });
-//
-//     const returnData = {
-//       signedRequest: data,
-//       avatar,
-//     };
-//
-//     return res.json(returnData);
-//   });
-// }
-
-/**
- * Verifies a user account password
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- */
-function verifyPassword(req, res) {
-  res.json({ passwordVerified: req.locals.passwordVerified });
+function getPaymentSources(req, res) {
+  req.locals.user.getPaymentProfile()
+  .then(profile => stripe.getPaymentMethods(profile.stripeCustomerId))
+  .then((resp) => {
+    let cards = resp.data;
+    // Clean the cards objects
+    cards = cards.map(c => _(c).omit(CARD_EXCLUDE_FIELDS_LIST));
+    res.json(cards);
+  })
+  .catch(err => res.json(new BadRequestError(err)));
 }
 
 /**
@@ -469,8 +388,8 @@ router
     verifyPassword);
 
 router
-  .route('/credit-card')
-  .get(getCardInfo);
+  .route('/payment-details')
+  .get(getPaymentSources);
 
 router
   .route('/payments')

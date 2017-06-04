@@ -1,3 +1,5 @@
+export const CARD_EXCLUDE_FIELDS_LIST = ['fingerprint', 'object', 'customer', 'tokenization_method', 'metadata', 'name'];
+
 // ────────────────────────────────────────────────────────────────────────────────
 // MODEL
 

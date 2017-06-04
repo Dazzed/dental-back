@@ -488,7 +488,7 @@ export const instance = {
       primaryAccountHolder: (userId === profile.primaryAccountHolderId),
       stripeCustomerId: profile.stripeCustomerId,
     }));
-  }
+  },
 };
 
 
