@@ -293,69 +293,6 @@ function getPaymentSources(req, res) {
   .catch(err => res.json(new BadRequestError(err)));
 }
 
-/**
- * Submits a request to charge the associated user account record
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
-function makePayment(req, res, next) {
-  // FIXME: completely rebuild this functionality using Stripe
-  ensureCreditCard(req.locals.user, req.body.card).then(user => {
-    db.Subscription.getPendingAmount(user.id).then(data => {
-      if (parseInt(data.total, 10) !== 0) {
-        chargeAuthorize(user.authorizeId, user.paymentId, data).then(() => {
-          req.locals.user.getSubscriptions().then(subscriptions => {
-            Promise.all(subscriptions.map(
-              subscription => subscription.setActive(true)
-            ));
-          });
-
-          // send welcome email to patient.
-          mailer.sendEmail(res.mailer, {
-            template: 'auth/client/welcome',
-            subject: EMAIL_SUBJECTS.client.welcome,
-            user
-          }, {
-            emailBody: patientMessages.welcome.body
-          });
-
-          // send email to patient's dentist.
-          req.locals.user.getMyDentist(true).then(([dentist, rawDentist]) => {
-            mailer.sendEmail(res.mailer, {
-              template: 'dentists/new_patient',
-              subject: EMAIL_SUBJECTS.dentist.new_patient,
-              user: dentist
-            }, {
-              emailBody: dentistMessages.new_patient.body
-            });
-
-            // create a new notification for the dentist about new patient.
-            rawDentist.createNotification({
-              title: dentistMessages.new_patient.title,
-              body: dentistMessages.new_patient.body
-            });
-          });
-
-          // add notification.
-
-          // TODO: keep transaction log and/or implement webhook with Authorize.
-          res.json({
-            data: _.omit(user, ['authorizeId', 'paymentId'])
-          });
-        })
-        .catch(errors => next(errors));
-      } else {
-        res.json({
-          data: _.omit(user, ['authorizeId', 'paymentId'])
-        });
-      }
-    });
-  })
-  .catch(errors => next(errors));
-}
-
 // ────────────────────────────────────────────────────────────────────────────────
 // ENDPOINTS
 
@@ -390,10 +327,5 @@ router
 router
   .route('/payment-details')
   .get(getPaymentSources);
-
-router
-  .route('/payments')
-  .post(makePayment);
-
 
 export default router;
