@@ -1534,11 +1534,11 @@
     "/users/3/account": {
       "get": {
         "description": "TODO: Add Description",
-        "summary": "Get My User Details",
+        "summary": "Get User Details copy",
         "tags": [
-          "Users"
+          "User"
         ],
-        "operationId": "Get My User Details",
+        "operationId": "Get User Details copy",
         "produces": [
           "application/json"
         ],
@@ -1584,7 +1584,7 @@
             },
             "x-testShouldPass": true,
             "x-testEnabled": true,
-            "x-testName": "Get My User Details",
+            "x-testName": "Get User Details copy",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -1599,7 +1599,7 @@
         "description": "TODO: Add Description",
         "summary": "Update User",
         "tags": [
-          "Users"
+          "User"
         ],
         "operationId": "Update User",
         "produces": [
@@ -1672,7 +1672,7 @@
         "description": "TODO: Add Description",
         "summary": "Delete User",
         "tags": [
-          "Users"
+          "User"
         ],
         "operationId": "Delete User",
         "produces": [
@@ -1732,87 +1732,12 @@
         }
       }
     },
-    "/users/3/account/change-auth": {
-      "put": {
-        "description": "TODO: Add Description",
-        "summary": "Change My Password",
-        "tags": [
-          "Users"
-        ],
-        "operationId": "Change My Password",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/ChangeMyPasswordrequest"
-            }
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "PUT",
-              "uri": "/users/3/account/change-auth",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2MjkyNTQ5fQ.dV7SMto3FCQkVqyLnOF0Y7uryrzx4Qrb6IyPEj_SdHI"
-              },
-              "body": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"newEmail\": \"\"\n}"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Change My Password",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
     "/users/3/account/patients/2": {
       "put": {
         "description": "TODO: Add Description",
         "summary": "Update Patient",
         "tags": [
-          "Users"
+          "User"
         ],
         "operationId": "Update Patient",
         "produces": [
@@ -1887,7 +1812,7 @@
         "description": "TODO: Add Description",
         "summary": "Verify Password",
         "tags": [
-          "Users"
+          "User"
         ],
         "operationId": "Verify Password",
         "produces": [
@@ -1957,14 +1882,89 @@
         }
       }
     },
-    "/users/3/account/payment-details": {
+    "/users/3/account/change-auth": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Change My Password",
+        "tags": [
+          "User"
+        ],
+        "operationId": "Change My Password",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/ChangeMyPasswordrequest"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/users/3/account/change-auth",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2MjkyNTQ5fQ.dV7SMto3FCQkVqyLnOF0Y7uryrzx4Qrb6IyPEj_SdHI"
+              },
+              "body": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"newEmail\": \"\"\n}"
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Change My Password",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/users/3/account/payment/sources": {
       "get": {
         "description": "TODO: Add Description",
-        "summary": "Get Payment Details",
+        "summary": "Get Payment Detail(s)",
         "tags": [
-          "Users"
+          "User"
         ],
-        "operationId": "Get Payment Details",
+        "operationId": "Get Payment Detail(s)",
         "produces": [
           "application/json"
         ],
@@ -1994,7 +1994,7 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/users/3/account/payment-details",
+              "uri": "/users/3/account/payment/sources",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2MjkyNTQ5fQ.dV7SMto3FCQkVqyLnOF0Y7uryrzx4Qrb6IyPEj_SdHI"
@@ -2010,7 +2010,7 @@
             },
             "x-testShouldPass": true,
             "x-testEnabled": true,
-            "x-testName": "Get Payment Details",
+            "x-testName": "Get Payment Detail(s)",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -2022,27 +2022,18 @@
         }
       }
     },
-    "/users/3/charge-bill": {
+    "/users/3/account/payment/sources/tok_1ANaQBECJr7ZmBNOmCns5MMZ": {
       "post": {
         "description": "TODO: Add Description",
-        "summary": "Charge Bill",
+        "summary": "Add Payment Source",
         "tags": [
-          "Users"
+          "User"
         ],
-        "operationId": "Charge Bill",
+        "operationId": "Add Payment Source",
         "produces": [
           "application/json"
         ],
         "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/ChargeBillrequest"
-            }
-          },
           {
             "name": "Content-Type",
             "in": "header",
@@ -2068,12 +2059,11 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/users/3/charge-bill",
+              "uri": "/users/3/account/payment/sources/tok_1ANaQBECJr7ZmBNOmCns5MMZ",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2MjkyNTQ5fQ.dV7SMto3FCQkVqyLnOF0Y7uryrzx4Qrb6IyPEj_SdHI"
-              },
-              "body": "{\n\t\"card\": \"\"\n}"
+              }
             },
             "expectedResponse": {
               "x-allowExtraHeaders": true,
@@ -2085,7 +2075,7 @@
             },
             "x-testShouldPass": true,
             "x-testEnabled": true,
-            "x-testName": "Charge Bill",
+            "x-testName": "Add Payment Source",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -2097,27 +2087,18 @@
         }
       }
     },
-    "/users/3/payments": {
-      "post": {
+    "/users/3/account/payment/sources/card_1ANaQBECJr7ZmBNOsmpRAqMy": {
+      "delete": {
         "description": "TODO: Add Description",
-        "summary": "Make Payment",
+        "summary": "Delete Payment Source",
         "tags": [
-          "Users"
+          "User"
         ],
-        "operationId": "Make Payment",
+        "operationId": "Delete Payment Source",
         "produces": [
           "application/json"
         ],
         "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/MakePaymentrequest"
-            }
-          },
           {
             "name": "Content-Type",
             "in": "header",
@@ -2142,13 +2123,12 @@
         "x-unitTests": [
           {
             "request": {
-              "method": "POST",
-              "uri": "/users/3/payments",
+              "method": "DELETE",
+              "uri": "/users/3/account/payment/sources/card_1ANaQBECJr7ZmBNOsmpRAqMy",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2MjkyNTQ5fQ.dV7SMto3FCQkVqyLnOF0Y7uryrzx4Qrb6IyPEj_SdHI"
-              },
-              "body": "{\n\t\"card\": \"\"\n}"
+              }
             },
             "expectedResponse": {
               "x-allowExtraHeaders": true,
@@ -2160,7 +2140,72 @@
             },
             "x-testShouldPass": true,
             "x-testEnabled": true,
-            "x-testName": "Make Payment",
+            "x-testName": "Delete Payment Source",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/users/3/account/payment/sources/card_1AQfPqECJr7ZmBNObXqRiBrO/default": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Set Default Payment Source",
+        "tags": [
+          "User"
+        ],
+        "operationId": "Set Default Payment Source",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/users/3/account/payment/sources/card_1AQfPqECJr7ZmBNObXqRiBrO/default",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2MjkyNTQ5fQ.dV7SMto3FCQkVqyLnOF0Y7uryrzx4Qrb6IyPEj_SdHI"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Set Default Payment Source",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -4388,29 +4433,6 @@
         "contactMethod"
       ]
     },
-    "ChangeMyPasswordrequest": {
-      "title": "Change My PasswordRequest",
-      "type": "object",
-      "properties": {
-        "oldPassword": {
-          "description": "",
-          "type": "string"
-        },
-        "newPassword": {
-          "description": "",
-          "type": "string"
-        },
-        "newEmail": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "oldPassword",
-        "newPassword",
-        "newEmail"
-      ]
-    },
     "UpdatePatientrequest": {
       "title": "Update PatientRequest",
       "type": "object",
@@ -4462,30 +4484,27 @@
         "oldPassword"
       ]
     },
-    "ChargeBillrequest": {
-      "title": "Charge BillRequest",
+    "ChangeMyPasswordrequest": {
+      "title": "Change My PasswordRequest",
       "type": "object",
       "properties": {
-        "card": {
+        "oldPassword": {
+          "description": "",
+          "type": "string"
+        },
+        "newPassword": {
+          "description": "",
+          "type": "string"
+        },
+        "newEmail": {
           "description": "",
           "type": "string"
         }
       },
       "required": [
-        "card"
-      ]
-    },
-    "MakePaymentrequest": {
-      "title": "Make PaymentRequest",
-      "type": "object",
-      "properties": {
-        "card": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "card"
+        "oldPassword",
+        "newPassword",
+        "newEmail"
       ]
     },
     "UpdateMemberrequest": {
@@ -4616,10 +4635,10 @@
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/User27"
+          "$ref": "#/definitions/User25"
         },
         "officeInfo": {
-          "$ref": "#/definitions/OfficeInfo28"
+          "$ref": "#/definitions/OfficeInfo26"
         },
         "officeImages": {
           "description": "",
@@ -4629,7 +4648,7 @@
           }
         },
         "pricing": {
-          "$ref": "#/definitions/Pricing29"
+          "$ref": "#/definitions/Pricing27"
         },
         "workingHours": {
           "description": "",
@@ -4663,8 +4682,8 @@
         "childMembership"
       ]
     },
-    "User27": {
-      "title": "User27",
+    "User25": {
+      "title": "User25",
       "type": "object",
       "properties": {
         "firstName": {
@@ -4696,8 +4715,8 @@
         "specialtyId"
       ]
     },
-    "OfficeInfo28": {
-      "title": "OfficeInfo28",
+    "OfficeInfo26": {
+      "title": "OfficeInfo26",
       "type": "object",
       "properties": {
         "officeName": {
@@ -4759,8 +4778,8 @@
         "marketplaceOptIn"
       ]
     },
-    "Pricing29": {
-      "title": "Pricing29",
+    "Pricing27": {
+      "title": "Pricing27",
       "type": "object",
       "properties": {
         "codes": {
