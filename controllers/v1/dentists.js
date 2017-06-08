@@ -14,11 +14,15 @@ import { fetchDentist } from '../../orm-methods/dentists';
 
 import {
   userRequired,
+  dentistRequired,
   injectSubscribedPatient,
   validateBody,
 } from '../middlewares';
 
 import db from '../../models';
+
+import stripe from '../stripe';
+
 import { mailer } from '../../services/mailer';
 
 import {
@@ -351,25 +355,36 @@ function waiveCancellationFee(req, res) {
  * @param {Object} res - express response
  */
 function updatePatientCard(req, res) {
-  Promise.resolve()
-  .then(() => {
-    const body = _.pick(req.body, [
-      'periodontalDiseaseWaiver',
-      'cancellationFeeWaiver',
-      'reEnrollmentFeeWaiver',
-      'termsAndConditions'
-    ]);
+  let patient = req.locals.client;
+  // let dentist = req.user;
 
-    if (!req.locals.client.get('waiverCreatedAt')) {
-      body.waiverCreatedAt = new Date();
+  patient.getPaymentProfile()
+  .then((paymentProfile) => {
+    if(!paymentProfile.primaryAccountHolder) {
+      return res.json(new BadRequestError('Cannot update the card of a non-primary account holder patient.'));
     }
 
-    return req.locals.client.update(body);
-  })
-  .then(() => {
-    const client = req.locals.client.toJSON();
-    res.json({ data: client });
-  }).catch(err => res.json(new BadRequestError(err)));
+    return stripe.updateCustomer(paymentProfile.stripeCustomerId, {
+      source: req.body.stripeToken
+    })
+    .then(() => {
+      let patientUpdate = _.pick(req.body, [
+        'periodontalDiseaseWaiver',
+        'cancellationFeeWaiver',
+        'reEnrollmentFeeWaiver',
+        'termsAndConditions'
+      ]);
+
+      if(!patient.get('waiverCreatedAt')) {
+        patientUpdate.waiverCreatedAt = new Date();
+      }
+
+      patient.update(patientUpdate)
+      .then(() => {
+        return res.json({ data : patient.get({plain: true}) });
+      });
+    });
+  });
 }
 
 /**
@@ -434,6 +449,7 @@ router
   .route('/patients/:patientId/update-card')
   .put(
     userRequired,
+    dentistRequired,
     validateBody(PATIENT_CARD_UPDATE),
     injectSubscribedPatient(),
     // TODO: removed since Stripe.js handles card auth

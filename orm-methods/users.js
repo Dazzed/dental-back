@@ -485,7 +485,7 @@ export const instance = {
     // 2. Get the payment profile
     .then(sub => db.PaymentProfile.find({ where: { id: sub.paymentProfileId } }))
     .then(profile => ({
-      primaryAccountHolder: (userId === profile.primaryAccountHolderId),
+      primaryAccountHolder: (userId === profile.primaryAccountHolder),
       stripeCustomerId: profile.stripeCustomerId,
     }));
   },
