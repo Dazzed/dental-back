@@ -455,7 +455,7 @@
         }
       }
     },
-    "/dentists": {
+    "/dentists/details/all": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "List all dentists",
@@ -492,7 +492,7 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/dentists",
+              "uri": "/dentists/details/all",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -798,7 +798,7 @@
         }
       }
     },
-    "/users/1/dentist": {
+    "/dentists/details/1": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Dentist Info",
@@ -835,7 +835,7 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/users/1/dentist",
+              "uri": "/dentists/details/1",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -863,7 +863,7 @@
         }
       }
     },
-    "/dentists/1/no-auth": {
+    "/dentists/details/1/no-auth": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Dentist - No Auth",
@@ -900,7 +900,7 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/dentists/1/no-auth",
+              "uri": "/dentists/details/1/no-auth",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -1271,7 +1271,7 @@
         }
       }
     },
-    "/admin/memberships/1": {
+    "/admin/memberships/2": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Membership",
@@ -1308,7 +1308,7 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/admin/memberships/1",
+              "uri": "/admin/memberships/2",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -1390,6 +1390,136 @@
             "x-testShouldPass": true,
             "x-testEnabled": true,
             "x-testName": "List Dentist Offices",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/admin/dentists/patients/2/toggle-cancellation-waiver": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Toggle Cancellation Fee Waiver",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "Toggle Cancellation Fee Waiver",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/admin/dentists/patients/2/toggle-cancellation-waiver",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Toggle Cancellation Fee Waiver",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/admin/dentists/patients/2/toggle-reenrollment-waiver": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Toggle Re-Enrollment Fee Waiver",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "Toggle Re-Enrollment Fee Waiver",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/admin/dentists/patients/2/toggle-reenrollment-waiver",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Toggle Re-Enrollment Fee Waiver",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -2282,7 +2412,7 @@
         }
       }
     },
-    "/members/2": {
+    "/members/3": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Member",
@@ -2319,7 +2449,7 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/members/2",
+              "uri": "/members/3",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -2391,7 +2521,7 @@
           {
             "request": {
               "method": "PUT",
-              "uri": "/members/2",
+              "uri": "/members/3",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -2455,7 +2585,7 @@
           {
             "request": {
               "method": "DELETE",
-              "uri": "/members/2",
+              "uri": "/members/3",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -3366,81 +3496,6 @@
         }
       }
     },
-    "/dentists/patients/2/waive-fees": {
-      "put": {
-        "description": "TODO: Add Description",
-        "summary": "Waive Fees",
-        "tags": [
-          "Patients"
-        ],
-        "operationId": "Waive Fees",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/WaiveFeesrequest"
-            }
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "PUT",
-              "uri": "/dentists/patients/2/waive-fees",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
-              },
-              "body": "{\n\t\"cancellationFee\": \"\",\n\t\"reEnrollmentFee\": \"\"\n}"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Waive Fees",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
     "/users/3/dentist-info/124": {
       "get": {
         "description": "TODO: Add Description",
@@ -3882,7 +3937,7 @@
         }
       }
     },
-    "//dentists/1/subscription/plan/1": {
+    "//dentists/1/subscription/plan/2": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Subscribe to Dentist Plan",
@@ -3919,7 +3974,7 @@
           {
             "request": {
               "method": "POST",
-              "uri": "//dentists/1/subscription/plan/1",
+              "uri": "//dentists/1/subscription/plan/2",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -3947,7 +4002,7 @@
         }
       }
     },
-    "//dentists/1/subscription/members/2/plan/1": {
+    "//dentists/1/subscription/members/3/plan/2": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Subscribe Family Member to Dentist Plan",
@@ -3984,7 +4039,7 @@
           {
             "request": {
               "method": "POST",
-              "uri": "//dentists/1/subscription/members/2/plan/1",
+              "uri": "//dentists/1/subscription/members/3/plan/2",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -4012,7 +4067,7 @@
         }
       }
     },
-    "//dentists/1/subscription//plan/1/user/3": {
+    "//dentists/1/subscription//plan/2/user/3": {
       "put": {
         "description": "TODO: Add Description",
         "summary": "Change Plan from existing Dentist",
@@ -4049,7 +4104,7 @@
           {
             "request": {
               "method": "PUT",
-              "uri": "//dentists/1/subscription//plan/1/user/3",
+              "uri": "//dentists/1/subscription//plan/2/user/3",
               "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
@@ -4066,6 +4121,327 @@
             "x-testShouldPass": true,
             "x-testEnabled": true,
             "x-testName": "Change Plan from existing Dentist",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "//dentists/1/subscription/plan": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get My Subscription Details",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Get My Subscription Details",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "//dentists/1/subscription/plan",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get My Subscription Details",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      },
+      "delete": {
+        "description": "TODO: Add Description",
+        "summary": "Cancel My Subscription",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Cancel My Subscription",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "DELETE",
+              "uri": "//dentists/1/subscription/plan",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Cancel My Subscription",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "//dentists/1/subscription/members/3/plan": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get Member's Subscription Details",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Get Member's Subscription Details",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "//dentists/1/subscription/members/3/plan",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get Member's Subscription Details",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      },
+      "delete": {
+        "description": "TODO: Add Description",
+        "summary": "Cancel Member's Subscription copy",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Cancel Member's Subscription copy",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "DELETE",
+              "uri": "//dentists/1/subscription/members/3/plan",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Cancel Member's Subscription copy",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "//dentists/1/subscription/patients/3/toggle-cancellation-waiver": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Toggle Cancellation Fee Waiver",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Toggle Cancellation Fee Waiver1",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "//dentists/1/subscription/patients/3/toggle-cancellation-waiver",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Toggle Cancellation Fee Waiver",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -4825,33 +5201,15 @@
         "termsAndConditions"
       ]
     },
-    "WaiveFeesrequest": {
-      "title": "Waive FeesRequest",
-      "type": "object",
-      "properties": {
-        "cancellationFee": {
-          "description": "",
-          "type": "string"
-        },
-        "reEnrollmentFee": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "cancellationFee",
-        "reEnrollmentFee"
-      ]
-    },
     "UpdateDentistInforequest": {
       "title": "Update Dentist InfoRequest",
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/User26"
+          "$ref": "#/definitions/User25"
         },
         "officeInfo": {
-          "$ref": "#/definitions/OfficeInfo27"
+          "$ref": "#/definitions/OfficeInfo26"
         },
         "officeImages": {
           "description": "",
@@ -4861,7 +5219,7 @@
           }
         },
         "pricing": {
-          "$ref": "#/definitions/Pricing28"
+          "$ref": "#/definitions/Pricing27"
         },
         "workingHours": {
           "description": "",
@@ -4895,8 +5253,8 @@
         "childMembership"
       ]
     },
-    "User26": {
-      "title": "User26",
+    "User25": {
+      "title": "User25",
       "type": "object",
       "properties": {
         "firstName": {
@@ -4928,8 +5286,8 @@
         "specialtyId"
       ]
     },
-    "OfficeInfo27": {
-      "title": "OfficeInfo27",
+    "OfficeInfo26": {
+      "title": "OfficeInfo26",
       "type": "object",
       "properties": {
         "officeName": {
@@ -4991,8 +5349,8 @@
         "marketplaceOptIn"
       ]
     },
-    "Pricing28": {
-      "title": "Pricing28",
+    "Pricing27": {
+      "title": "Pricing27",
       "type": "object",
       "properties": {
         "codes": {
