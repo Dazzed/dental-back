@@ -62,7 +62,7 @@ export default function (sequelize, DataTypes) {
     email: {
       type: DataTypes.STRING,
       unique: true,
-      allowNull: true,
+      allowNull: false,
       validate: { isEmail: true }
     },
     hash: {

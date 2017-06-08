@@ -182,19 +182,21 @@ function normalUserSignup(req, res, next) {
     .json({ data: [_.omit(userObj.toJSON(), excludedKeys)] });
   })
   .catch((errors) => {
-    // Delete the user object that was created
-    db.User.destroy({
-      where: { id: userObj.id }
-    }).then(() => {
-      stripe.deleteCustomer(customerId)
-      .then(() => {
-        if (isPlainObject(errors)) {
-          return next(new BadRequestError(errors));
-        }
+    const done = () => {
+      if (isPlainObject(errors)) {
+        return next(new BadRequestError(errors));
+      }
 
-        return next(errors);
-      });
-    });
+      return next(errors);
+    };
+
+    // Delete the user object that was created
+    return Promise.all([
+      db.User.destroy({
+        where: { id: userObj.id }
+      }),
+      stripe.deleteCustomer(customerId),
+    ]).then(done, done);
   });
 }
 
