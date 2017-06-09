@@ -138,7 +138,7 @@ function updateDentistInfo(req, res, next) {
   .then(() => db.DentistInfo.find(query))
   .then((dentistInfo) => {
     if (dentistInfo == null) {
-      next(new BadRequestError('No dentist info object was found'));
+      return next(new BadRequestError('No dentist info object was found'));
     }
 
     const queries = [];
@@ -151,34 +151,38 @@ function updateDentistInfo(req, res, next) {
     const workingHours = req.body.workingHours;
     const services = req.body.services;
 
-    queries.push(
-      req.user.update({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phone: user.phone,
-        avatar: user.avatar,
-        zipCode: user.zipCode,
-        specialtyId: user.specialtyId
-      })
-    );
+    if (user) {
+      queries.push(
+        req.user.update({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          avatar: user.avatar,
+          zipCode: user.zipCode,
+          specialtyId: user.specialtyId
+        })
+      );
+    }
 
     // update info itself.
-    queries.push(
-      dentistInfo.update({
-        officeName: officeInfo.officeName,
-        url: officeInfo.url,
-        phone: officeInfo.phone,
-        message: officeInfo.message,
-        address: officeInfo.address,
-        city: officeInfo.city,
-        state: officeInfo.state,
-        zipCode: officeInfo.zipCode,
-        logo: officeInfo.logo,
-        acceptsChildren: officeInfo.acceptsChildren,
-        childStartingAge: officeInfo.childStartingAge,
-        marketplaceOptIn: officeInfo.marketplaceOptIn
-      })
-    );
+    if (officeInfo) {
+      queries.push(
+        dentistInfo.update({
+          officeName: officeInfo.officeName,
+          url: officeInfo.url,
+          phone: officeInfo.phone,
+          message: officeInfo.message,
+          address: officeInfo.address,
+          city: officeInfo.city,
+          state: officeInfo.state,
+          zipCode: officeInfo.zipCode,
+          logo: officeInfo.logo,
+          acceptsChildren: officeInfo.acceptsChildren,
+          childStartingAge: officeInfo.childStartingAge,
+          marketplaceOptIn: officeInfo.marketplaceOptIn
+        })
+      );
+    }
 
     if (pricing) {
       // update pricing codes.
@@ -264,14 +268,38 @@ function updateDentistInfo(req, res, next) {
       });
     }
 
-    return Promise.all(queries);
-  })
-  .then(() => {
-    res.json({});
+    return Promise.all(queries).then(() => res.json({}));
   })
   .catch((err) => {
-    next(new BadRequestError(err));
+    return next(new BadRequestError(err));
   });
+}
+
+/**
+ * Delete a dentist image.
+ */
+function deleteDentistInfoPhoto (req, res, next) {
+  return db.DentistInfo.find({ id: req.params.dentistInfoId })
+    .then((dentistInfo) => {
+      if (!dentistInfo) {
+        return false;
+      }
+
+      return dentistInfo.get('userId') === req.user.get('id');
+    })
+    .then((isDentistOwner) => {
+      if (!isDentistOwner) {
+        return Promise.reject(new ForbiddenError('Not the dentist owner'));
+      }
+
+      return db.DentistInfoPhotos.destroy({
+        where: {
+          id: req.params.dentistInfoPhotoId,
+          dentistInfoId: req.params.dentistInfoId,
+        }
+      }).then((result) => res.json({ result }));
+    })
+    .catch(next);
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -285,6 +313,12 @@ router
     userRequired,
     injectDentistInfo(),
     getDentistInfo);
+
+router
+  .route('/:dentistInfoId/photos/:dentistInfoPhotoId')
+  .delete(
+    userRequired,
+    deleteDentistInfoPhoto);
 
 router
   .route('/:dentistInfoId?')
