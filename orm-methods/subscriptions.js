@@ -1,7 +1,6 @@
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
-import changeFactory from 'change-js';
 import Moment from 'moment';
 
 import db from '../models';
@@ -46,7 +45,6 @@ export const model = {
       where: {
         clientId: userId
       },
-      order: '"createdAt" DESC',
     });
   },
 

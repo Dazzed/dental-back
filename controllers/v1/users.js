@@ -1,3 +1,4 @@
+/* eslint max-len:0 */
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
@@ -12,39 +13,25 @@ import { EXCLUDE_FIELDS_LIST } from '../../models/user';
 import { CARD_EXCLUDE_FIELDS_LIST } from '../../models/payment-profile';
 
 import {
-  ensureCreditCard,
-  chargeAuthorize
-} from '../payments';
-
-import {
+  NEW_EMAIL_VALIDATOR,
+  NEW_PASSWORD_VALIDATOR,
   NORMAL_USER_EDIT,
   PATIENT_EDIT,
-  NEW_EMAIL_VALIDATOR,
-  NEW_PASSWORD_VALIDATOR
+  STRIPE_TOKEN,
 } from '../../utils/schema-validators';
 
 import {
-  EMAIL_SUBJECTS
-} from '../../config/constants';
-
-import {
-  dentistMessages,
-  patientMessages
-} from '../../config/messages';
-
-import {
-  verifyPasswordLocal,
   validateBody,
+  validateParams,
+  validatePaymentManager,
+  verifyPasswordLocal,
 } from '../middlewares';
-
-import { mailer } from '../../services/mailer';
 
 import {
   BadRequestError,
   NotFoundError,
   UnauthorizedError
 } from '../errors';
-
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
@@ -67,8 +54,9 @@ function verifyPassword(req, res) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getUser(req, res) {
+function getUser(req, res, next) {
   let userReq = null;
 
   if (req.locals.user.get('type') === 'dentist') {
@@ -78,13 +66,12 @@ function getUser(req, res) {
     // Get full user
     userReq = req.locals.user.getFullClient();
   } else {
-    res.status(HTTPStatus.BAD_REQUEST);
-    return res.json(new BadRequestError('Requested user is not a valid user type for this call'));
+    return next(new BadRequestError('Requested user is not a valid user type for this call'));
   }
 
   return userReq
   .then(data => res.json({ data }))
-  .catch(err => res.json(new BadRequestError(err)));
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -102,8 +89,9 @@ function deleteUser(req, res) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function updateUser(req, res) {
+function updateUser(req, res, next) {
   // TODO: maybe later add avatar support?? or another endpoint
   // const validator = Object.assign({}, req.locals.user.type === 'client' ?
   //   NORMAL_USER_EDIT : DENTIST_USER_EDIT);
@@ -153,10 +141,10 @@ function updateUser(req, res) {
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
-      return res.json(new BadRequestError(errors));
+      return next(new BadRequestError(errors));
     }
 
-    return res.json(new BadRequestError(errors));
+    return next(new BadRequestError(errors));
   });
 }
 
@@ -165,8 +153,9 @@ function updateUser(req, res) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function updatePatient(req, res) {
+function updatePatient(req, res, next) {
   Promise.resolve()
   .then(() => {
     const body = _.omit(req.body, EXCLUDE_FIELDS_LIST);
@@ -185,7 +174,7 @@ function updatePatient(req, res) {
 
     return db.User.findOne({ where })
     .then((patient) => {
-      if (!patient) return res.json(new NotFoundError());
+      if (!patient) return next(new NotFoundError());
 
       if (patient.get('id') === mainUser.get('id')) {
         phone.set('number', req.body.phone);
@@ -199,14 +188,14 @@ function updatePatient(req, res) {
       ]);
     })
     .then(() => res.json({}))
-    .catch(err => res.json(new BadRequestError(err)));
+    .catch(err => next(new BadRequestError(err)));
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
-      return res.json(new BadRequestError(errors));
+      return next(new BadRequestError(errors));
     }
 
-    return res.json(new BadRequestError(errors));
+    return next(new BadRequestError(errors));
   });
 }
 
@@ -276,21 +265,75 @@ function updateAuth(req, res, next) {
 }
 
 /**
- * Gets the user account payment card info
+ * Gets the payment details for a specific card
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
  */
-function getPaymentSources(req, res) {
+function getPaymentSource(req, res, next) {
   req.locals.user.getPaymentProfile()
-  .then(profile => stripe.getPaymentMethods(profile.stripeCustomerId))
-  .then((resp) => {
-    let cards = resp.data;
-    // Clean the cards objects
-    cards = cards.map(c => _(c).omit(CARD_EXCLUDE_FIELDS_LIST));
-    res.json(cards);
+  .then((profile) => {
+    if (req.params.token) return stripe.getPaymentMethod(profile.stripeCustomerId, req.params.token);
+    return stripe.getPaymentMethods(profile.stripeCustomerId);
   })
-  .catch(err => res.json(new BadRequestError(err)));
+  .then((resp) => {
+    let data = (req.params.token) ? [resp] : resp.data;
+    // Clean the cards objects
+    data = data.map(c => _(c).omit(CARD_EXCLUDE_FIELDS_LIST));
+    res.json({ data });
+  })
+  .catch(err => next(new BadRequestError(err)));
+}
+
+/**
+ * Add a new payment source for the user. Limited to only
+ * the primary account holder or associated dentist record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
+function addPaymentSource(req, res, next) {
+  stripe.addPaymentSource(
+    req.locals.paymentProfile.stripeCustomerId,
+    req.params.token,
+  ).then((card) => {
+    card = _(card).omit(CARD_EXCLUDE_FIELDS_LIST);
+    res.json(card);
+  }).catch(err => next(new BadRequestError(err)));
+}
+
+/**
+ * Sets the user's default payment option
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
+function setDefaultPaymentSource(req, res, next) {
+  stripe.setDefaultPaymentSource(
+    req.locals.paymentProfile.stripeCustomerId,
+    req.params.token,
+  ).then((customer) => {
+    res.json(customer);
+  }).catch(err => next(new BadRequestError(err)));
+}
+
+/**
+ * Add payment source
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
+function deletePaymentSource(req, res, next) {
+  stripe.deletePaymentSource(
+    req.locals.paymentProfile.stripeCustomerId,
+    req.params.token,
+  )
+  .then(() => res.json({}))
+  .catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -325,7 +368,13 @@ router
     verifyPassword);
 
 router
-  .route('/payment-details')
-  .get(getPaymentSources);
+  .route('/payment/sources/:token?')
+  .get(getPaymentSource)
+  .post(validateParams(STRIPE_TOKEN), validatePaymentManager(), addPaymentSource)
+  .delete(validateParams(STRIPE_TOKEN), validatePaymentManager(), deletePaymentSource);
+
+router
+  .route('/payment/sources/:token/default')
+  .put(validateParams(STRIPE_TOKEN), validatePaymentManager(), setDefaultPaymentSource);
 
 export default router;

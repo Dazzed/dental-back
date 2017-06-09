@@ -8,7 +8,7 @@ import db from '../../models';
 import { userRequired, dentistRequired, validateBody } from '../middlewares';
 import { NEW_PRICING_CODE } from '../../utils/schema-validators';
 
-import { ForbiddenError } from '../errors';
+import { BadRequestError, ForbiddenError } from '../errors';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -20,12 +20,13 @@ const VISIBLE_COLUMNS = ['id', 'code', 'description'];
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getPricingCodes(req, res) {
+function getPricingCodes(req, res, next) {
   db.PriceCodes.findAll({}).then((codes) => {
     codes = codes.map(c => _.pick(c, VISIBLE_COLUMNS));
     res.json({ data: codes });
-  }).catch(err => res.json({ data: new ForbiddenError(err) }));
+  }).catch(err => next({ data: new ForbiddenError(err) }));
 }
 
 /**
@@ -33,14 +34,15 @@ function getPricingCodes(req, res) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function savePriceCode(req, res) {
+function savePriceCode(req, res, next) {
   db.PriceCodes.findOrCreate({
     where: req.body,
     returning: true,
   }).then((code) => {
     res.json({ data: _.pick(code.shift(), VISIBLE_COLUMNS) });
-  });
+  }).catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

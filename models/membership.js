@@ -64,7 +64,7 @@ export default function (sequelize, DataTypes) {
         new Promise((resolve) => {
           stripe.createMembershipPlan(
             stripe.createUniqueID(membership.userId, membership.name),
-            membership.price
+            membership.price,
           ).then((plan) => {
             membership.stripePlanId = plan.id;
             resolve();

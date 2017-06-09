@@ -11,6 +11,7 @@ import {
 } from '../../utils/schema-validators';
 
 import {
+  BadRequestError,
   NotFoundError,
 } from '../errors';
 
@@ -60,29 +61,29 @@ function getUnreadCount(req, res, next) {
   );
 
   db.Conversation
-    .find({ where })
-    .then((conversation) => {
-      if (!conversation) {
-        return res.json({
-          data: { unread_count: 0 }
-        });
-      }
+  .find({ where })
+  .then((conversation) => {
+    if (!conversation) {
+      return res.json({
+        data: { unread_count: 0 }
+      });
+    }
 
-      return db.Message
-        .count({
-          where: {
-            isRead: false,
-            conversationId: conversation.id,
-            userId: req.params.recipientId,
-          }
-        })
-        .then((count) => {
-          res.json({
-            data: { unread_count: count }
-          });
+    return db.Message
+      .count({
+        where: {
+          isRead: false,
+          conversationId: conversation.id,
+          userId: req.params.recipientId,
+        }
+      })
+      .then((count) => {
+        res.json({
+          data: { unread_count: count }
         });
-    })
-    .catch(next);
+      });
+  })
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -100,29 +101,29 @@ function makeAllRead(req, res, next) {
   );
 
   db.Conversation
-    .find({ where })
-    .then((conversation) => {
-      if (!conversation) {
-        return next(new NotFoundError());
-      }
+  .find({ where })
+  .then((conversation) => {
+    if (!conversation) {
+      return next(new NotFoundError());
+    }
 
-      return conversation.id;
+    return conversation.id;
+  })
+  .then((conversationId) => {
+    db.Message.update({
+      isRead: true
+    }, {
+      where: {
+        isRead: false,
+        conversationId,
+        userId: req.params.recipientId,
+      }
     })
-    .then((conversationId) => {
-      db.Message.update({
-        isRead: true
-      }, {
-        where: {
-          isRead: false,
-          conversationId,
-          userId: req.params.recipientId,
-        }
-      })
-      .then(() => {
-        res.json({});
-      });
-    })
-    .catch(next);
+    .then(() => {
+      res.json({});
+    });
+  })
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -157,7 +158,7 @@ function getMessages(req, res, next) {
           data: conversation.toJSON()
         });
       }
-    }).catch(next);
+    }).catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -193,7 +194,7 @@ function addMessage(req, res, next) {
       res.status(HTTPStatus.CREATED);
       res.json(message.toJSON());
     })
-    .catch(next);
+    .catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
