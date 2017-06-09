@@ -9,14 +9,8 @@
       "url": "http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT"
     }
   },
-  "host": "example.com",
-  "basePath": "/",
-  "securityDefinitions": {
-    "auth": {
-      "type": "basic",
-      "x-testValue": []
-    }
-  },
+  "host": "localhost:3090",
+  "basePath": "/api/v1",
   "schemes": [
     "http"
   ],
@@ -27,209 +21,14 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/dentists/8/members": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Admin :: Dentist Clients/Members",
-        "tags": [
-          "Admin"
-        ],
-        "operationId": "Admin :: Dentist Clients/Members",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/api/v1/dentists/8/members",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Admin :: Dentist Clients/Members",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/dentists/8/reviews": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Admin :: Get Reviews by Dentist",
-        "tags": [
-          "Admin"
-        ],
-        "operationId": "Admin :: Get Reviews by Dentist",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/api/v1/dentists/8/reviews",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Admin :: Get Reviews by Dentist",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/dentists/8/reviews/3": {
-      "delete": {
-        "description": "TODO: Add Description",
-        "summary": "Admin :: Delete Dentist Review",
-        "tags": [
-          "Admin"
-        ],
-        "operationId": "Admin :: Delete Dentist Review",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "DELETE",
-              "uri": "/api/v1/dentists/8/reviews/3",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Admin :: Delete Dentist Review",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/accounts/login": {
+    "/accounts/login": {
       "post": {
         "description": "TODO: Add Description",
-        "summary": "Login",
+        "summary": "Client Login",
         "tags": [
           "Authorization"
         ],
-        "operationId": "Login",
+        "operationId": "Client Login",
         "produces": [
           "application/json"
         ],
@@ -240,7 +39,7 @@
             "required": true,
             "description": "",
             "schema": {
-              "$ref": "#/definitions/LoginRequest"
+              "$ref": "#/definitions/ClientLoginrequest"
             }
           },
           {
@@ -261,11 +60,11 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/accounts/login",
+              "uri": "/accounts/login",
               "headers": {
                 "Content-Type": "application/json"
               },
-              "body": "{\n\t\"email\": \"vicsstar@hotmail.com\",\n\t\"password\": \"Password123\"\n}"
+              "body": "{\n\t\"email\": \"john.smith@gmail.com\",\n\t\"password\": \"Abc123\"\n}"
             },
             "expectedResponse": {
               "x-allowExtraHeaders": true,
@@ -277,7 +76,7 @@
             },
             "x-testShouldPass": true,
             "x-testEnabled": true,
-            "x-testName": "Login",
+            "x-testName": "Client Login",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -289,7 +88,7 @@
         }
       }
     },
-    "/api/v1/accounts/admin/login": {
+    "/accounts/admin/login": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Admin Login",
@@ -328,7 +127,7 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/accounts/admin/login",
+              "uri": "/accounts/admin/login",
               "headers": {
                 "Content-Type": "application/json"
               },
@@ -356,7 +155,7 @@
         }
       }
     },
-    "/api/v1/accounts/logout": {
+    "/accounts/logout": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Logout",
@@ -386,7 +185,7 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/accounts/logout",
+              "uri": "/accounts/logout",
               "headers": {
                 "Content-Type": "application/json"
               }
@@ -413,7 +212,7 @@
         }
       }
     },
-    "/api/v1/accounts/dentist-signup": {
+    "/accounts/dentist-signup": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Dentists - Signup",
@@ -448,30 +247,7 @@
           }
         },
         "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "POST",
-              "uri": "/api/v1/accounts/dentist-signup",
-              "headers": {
-                "Content-Type": "application/json"
-              },
-              "body": "{\n  \"pricing\": {\n    \"adultYearlyFeeActivated\": true,\n    \"childYearlyFeeActivated\": true,\n    \"codes\": [\n      {\n        \"code\": \"0120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0140\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0150\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0220\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0272\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0274\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"0330\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"1110\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"1120\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"1206\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"2391\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"2392\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"2750\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"3330\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"4341\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"4910\",\n        \"amount\": \"10.00\"\n      },\n      {\n        \"code\": \"7140\",\n        \"amount\": \"10.00\"\n      }\n    ],\n    \"adultMonthlyFee\": \"20.00\",\n    \"childMonthlyFee\": \"15.00\",\n    \"adultYearlyFee\": \"51.00\",\n    \"childYearlyFee\": \"54.00\",\n    \"treatmentDiscount\": \"5\"\n  },\n  \"workingHours\": [\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"monday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"tuesday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"wednesday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"thursday\"\n    },\n    {\n      \"isOpen\": true,\n      \"startAt\": \"09:00:00\",\n      \"endAt\": \"17:00:00\",\n      \"day\": \"friday\"\n    },\n    {\n      \"isOpen\": false,\n      \"day\": \"saturday\"\n    },\n    {\n      \"isOpen\": false,\n      \"day\": \"sunday\"\n    }\n  ],\n  \"user\": {\n    \"firstName\": \"Victor\",\n    \"lastName\": \"Igbokwe\",\n    \"phone\": \"(070) 305-4164\",\n    \"email\": \"vicsstar3@hotmail.com\",\n    \"confirmEmail\": \"vicsstar3@hotmail.com\",\n    \"password\": \"Password123\",\n    \"confirmPassword\": \"Password123\",\n    \"zipCode\": \"23401\",\n    \"specialtyId\": \"2\"\n  },\n  \"officeInfo\": {\n    \"officeName\": \"Hepzibah Dental\",\n    \"email\": \"vic.igbokwe@gmail.com\",\n    \"phone\": \"(070) 305-4164\",\n    \"url\": \"https://hepdentist.com\",\n    \"message\": \"We solve you teeth issues.\",\n    \"address\": \"294, Herbert Macaulay Way, Sabo, Yaba\",\n    \"city\": \"Lagos\",\n    \"state\": \"AZ\",\n    \"zipCode\": \"23401\",\n    \"logo\": \"https://dentalman_uploads.s3.amazonaws.com/72d1d3eb-ffbb-44a2-af2e-92a9d257f836_02NneqJ7MF0Vh_4312.jpg\",\n    \"officeImages\": [],\n    \"acceptsChildren\": true,\n    \"childStartingAge\": \"7\",\n    \"marketplaceOptIn\": true\n  },\n  \"services\": [\n    \"3\",\n    \"8\",\n    \"12\",\n    \"13\",\n    \"14\",\n    \"23\",\n    \"15\",\n    \"21\",\n    \"1\",\n    \"16\",\n    \"10\",\n    \"9\",\n    \"5\",\n    \"4\"\n  ]\n}"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Dentists - Signup",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
+        "x-unitTests": [],
         "x-operation-settings": {
           "CollectParameters": false,
           "AllowDynamicQueryParameters": false,
@@ -480,7 +256,7 @@
         }
       }
     },
-    "/api/v1/accounts/signup": {
+    "/accounts/signup": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "User Signup",
@@ -519,11 +295,11 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/accounts/signup",
+              "uri": "/accounts/signup",
               "headers": {
                 "Content-Type": "application/json"
               },
-              "body": "{\n\t\"email\": \"\",\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"password\": \"\",\n\t\"confirmPassword\": \"\",\n\t\"confirmEmail\": \"\",\n\t\"origin\": \"\"\n}"
+              "body": "{\n\t\"email\": \"john.smith@gmail.com\",\n\t\"confirmEmail\": \"john.smith@gmail.com\",\n\t\"firstName\": \"John\",\n\t\"lastName\": \"Smith\",\n\t\"password\": \"Abc123\",\n\t\"confirmPassword\": \"Abc123\",\n\t\"origin\": \"external\",\n\t\"officeId\": 1, \n\t\"membershipId\": 2\n}"
             },
             "expectedResponse": {
               "x-allowExtraHeaders": true,
@@ -547,7 +323,7 @@
         }
       }
     },
-    "/api/v1/accounts/activate/variable_value": {
+    "/accounts/activate/variable_value": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Activate Account",
@@ -577,7 +353,7 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/accounts/activate/variable_value",
+              "uri": "/accounts/activate/variable_value",
               "headers": {
                 "Content-Type": "application/json"
               }
@@ -604,7 +380,7 @@
         }
       }
     },
-    "/api/v1/dentists/me/contact_support": {
+    "/dentists/3/contact_support": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Contact Support",
@@ -650,10 +426,10 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/dentists/me/contact_support",
+              "uri": "/dentists/3/contact_support",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"name\": \"\",\n\t\"email\": \"\",\n\t\"message\": \"\"\n}"
             },
@@ -679,7 +455,7 @@
         }
       }
     },
-    "/api/v1/dentists": {
+    "/dentists/details/all": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "List all dentists",
@@ -716,10 +492,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/dentists",
+              "uri": "/dentists/details/all",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -744,7 +520,7 @@
         }
       }
     },
-    "/api/v1/dentists/me/2": {
+    "/dentists/3/2": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "List User's Dentists",
@@ -781,10 +557,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/dentists/me/2",
+              "uri": "/dentists/3/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -853,10 +629,10 @@
           {
             "request": {
               "method": "PUT",
-              "uri": "/api/v1/dentists/me/2",
+              "uri": "/dentists/3/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"firstName\": \"\",\n\t\"middleName\": \"\",\n\t\"lastName\": \"\",\n\t\"email\": \"\",\n\t\"phoneNumber\": \"\"\n}"
             },
@@ -882,7 +658,7 @@
         }
       }
     },
-    "/api/v1/dentists/12/members": {
+    "/dentists/1/members": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "List Members",
@@ -919,10 +695,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/dentists/12/members",
+              "uri": "/dentists/1/members",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -947,7 +723,7 @@
         }
       }
     },
-    "/api/v1/dentists/12": {
+    "/dentists/1": {
       "put": {
         "description": "TODO: Add Description",
         "summary": "Update Dentist",
@@ -993,10 +769,10 @@
           {
             "request": {
               "method": "PUT",
-              "uri": "/api/v1/dentists/12",
+              "uri": "/dentists/1",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"middleName\": \"XXX\",\n\t\"phoneNumber\": \"(415) 400-8898\"\n}"
             },
@@ -1022,7 +798,7 @@
         }
       }
     },
-    "/api/v1/users/12/dentist": {
+    "/dentists/details/1": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Dentist Info",
@@ -1059,10 +835,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/users/12/dentist",
+              "uri": "/dentists/details/1",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -1087,7 +863,7 @@
         }
       }
     },
-    "/api/v1/dentists/12/no-auth": {
+    "/dentists/details/1/no-auth": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Dentist - No Auth",
@@ -1124,10 +900,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/dentists/12/no-auth",
+              "uri": "/dentists/details/1/no-auth",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -1152,7 +928,7 @@
         }
       }
     },
-    "/api/v1/users/upload-photos": {
+    "/users/upload-photos": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Photos - Upload",
@@ -1194,7 +970,7 @@
         }
       }
     },
-    "/api/v1/reports/dentist/12/list": {
+    "/reports/dentist/1/list": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "List Report URLs",
@@ -1224,9 +1000,9 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/reports/dentist/12/list",
+              "uri": "/reports/dentist/1/list",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -1251,7 +1027,7 @@
         }
       }
     },
-    "/api/v1/reports/dentist/12/general": {
+    "/reports/dentist/1/general": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Dentist - General",
@@ -1281,9 +1057,9 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/reports/dentist/12/general",
+              "uri": "/reports/dentist/1/general",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -1308,7 +1084,7 @@
         }
       }
     },
-    "/api/v1/reports/dentists/2017/1": {
+    "/reports/dentists/2017/1": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Dentist - Master",
@@ -1338,9 +1114,9 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/reports/dentists/2017/1",
+              "uri": "/reports/dentists/2017/1",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -1365,12 +1141,12 @@
         }
       }
     },
-    "/api/v1/admin/stats/": {
+    "/admin/stats/": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "All stats",
         "tags": [
-          "Admin Stats"
+          "Admin"
         ],
         "operationId": "All stats",
         "produces": [
@@ -1402,10 +1178,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/admin/stats/",
+              "uri": "/admin/stats/",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -1430,7 +1206,332 @@
         }
       }
     },
-    "/api/v1/pricing": {
+    "/admin/memberships": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get Memberships",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "Get Memberships",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/admin/memberships",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get Memberships",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/admin/memberships/2": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get Membership",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "Get Membership",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/admin/memberships/2",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get Membership",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/admin/offices": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "List Dentist Offices",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "List Dentist Offices",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/admin/offices",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "List Dentist Offices",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/admin/dentists/patients/2/toggle-cancellation-waiver": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Toggle Cancellation Fee Waiver",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "Toggle Cancellation Fee Waiver",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/admin/dentists/patients/2/toggle-cancellation-waiver",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Toggle Cancellation Fee Waiver",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/admin/dentists/patients/2/toggle-reenrollment-waiver": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Toggle Re-Enrollment Fee Waiver",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "Toggle Re-Enrollment Fee Waiver",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/admin/dentists/patients/2/toggle-reenrollment-waiver",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Toggle Re-Enrollment Fee Waiver",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/pricing": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "List Price Codes",
@@ -1460,9 +1561,9 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/pricing",
+              "uri": "/pricing",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -1531,10 +1632,10 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/pricing",
+              "uri": "/pricing",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"description\": \"Lorem Ipsum Dolor\",\n\t\"code\": \"0129382\"\n}"
             },
@@ -1560,614 +1661,14 @@
         }
       }
     },
-    "/rest/v1/eventtypes": {
+    "/users/3/account": {
       "get": {
         "description": "TODO: Add Description",
-        "summary": "List Hook Event Types",
+        "summary": "Get User Details copy",
         "tags": [
-          "Webhooks"
+          "User"
         ],
-        "operationId": "List Hook Event Types",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "auth": []
-          }
-        ],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/rest/v1/eventtypes",
-              "headers": {
-                "Authorization": "Basic N3A5d3M5dE1GTjZOOjNVd1czR3JwTDczNmVMM3o="
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "List Hook Event Types",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/rest/v1/webhooks": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "List registered webhooks",
-        "tags": [
-          "Webhooks"
-        ],
-        "operationId": "List registered webhooks",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "auth": []
-          }
-        ],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/rest/v1/webhooks",
-              "headers": {
-                "Authorization": "Basic N3A5d3M5dE1GTjZOOjNVd1czR3JwTDczNmVMM3o=",
-                "Content-Type": "application/json"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "List registered webhooks",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      },
-      "post": {
-        "description": "TODO: Add Description",
-        "summary": "Create new Webhook",
-        "tags": [
-          "Webhooks"
-        ],
-        "operationId": "Create new Webhook",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/CreateNewWebhookrequest"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "auth": []
-          }
-        ],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "POST",
-              "uri": "/rest/v1/webhooks",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "Basic N3A5d3M5dE1GTjZOOjNVd1czR3JwTDczNmVMM3o="
-              },
-              "body": "{\n\t\"url\": \"http://{yourserver.com}/api/webhooks\",\n\t\"eventTypes\": [\n\t\t\"net.authorize.payment.authcapture.created\",\n\t\t\"net.authorize.customer.created\",\n\t\t\"net.authorize.customer.paymentProfile.created\",\n\t\t\"net.authorize.customer.subscription.expiring\"\n\t],\n\t\"status\": \"active\"\n}\n"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Create new Webhook",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/rest/v1/webhooks/{webhookID}": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Get webhook details",
-        "tags": [
-          "Webhooks"
-        ],
-        "operationId": "Get webhook details",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "webhookID",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "auth": []
-          }
-        ],
-        "x-unitTests": [],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      },
-      "put": {
-        "description": "TODO: Add Description",
-        "summary": "Update webhook",
-        "tags": [
-          "Webhooks"
-        ],
-        "operationId": "Update webhook",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/UpdateWebhookrequest"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "webhookID",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "auth": []
-          }
-        ],
-        "x-unitTests": [],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      },
-      "delete": {
-        "description": "TODO: Add Description",
-        "summary": "Delete webhook",
-        "tags": [
-          "Webhooks"
-        ],
-        "operationId": "Delete webhook",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "webhookID",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "auth": []
-          }
-        ],
-        "x-unitTests": [],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/rest/v1/notifications": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Retrieve Notification History",
-        "tags": [
-          "Webhooks"
-        ],
-        "operationId": "Retrieve Notification History",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "from_date",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "format": "date-time",
-            "description": ""
-          },
-          {
-            "name": "to_date",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "format": "date-time",
-            "description": ""
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": true,
-            "type": "integer",
-            "format": "int32",
-            "description": ""
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": true,
-            "type": "integer",
-            "format": "int32",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "auth": []
-          }
-        ],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/rest/v1/notifications?from_date=2017-03-01&to_date=2017-03-13&offset=0&limit=100",
-              "headers": {
-                "Authorization": "Basic N3A5d3M5dE1GTjZOOjNVd1czR3JwTDczNmVMM3o=",
-                "Content-Type": "application/json"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Retrieve Notification History",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/rest/v1/notifications/{notificationID}": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Retrieve specific Notification History",
-        "tags": [
-          "Webhooks"
-        ],
-        "operationId": "Retrieve specific Notification History",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "notificationID",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "auth": []
-          }
-        ],
-        "x-unitTests": [],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/webhooks/authorize": {
-      "post": {
-        "description": "TODO: Add Description",
-        "summary": "Test API Hook",
-        "tags": [
-          "Webhooks"
-        ],
-        "operationId": "Test API Hook",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/TestApiHookrequest"
-            }
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "X-ANET-Signature",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "POST",
-              "uri": "/api/v1/webhooks/authorize",
-              "headers": {
-                "Content-Type": "application/json",
-                "X-ANET-Signature": "nrHd4NcxvsmWN6PUitrdYzF9bWVO88/94fN93nnq7mPWdUNjsMqIzGramnmnMwIimBFjOD2udi+mymiwZuIThw=="
-              },
-              "body": "{\n\t\"notificationId\": \"d0e8e7fe-c3e7-4add-a480-27bc5ce28a18\",\n\t\"eventType\": \"net.authorize.payment.refund.created\",\n\t\"eventDate\": \"2017-03-29T20:48:02.0080095Z\",\n\t\"webhookId\": \"63d6fea2-aa13-4b1d-a204-f5fbc15942b7\",\n\t\"payload\": {\n\t\t\"responseCode\": 1,\n\t\t\"authCode\": \"LZ6I19\",\n\t\t\"avsResponse\": \"Y\",\n\t\t\"authAmount\": 45.00,\n\t\t\"entityName\": \"transaction\",\n\t\t\"id\": \"60020981676\"\n\t}\n}\n"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Test API Hook",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/memberships": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Get Memberships",
-        "tags": [
-          "Memberships"
-        ],
-        "operationId": "Get Memberships",
+        "operationId": "Get User Details copy",
         "produces": [
           "application/json"
         ],
@@ -2197,10 +1698,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/memberships",
+              "uri": "/users/3/account",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -2213,476 +1714,7 @@
             },
             "x-testShouldPass": true,
             "x-testEnabled": true,
-            "x-testName": "Get Memberships",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      },
-      "post": {
-        "description": "TODO: Add Description",
-        "summary": "Add Membership",
-        "tags": [
-          "Memberships"
-        ],
-        "operationId": "Add Membership",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/AddMembershiprequest"
-            }
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "POST",
-              "uri": "/api/v1/memberships",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              },
-              "body": "{\n\t\"name\": \"\",\n\t\"price\": \"\"\n}"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Add Membership",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/memberships/2": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Get Membership",
-        "tags": [
-          "Memberships"
-        ],
-        "operationId": "Get Membership",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/api/v1/memberships/2",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Get Membership",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      },
-      "post": {
-        "description": "TODO: Add Description",
-        "summary": "Update Membership",
-        "tags": [
-          "Memberships"
-        ],
-        "operationId": "Update Membership",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/UpdateMembershiprequest"
-            }
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "POST",
-              "uri": "/api/v1/memberships/2",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              },
-              "body": "{\n\t\"name\": \"\",\n\t\"price\": \"\"\n}"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Update Membership",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      },
-      "delete": {
-        "description": "TODO: Add Description",
-        "summary": "Delete Membership",
-        "tags": [
-          "Memberships"
-        ],
-        "operationId": "Delete Membership",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "DELETE",
-              "uri": "/api/v1/memberships/2",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Delete Membership",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/memberships/cancel/me": {
-      "delete": {
-        "description": "TODO: Add Description",
-        "summary": "Cancel User's Membership",
-        "tags": [
-          "Memberships"
-        ],
-        "operationId": "Cancel User's Membership",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "DELETE",
-              "uri": "/api/v1/memberships/cancel/me",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Cancel User's Membership",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/memberships/deactivate/me": {
-      "delete": {
-        "description": "TODO: Add Description",
-        "summary": "Deactivate User's Membership",
-        "tags": [
-          "Memberships"
-        ],
-        "operationId": "Deactivate User's Membership",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "DELETE",
-              "uri": "/api/v1/memberships/deactivate/me",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Deactivate User's Membership",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/users/me": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Get My User Details",
-        "tags": [
-          "Users"
-        ],
-        "operationId": "Get My User Details",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/api/v1/users/me",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Get My User Details",
+            "x-testName": "Get User Details copy",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -2697,7 +1729,7 @@
         "description": "TODO: Add Description",
         "summary": "Update User",
         "tags": [
-          "Users"
+          "User"
         ],
         "operationId": "Update User",
         "produces": [
@@ -2738,10 +1770,10 @@
           {
             "request": {
               "method": "PUT",
-              "uri": "/api/v1/users/me",
+              "uri": "/users/3/account",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"confirmNewPassword\": \"\",\n\t\"email\": \"\",\n\t\"specialtyId\": \"\",\n\t\"newEmail\": \"\",\n\t\"confirmEmail\": \"\",\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"birthDate\": \"\",\n\t\"phone\": \"\",\n\t\"sex\": \"\",\n\t\"address\": \"\",\n\t\"city\": \"\",\n\t\"state\": \"\",\n\t\"zipCode\": \"\",\n\t\"contactMethod\": \"\"\n}"
             },
@@ -2770,7 +1802,7 @@
         "description": "TODO: Add Description",
         "summary": "Delete User",
         "tags": [
-          "Users"
+          "User"
         ],
         "operationId": "Delete User",
         "produces": [
@@ -2802,10 +1834,10 @@
           {
             "request": {
               "method": "DELETE",
-              "uri": "/api/v1/users/me",
+              "uri": "/users/3/account",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -2830,87 +1862,12 @@
         }
       }
     },
-    "/api/v1/users/me/change-auth": {
-      "put": {
-        "description": "TODO: Add Description",
-        "summary": "Change My Password",
-        "tags": [
-          "Users"
-        ],
-        "operationId": "Change My Password",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/ChangeMyPasswordrequest"
-            }
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "PUT",
-              "uri": "/api/v1/users/me/change-auth",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              },
-              "body": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"newEmail\": \"\"\n}"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Change My Password",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/users/me/patients/2": {
+    "/users/3/account/patients/2": {
       "put": {
         "description": "TODO: Add Description",
         "summary": "Update Patient",
         "tags": [
-          "Users"
+          "User"
         ],
         "operationId": "Update Patient",
         "produces": [
@@ -2951,10 +1908,10 @@
           {
             "request": {
               "method": "PUT",
-              "uri": "/api/v1/users/me/patients/2",
+              "uri": "/users/3/account/patients/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"phone\": \"\",\n\t\"address\": \"\",\n\t\"city\": \"\",\n\t\"state\": \"\",\n\t\"zipCode\": \"\",\n\t\"contactMethod\": \"\"\n}"
             },
@@ -2980,12 +1937,12 @@
         }
       }
     },
-    "/api/v1/users/me/verify-password": {
+    "/users/3/verify-password": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Verify Password",
         "tags": [
-          "Users"
+          "User"
         ],
         "operationId": "Verify Password",
         "produces": [
@@ -3026,10 +1983,10 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/users/me/verify-password",
+              "uri": "/users/3/verify-password",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"oldPassword\": \"\"\n}"
             },
@@ -3055,14 +2012,89 @@
         }
       }
     },
-    "/api/v1/users/me/credit-card": {
+    "/users/3/account/change-auth": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Change My Password",
+        "tags": [
+          "User"
+        ],
+        "operationId": "Change My Password",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/ChangeMyPasswordrequest"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/users/3/account/change-auth",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              },
+              "body": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"newEmail\": \"\"\n}"
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Change My Password",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/users/3/account/payment/sources": {
       "get": {
         "description": "TODO: Add Description",
-        "summary": "Get Credit Card Info",
+        "summary": "Get Payment Detail(s)",
         "tags": [
-          "Users"
+          "User"
         ],
-        "operationId": "Get Credit Card Info",
+        "operationId": "Get Payment Detail(s)",
         "produces": [
           "application/json"
         ],
@@ -3092,10 +2124,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/users/me/credit-card",
+              "uri": "/users/3/account/payment/sources",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3108,7 +2140,7 @@
             },
             "x-testShouldPass": true,
             "x-testEnabled": true,
-            "x-testName": "Get Credit Card Info",
+            "x-testName": "Get Payment Detail(s)",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -3120,92 +2152,18 @@
         }
       }
     },
-    "/api/v1/users/me/pending-amount": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Get Pending Amount",
-        "tags": [
-          "Users"
-        ],
-        "operationId": "Get Pending Amount",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/api/v1/users/me/pending-amount",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Get Pending Amount",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/users/me/charge-bill": {
+    "/users/3/account/payment/sources/tok_1ANaQBECJr7ZmBNOmCns5MMZ": {
       "post": {
         "description": "TODO: Add Description",
-        "summary": "Charge Bill",
+        "summary": "Add Payment Source",
         "tags": [
-          "Users"
+          "User"
         ],
-        "operationId": "Charge Bill",
+        "operationId": "Add Payment Source",
         "produces": [
           "application/json"
         ],
         "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/ChargeBillrequest"
-            }
-          },
           {
             "name": "Content-Type",
             "in": "header",
@@ -3231,12 +2189,11 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/users/me/charge-bill",
+              "uri": "/users/3/account/payment/sources/tok_1ANaQBECJr7ZmBNOmCns5MMZ",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              },
-              "body": "{\n\t\"card\": \"\"\n}"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
             },
             "expectedResponse": {
               "x-allowExtraHeaders": true,
@@ -3248,7 +2205,7 @@
             },
             "x-testShouldPass": true,
             "x-testEnabled": true,
-            "x-testName": "Charge Bill",
+            "x-testName": "Add Payment Source",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -3260,27 +2217,18 @@
         }
       }
     },
-    "/api/v1/users/me/payments": {
-      "post": {
+    "/users/3/account/payment/sources/card_1ANaQBECJr7ZmBNOsmpRAqMy": {
+      "delete": {
         "description": "TODO: Add Description",
-        "summary": "Make Payment",
+        "summary": "Delete Payment Source",
         "tags": [
-          "Users"
+          "User"
         ],
-        "operationId": "Make Payment",
+        "operationId": "Delete Payment Source",
         "produces": [
           "application/json"
         ],
         "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/MakePaymentrequest"
-            }
-          },
           {
             "name": "Content-Type",
             "in": "header",
@@ -3305,13 +2253,12 @@
         "x-unitTests": [
           {
             "request": {
-              "method": "POST",
-              "uri": "/api/v1/users/me/payments",
+              "method": "DELETE",
+              "uri": "/users/3/account/payment/sources/card_1ANaQBECJr7ZmBNOsmpRAqMy",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              },
-              "body": "{\n\t\"card\": \"\"\n}"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
             },
             "expectedResponse": {
               "x-allowExtraHeaders": true,
@@ -3323,7 +2270,7 @@
             },
             "x-testShouldPass": true,
             "x-testEnabled": true,
-            "x-testName": "Make Payment",
+            "x-testName": "Delete Payment Source",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -3335,7 +2282,72 @@
         }
       }
     },
-    "/api/v1/members": {
+    "/users/3/account/payment/sources/card_1AQfPqECJr7ZmBNObXqRiBrO/default": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Set Default Payment Source",
+        "tags": [
+          "User"
+        ],
+        "operationId": "Set Default Payment Source",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/users/3/account/payment/sources/card_1AQfPqECJr7ZmBNObXqRiBrO/default",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Set Default Payment Source",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/members": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Members",
@@ -3372,10 +2384,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/members",
+              "uri": "/members",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3400,7 +2412,7 @@
         }
       }
     },
-    "/api/v1/members/2": {
+    "/members/3": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Member",
@@ -3437,10 +2449,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/members/2",
+              "uri": "/members/3",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3509,10 +2521,10 @@
           {
             "request": {
               "method": "PUT",
-              "uri": "/api/v1/members/2",
+              "uri": "/members/3",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"birthDate\": \"\",\n\t\"sex\": \"\",\n\t\"familyRelationship\": \"\"\n}"
             },
@@ -3573,10 +2585,10 @@
           {
             "request": {
               "method": "DELETE",
-              "uri": "/api/v1/members/2",
+              "uri": "/members/3",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3601,7 +2613,7 @@
         }
       }
     },
-    "/api/v1/users/me/messages/2/unread_count": {
+    "/users/3/messages/2/unread_count": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Unread Count",
@@ -3638,10 +2650,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/users/me/messages/2/unread_count",
+              "uri": "/users/3/messages/2/unread_count",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3666,7 +2678,7 @@
         }
       }
     },
-    "/api/v1/users/me/messages/2/mark_all_read": {
+    "/users/3/messages/2/mark_all_read": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Mark all read",
@@ -3703,10 +2715,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/users/me/messages/2/mark_all_read",
+              "uri": "/users/3/messages/2/mark_all_read",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3731,7 +2743,7 @@
         }
       }
     },
-    "/api/v1/users/me/messages/2": {
+    "/users/3/messages/2": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Messages",
@@ -3768,10 +2780,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/users/me/messages/2",
+              "uri": "/users/3/messages/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3831,10 +2843,10 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/users/me/messages/2",
+              "uri": "/users/3/messages/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3859,7 +2871,7 @@
         }
       }
     },
-    "/api/v1/users/me/notifications": {
+    "/users/3/notifications": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get All Notifications",
@@ -3896,10 +2908,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/users/me/notifications",
+              "uri": "/users/3/notifications",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3924,7 +2936,7 @@
         }
       }
     },
-    "/api/v1/users/me/notifications/unread_count": {
+    "/users/3/notifications/unread_count": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Unread Count",
@@ -3961,10 +2973,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/users/me/notifications/unread_count",
+              "uri": "/users/3/notifications/unread_count",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -3989,7 +3001,7 @@
         }
       }
     },
-    "/api/v1/users/me/notifications/mark_all_read": {
+    "/users/3/notifications/mark_all_read": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Mark all read",
@@ -4026,10 +3038,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/users/me/notifications/mark_all_read",
+              "uri": "/users/3/notifications/mark_all_read",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -4054,7 +3066,7 @@
         }
       }
     },
-    "/api/v1/dentists/12/reviews": {
+    "/dentists/1/reviews": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Reviews",
@@ -4091,10 +3103,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/dentists/12/reviews",
+              "uri": "/dentists/1/reviews",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -4119,7 +3131,7 @@
         }
       }
     },
-    "/api/v1/dentists/me/review": {
+    "/dentists/3/review": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Add Review",
@@ -4165,10 +3177,10 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/dentists/me/review",
+              "uri": "/dentists/3/review",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"message\": \"\"\n}"
             },
@@ -4194,7 +3206,7 @@
         }
       }
     },
-    "/api/v1/dentists/me/review/2": {
+    "/dentists/3/review/2": {
       "put": {
         "description": "TODO: Add Description",
         "summary": "Update Review",
@@ -4240,10 +3252,10 @@
           {
             "request": {
               "method": "PUT",
-              "uri": "/api/v1/dentists/me/review/2",
+              "uri": "/dentists/3/review/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"message\": \"\"\n}"
             },
@@ -4269,7 +3281,7 @@
         }
       }
     },
-    "/api/v1/dentists/12/reviews/2": {
+    "/dentists/1/reviews/2": {
       "delete": {
         "description": "TODO: Add Description",
         "summary": "Delete Review",
@@ -4306,10 +3318,10 @@
           {
             "request": {
               "method": "DELETE",
-              "uri": "/api/v1/dentists/12/reviews/2",
+              "uri": "/dentists/1/reviews/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -4334,7 +3346,7 @@
         }
       }
     },
-    "/api/v1/dentists//me/invite_patient": {
+    "/dentists//3/invite_patient": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Invite Patient",
@@ -4380,10 +3392,10 @@
           {
             "request": {
               "method": "POST",
-              "uri": "/api/v1/dentists//me/invite_patient",
+              "uri": "/dentists//3/invite_patient",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"email\": \"\"\n}"
             },
@@ -4409,7 +3421,7 @@
         }
       }
     },
-    "/api/v1/dentists//me/patients/2/update-card": {
+    "/dentists//3/patients/2/update-card": {
       "put": {
         "description": "TODO: Add Description",
         "summary": "Update Card",
@@ -4455,10 +3467,10 @@
           {
             "request": {
               "method": "PUT",
-              "uri": "/api/v1/dentists//me/patients/2/update-card",
+              "uri": "/dentists//3/patients/2/update-card",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               },
               "body": "{\n\t\"card\": \"\",\n\t\"periodontalDiseaseWaiver\": \"\",\n\t\"cancellationFeeWaiver\": \"\",\n\t\"reEnrollmentFeeWaiver\": \"\",\n\t\"termsAndConditions\": \"\"\n}"
             },
@@ -4484,82 +3496,7 @@
         }
       }
     },
-    "/api/v1/dentists//me/patients/2/waive-fees": {
-      "put": {
-        "description": "TODO: Add Description",
-        "summary": "Waive Fees",
-        "tags": [
-          "Patients"
-        ],
-        "operationId": "Waive Fees",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/WaiveFeesrequest"
-            }
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "PUT",
-              "uri": "/api/v1/dentists//me/patients/2/waive-fees",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              },
-              "body": "{\n\t\"cancellationFee\": \"\",\n\t\"reEnrollmentFee\": \"\"\n}"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Waive Fees",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/api/v1/users/me/dentist-info/": {
+    "/users/3/dentist-info/124": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Dentist Info",
@@ -4596,10 +3533,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/users/me/dentist-info/",
+              "uri": "/users/3/dentist-info/124",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -4622,7 +3559,9 @@
           "AllowDynamicFormParameters": false,
           "IsMultiContentStreaming": false
         }
-      },
+      }
+    },
+    "/users/3/dentist-info/": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Update Dentist Info",
@@ -4664,31 +3603,7 @@
           }
         },
         "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "POST",
-              "uri": "/api/v1/users/me/dentist-info/",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
-              },
-              "body": "{\n\t\"user\": \"\",\n\t\"officeInfo\": \"\",\n\t\"officeImages\": \"\",\n\t\"pricing\": \"\",\n\t\"membership\": \"\",\n\t\"childMembership\": \"\",\n\t\"workingHours\": \"\",\n\t\"services\": \"\"\n}"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Update Dentist Info",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
+        "x-unitTests": [],
         "x-operation-settings": {
           "CollectParameters": false,
           "AllowDynamicQueryParameters": false,
@@ -4697,7 +3612,7 @@
         }
       }
     },
-    "/api/v1/dentist-specialties": {
+    "/dentist-specialties": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Specialties",
@@ -4734,10 +3649,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/dentist-specialties",
+              "uri": "/dentist-specialties",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -4762,7 +3677,7 @@
         }
       }
     },
-    "/api/v1/services": {
+    "/services": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Services",
@@ -4799,10 +3714,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/services",
+              "uri": "/services",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -4827,7 +3742,7 @@
         }
       }
     },
-    "/api/v1/offices": {
+    "/offices": {
       "get": {
         "description": "TODO: Add Description",
         "summary": "Get Offices",
@@ -4864,10 +3779,10 @@
           {
             "request": {
               "method": "GET",
-              "uri": "/api/v1/offices",
+              "uri": "/offices",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTIsImlhdCI6MTQ5NTY2ODQ5N30.loJVGnPlcPfHhJn70kx9EJ-8Hlk0JNOUWizLIi8Qoiw"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
               }
             },
             "expectedResponse": {
@@ -4891,11 +3806,675 @@
           "IsMultiContentStreaming": false
         }
       }
+    },
+    "/users/3/my-dentist": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "My Dentist",
+        "tags": [
+          "User's Dentist"
+        ],
+        "operationId": "My Dentist",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/users/3/my-dentist",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "My Dentist",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/users/3/my-dentist/pending-amount": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get Pending Amount",
+        "tags": [
+          "User's Dentist"
+        ],
+        "operationId": "Get Pending Amount",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/users/3/my-dentist/pending-amount",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get Pending Amount",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "//dentists/1/subscription/plan/2": {
+      "post": {
+        "description": "TODO: Add Description",
+        "summary": "Subscribe to Dentist Plan",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Subscribe to Dentist Plan",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "POST",
+              "uri": "//dentists/1/subscription/plan/2",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Subscribe to Dentist Plan",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "//dentists/1/subscription/members/3/plan/2": {
+      "post": {
+        "description": "TODO: Add Description",
+        "summary": "Subscribe Family Member to Dentist Plan",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Subscribe Family Member to Dentist Plan",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "POST",
+              "uri": "//dentists/1/subscription/members/3/plan/2",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Subscribe Family Member to Dentist Plan",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "//dentists/1/subscription//plan/2/user/3": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Change Plan from existing Dentist",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Change Plan from existing Dentist",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "//dentists/1/subscription//plan/2/user/3",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Change Plan from existing Dentist",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "//dentists/1/subscription/plan": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get My Subscription Details",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Get My Subscription Details",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "//dentists/1/subscription/plan",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get My Subscription Details",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      },
+      "delete": {
+        "description": "TODO: Add Description",
+        "summary": "Cancel My Subscription",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Cancel My Subscription",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "DELETE",
+              "uri": "//dentists/1/subscription/plan",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Cancel My Subscription",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "//dentists/1/subscription/members/3/plan": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get Member's Subscription Details",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Get Member's Subscription Details",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "//dentists/1/subscription/members/3/plan",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get Member's Subscription Details",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      },
+      "delete": {
+        "description": "TODO: Add Description",
+        "summary": "Cancel Member's Subscription copy",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Cancel Member's Subscription copy",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "DELETE",
+              "uri": "//dentists/1/subscription/members/3/plan",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Cancel Member's Subscription copy",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "//dentists/1/subscription/patients/3/toggle-cancellation-waiver": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Toggle Cancellation Fee Waiver",
+        "tags": [
+          "User's Subscription"
+        ],
+        "operationId": "Toggle Cancellation Fee Waiver1",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "//dentists/1/subscription/patients/3/toggle-cancellation-waiver",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Toggle Cancellation Fee Waiver",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
     }
   },
   "definitions": {
-    "LoginRequest": {
-      "title": "LoginRequest",
+    "DentistLoginrequest": {
+      "title": "Dentist LoginRequest",
+      "type": "object",
+      "properties": {
+        "email": {
+          "description": "",
+          "type": "string"
+        },
+        "password": {
+          "description": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ]
+    },
+    "ClientLoginrequest": {
+      "title": "Client LoginRequest",
       "type": "object",
       "properties": {
         "email": {
@@ -4944,6 +4523,9 @@
             "$ref": "#/definitions/WorkingHour"
           }
         },
+        "marketplace": {
+          "$ref": "#/definitions/Marketplace"
+        },
         "user": {
           "$ref": "#/definitions/User"
         },
@@ -4961,6 +4543,7 @@
       "required": [
         "pricing",
         "workingHours",
+        "marketplace",
         "user",
         "officeInfo",
         "services"
@@ -4985,11 +4568,11 @@
             "$ref": "#/definitions/Code"
           }
         },
-        "adultMonthlyFee": {
+        "childMonthlyFee": {
           "description": "",
           "type": "string"
         },
-        "childMonthlyFee": {
+        "adultMonthlyFee": {
           "description": "",
           "type": "string"
         },
@@ -5010,8 +4593,8 @@
         "adultYearlyFeeActivated",
         "childYearlyFeeActivated",
         "codes",
-        "adultMonthlyFee",
         "childMonthlyFee",
+        "adultMonthlyFee",
         "adultYearlyFee",
         "childYearlyFee",
         "treatmentDiscount"
@@ -5023,7 +4606,8 @@
       "properties": {
         "code": {
           "description": "",
-          "type": "string"
+          "type": "integer",
+          "format": "int32"
         },
         "amount": {
           "description": "",
@@ -5059,6 +4643,19 @@
       "required": [
         "isOpen",
         "day"
+      ]
+    },
+    "Marketplace": {
+      "title": "Marketplace",
+      "type": "object",
+      "properties": {
+        "optIn": {
+          "description": "",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "optIn"
       ]
     },
     "User": {
@@ -5146,15 +4743,11 @@
           "description": "",
           "type": "string"
         },
-        "state": {
-          "description": "",
-          "type": "string"
-        },
         "zipCode": {
           "description": "",
           "type": "string"
         },
-        "logo": {
+        "state": {
           "description": "",
           "type": "string"
         },
@@ -5172,10 +4765,6 @@
         "childStartingAge": {
           "description": "",
           "type": "string"
-        },
-        "marketplaceOptIn": {
-          "description": "",
-          "type": "boolean"
         }
       },
       "required": [
@@ -5186,13 +4775,11 @@
         "message",
         "address",
         "city",
-        "state",
         "zipCode",
-        "logo",
+        "state",
         "officeImages",
         "acceptsChildren",
-        "childStartingAge",
-        "marketplaceOptIn"
+        "childStartingAge"
       ]
     },
     "UserSignuprequest": {
@@ -5200,6 +4787,10 @@
       "type": "object",
       "properties": {
         "email": {
+          "description": "",
+          "type": "string"
+        },
+        "confirmEmail": {
           "description": "",
           "type": "string"
         },
@@ -5219,23 +4810,31 @@
           "description": "",
           "type": "string"
         },
-        "confirmEmail": {
-          "description": "",
-          "type": "string"
-        },
         "origin": {
           "description": "",
           "type": "string"
+        },
+        "officeId": {
+          "description": "",
+          "type": "integer",
+          "format": "int32"
+        },
+        "membershipId": {
+          "description": "",
+          "type": "integer",
+          "format": "int32"
         }
       },
       "required": [
         "email",
+        "confirmEmail",
         "firstName",
         "lastName",
         "password",
         "confirmPassword",
-        "confirmEmail",
-        "origin"
+        "origin",
+        "officeId",
+        "membershipId"
       ]
     },
     "ContactSupportrequest": {
@@ -5328,166 +4927,6 @@
       "required": [
         "description",
         "code"
-      ]
-    },
-    "CreateNewWebhookrequest": {
-      "title": "Create new WebhookRequest",
-      "type": "object",
-      "properties": {
-        "url": {
-          "description": "",
-          "type": "string"
-        },
-        "eventTypes": {
-          "description": "",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "status": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "url",
-        "eventTypes",
-        "status"
-      ]
-    },
-    "UpdateWebhookrequest": {
-      "title": "Update webhookRequest",
-      "type": "object",
-      "properties": {
-        "url": {
-          "description": "",
-          "type": "string"
-        },
-        "eventTypes": {
-          "description": "",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "status": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "url",
-        "eventTypes",
-        "status"
-      ]
-    },
-    "TestApiHookrequest": {
-      "title": "Test API HookRequest",
-      "type": "object",
-      "properties": {
-        "notificationId": {
-          "description": "",
-          "type": "string"
-        },
-        "eventType": {
-          "description": "",
-          "type": "string"
-        },
-        "eventDate": {
-          "description": "",
-          "type": "string"
-        },
-        "webhookId": {
-          "description": "",
-          "type": "string"
-        },
-        "payload": {
-          "$ref": "#/definitions/Payload"
-        }
-      },
-      "required": [
-        "notificationId",
-        "eventType",
-        "eventDate",
-        "webhookId",
-        "payload"
-      ]
-    },
-    "Payload": {
-      "title": "Payload",
-      "type": "object",
-      "properties": {
-        "responseCode": {
-          "description": "",
-          "type": "integer",
-          "format": "int32"
-        },
-        "authCode": {
-          "description": "",
-          "type": "string"
-        },
-        "avsResponse": {
-          "description": "",
-          "type": "string"
-        },
-        "authAmount": {
-          "description": "",
-          "type": "number",
-          "format": "double"
-        },
-        "entityName": {
-          "description": "",
-          "type": "string"
-        },
-        "id": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "responseCode",
-        "authCode",
-        "avsResponse",
-        "authAmount",
-        "entityName",
-        "id"
-      ]
-    },
-    "AddMembershiprequest": {
-      "title": "Add MembershipRequest",
-      "type": "object",
-      "properties": {
-        "name": {
-          "description": "",
-          "type": "string"
-        },
-        "price": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "name",
-        "price"
-      ]
-    },
-    "UpdateMembershiprequest": {
-      "title": "Update MembershipRequest",
-      "type": "object",
-      "properties": {
-        "name": {
-          "description": "",
-          "type": "string"
-        },
-        "price": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "name",
-        "price"
       ]
     },
     "UpdateUserrequest": {
@@ -5583,29 +5022,6 @@
         "contactMethod"
       ]
     },
-    "ChangeMyPasswordrequest": {
-      "title": "Change My PasswordRequest",
-      "type": "object",
-      "properties": {
-        "oldPassword": {
-          "description": "",
-          "type": "string"
-        },
-        "newPassword": {
-          "description": "",
-          "type": "string"
-        },
-        "newEmail": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "oldPassword",
-        "newPassword",
-        "newEmail"
-      ]
-    },
     "UpdatePatientrequest": {
       "title": "Update PatientRequest",
       "type": "object",
@@ -5657,30 +5073,27 @@
         "oldPassword"
       ]
     },
-    "ChargeBillrequest": {
-      "title": "Charge BillRequest",
+    "ChangeMyPasswordrequest": {
+      "title": "Change My PasswordRequest",
       "type": "object",
       "properties": {
-        "card": {
+        "oldPassword": {
+          "description": "",
+          "type": "string"
+        },
+        "newPassword": {
+          "description": "",
+          "type": "string"
+        },
+        "newEmail": {
           "description": "",
           "type": "string"
         }
       },
       "required": [
-        "card"
-      ]
-    },
-    "MakePaymentrequest": {
-      "title": "Make PaymentRequest",
-      "type": "object",
-      "properties": {
-        "card": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "card"
+        "oldPassword",
+        "newPassword",
+        "newEmail"
       ]
     },
     "UpdateMemberrequest": {
@@ -5788,59 +5201,45 @@
         "termsAndConditions"
       ]
     },
-    "WaiveFeesrequest": {
-      "title": "Waive FeesRequest",
-      "type": "object",
-      "properties": {
-        "cancellationFee": {
-          "description": "",
-          "type": "string"
-        },
-        "reEnrollmentFee": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "cancellationFee",
-        "reEnrollmentFee"
-      ]
-    },
     "UpdateDentistInforequest": {
       "title": "Update Dentist InfoRequest",
       "type": "object",
       "properties": {
         "user": {
-          "description": "",
-          "type": "string"
+          "$ref": "#/definitions/User25"
         },
         "officeInfo": {
-          "description": "",
-          "type": "string"
+          "$ref": "#/definitions/OfficeInfo26"
         },
         "officeImages": {
           "description": "",
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "pricing": {
-          "description": "",
-          "type": "string"
-        },
-        "membership": {
-          "description": "",
-          "type": "string"
-        },
-        "childMembership": {
-          "description": "",
-          "type": "string"
+          "$ref": "#/definitions/Pricing27"
         },
         "workingHours": {
           "description": "",
-          "type": "string"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkingHour"
+          }
         },
         "services": {
           "description": "",
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "membership": {
+          "$ref": "#/definitions/Membership"
+        },
+        "childMembership": {
+          "$ref": "#/definitions/ChildMembership"
         }
       },
       "required": [
@@ -5848,10 +5247,187 @@
         "officeInfo",
         "officeImages",
         "pricing",
-        "membership",
-        "childMembership",
         "workingHours",
-        "services"
+        "services",
+        "membership",
+        "childMembership"
+      ]
+    },
+    "User25": {
+      "title": "User25",
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "description": "",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "",
+          "type": "string"
+        },
+        "phone": {
+          "description": "",
+          "type": "string"
+        },
+        "zipCode": {
+          "description": "",
+          "type": "string"
+        },
+        "specialtyId": {
+          "description": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "firstName",
+        "lastName",
+        "phone",
+        "zipCode",
+        "specialtyId"
+      ]
+    },
+    "OfficeInfo26": {
+      "title": "OfficeInfo26",
+      "type": "object",
+      "properties": {
+        "officeName": {
+          "description": "",
+          "type": "string"
+        },
+        "url": {
+          "description": "",
+          "type": "string"
+        },
+        "phone": {
+          "description": "",
+          "type": "string"
+        },
+        "message": {
+          "description": "",
+          "type": "string"
+        },
+        "address": {
+          "description": "",
+          "type": "string"
+        },
+        "city": {
+          "description": "",
+          "type": "string"
+        },
+        "state": {
+          "description": "",
+          "type": "string"
+        },
+        "zipCode": {
+          "description": "",
+          "type": "string"
+        },
+        "acceptsChildren": {
+          "description": "",
+          "type": "boolean"
+        },
+        "childStartingAge": {
+          "description": "",
+          "type": "string"
+        },
+        "marketplaceOptIn": {
+          "description": "",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "officeName",
+        "url",
+        "phone",
+        "message",
+        "address",
+        "city",
+        "state",
+        "zipCode",
+        "acceptsChildren",
+        "childStartingAge",
+        "marketplaceOptIn"
+      ]
+    },
+    "Pricing27": {
+      "title": "Pricing27",
+      "type": "object",
+      "properties": {
+        "codes": {
+          "description": "",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Code"
+          }
+        },
+        "childMonthlyFee": {
+          "description": "",
+          "type": "string"
+        },
+        "adultMonthlyFee": {
+          "description": "",
+          "type": "string"
+        },
+        "adultYearlyFee": {
+          "description": "",
+          "type": "string"
+        },
+        "childYearlyFee": {
+          "description": "",
+          "type": "string"
+        },
+        "treatmentDiscount": {
+          "description": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "codes",
+        "childMonthlyFee",
+        "adultMonthlyFee",
+        "adultYearlyFee",
+        "childYearlyFee",
+        "treatmentDiscount"
+      ]
+    },
+    "Membership": {
+      "title": "Membership",
+      "type": "object",
+      "properties": {
+        "price": {
+          "description": "",
+          "type": "number",
+          "format": "double"
+        },
+        "discount": {
+          "description": "",
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": [
+        "price",
+        "discount"
+      ]
+    },
+    "ChildMembership": {
+      "title": "ChildMembership",
+      "type": "object",
+      "properties": {
+        "price": {
+          "description": "",
+          "type": "number",
+          "format": "double"
+        },
+        "discount": {
+          "description": "",
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": [
+        "price",
+        "discount"
       ]
     }
   }

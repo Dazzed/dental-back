@@ -32,8 +32,9 @@ import {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getMembers(req, res) {
+function getMembers(req, res, next) {
   let query;
 
   // Returns all clients grouped by main user.
@@ -45,7 +46,7 @@ function getMembers(req, res) {
 
   query
   .then(data => res.json({ data }))
-  .catch(err => res.json(new BadRequestError(err)));
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -53,8 +54,9 @@ function getMembers(req, res) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function addMember(req, res) {
+function addMember(req, res, next) {
   Promise.resolve()
   .then(() => {
     const data = _.pick(req.body, ['firstName', 'lastName',
@@ -68,10 +70,10 @@ function addMember(req, res) {
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
-      res.json(new BadRequestError(errors));
+      next(new BadRequestError(errors));
     }
 
-    res.json(errors);
+    next(errors);
   });
 }
 
@@ -80,8 +82,9 @@ function addMember(req, res) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getMember(req, res) {
+function getMember(req, res, next) {
   const subscription = req.locals.member.subscription;
   const membershipId = subscription ? subscription.membershipId : 0;
 
@@ -92,7 +95,7 @@ function getMember(req, res) {
     if (membership) req.locals.member.membership = membership;
     return res.json({ data: req.locals.member });
   })
-  .catch(error => res.json(error));
+  .catch(error => next(error));
 }
 
 /**
@@ -100,8 +103,9 @@ function getMember(req, res) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function updateMember(req, res) {
+function updateMember(req, res, next) {
   const data = _.pick(req.body, ['firstName', 'lastName',
     'birthDate', 'familyRelationship', 'sex', 'membershipType']);
 
@@ -129,67 +133,16 @@ function updateMember(req, res) {
     return null;
   })
   .then(() => {
-    // let subscriptionId;
-
-    // FIXME: Removed since updating subscriptions by age will be automatic
-    // const years = moment().diff(req.body.birthDate, 'years', false);
-    // const oldYears = moment().diff(req.locals.member.birthDate, 'years', false);
-
-    // if (years !== oldYears) {
-    //   return db.Subscription.find({
-    //     attributes: ['dentistId', 'id'],
-    //     where: {
-    //       clientId: req.params.memberId,
-    //     },
-    //     order: '"status" DESC',
-    //     raw: true,
-    //   }).then(subscription => {
-    //     subscriptionId = subscription.id;
-
-    //     return db.DentistInfo.find({
-    //       attributes: ['membershipId', 'childMembershipId'],
-    //       where: {
-    //         userId: subscription.dentistId,
-    //       },
-    //       raw: true,
-    //     });
-    //   }).then(info => {
-    //     if (years < 13) {
-    //       return db.Membership.find({
-    //         where: { id: info.childMembershipId }
-    //       });
-    //     }
-    //     return db.Membership.find({ where: { id: info.membershipId } });
-    //   }).then(membership => {
-    //     req.locals.member.subscription.total = membership.price;
-    //     req.locals.member.subscription.monthly = membership.monthly;
-    //     req.locals.member.subscription.membershipId = membership.id;
-
-    //     return db.Subscription.update({
-    //       amount: membership.price,
-    //       membershipId: membership.id,
-    //     }, {
-    //       where: {
-    //         clientId: req.locals.member.id,
-    //         id: subscriptionId,
-    //       }
-    //     });
-    //   });
-    // }
-
-    return null;
-  })
-  .then(() => {
     Object.assign(req.locals.member, data);
     req.locals.member.phone = req.body.phone;
     res.json();
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
-      res.json(new BadRequestError(errors));
+      next(new BadRequestError(errors));
     }
 
-    res.json(errors);
+    next(errors);
   });
 }
 
@@ -198,15 +151,18 @@ function updateMember(req, res) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function deleteMember(req, res) {
+function deleteMember(req, res, next) {
   const delEmail = `DELETED_${req.locals.member.email}`;
 
   db.User.update({ email: delEmail, isDeleted: true }, {
     where: {
       id: req.locals.member.id,
     },
-  }).then(() => res.json({}));
+  })
+  .then(() => res.json({}))
+  .catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

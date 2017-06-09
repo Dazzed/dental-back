@@ -1,6 +1,10 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import HTTPStatus from 'http-status';
 
-// TODO: Hide error stacks in prod
+// ────────────────────────────────────────────────────────────────────────────────
+// EXPORTS
 
 export class ForbiddenError extends Error {
   constructor(message = 'Forbidden') {
@@ -11,10 +15,13 @@ export class ForbiddenError extends Error {
 
 
 export class BadRequestError extends Error {
-  constructor(errors, message = 'Bad Request') {
+  constructor(message = 'Bad Request', errors = null) {
     super(message);
     this.statusCode = HTTPStatus.BAD_REQUEST;
-    this.errors = errors;
+    if (!(process.env.NODE_ENV === 'production')) {
+      this.errors = errors;
+      delete this.meta;
+    }
   }
 }
 

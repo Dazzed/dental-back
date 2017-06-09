@@ -5,6 +5,10 @@ import { Router } from 'express';
 
 import db from '../../models';
 
+import {
+  BadRequestError,
+} from '../errors';
+
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -22,9 +26,7 @@ function getDentistSpecialties(req, res, next) {
     },
   }).then(specialties =>
     res.json({ data: specialties || [] })
-  ).catch((error) => {
-    next(error);
-  });
+  ).catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

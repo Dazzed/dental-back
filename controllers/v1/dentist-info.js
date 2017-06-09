@@ -24,8 +24,9 @@ import {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getDentistInfo(req, res) {
+function getDentistInfo(req, res, next) {
   let dentistInfo = req.locals.dentistInfo.toJSON();
   const userId = req.user.get('type') === 'admin' ? req.params.userId : req.user.get('id');
   dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId', 'pricing']);
@@ -91,7 +92,7 @@ function getDentistInfo(req, res) {
       res.json({ data });
     }
   })
-  .catch(err => new BadRequestError(err));
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -269,7 +270,7 @@ function updateDentistInfo(req, res, next) {
     res.json({});
   })
   .catch((err) => {
-    res.json(new BadRequestError(err));
+    next(new BadRequestError(err));
   });
 }
 

@@ -2,7 +2,8 @@ import {
   SEX_TYPES,
   PREFERRED_CONTACT_METHODS,
   MEMBER_RELATIONSHIP_TYPES,
-  USER_ORIGIN_OPTIONS
+  USER_ORIGIN_OPTIONS,
+  SUBSCRIPTION_TYPES,
 } from '../config/constants';
 
 
@@ -293,6 +294,29 @@ export const MEMBERSHIP = {
 };
 
 
+export const UPDATE_MEMBERSHIP = {
+  name: {
+    optional: true,
+  },
+  description: {
+    optional: true,
+  },
+  discount: {
+    optional: true,
+  },
+  type: {
+    optional: true,
+    isIn: {
+      options: SUBSCRIPTION_TYPES,
+    },
+    errorMessage: 'Invalid Membership type provided (i.e. Monthly, Annual, etc)',
+  },
+  price: {
+    optional: true,
+  },
+};
+
+
 export const MESSAGE = {
   message: {
     notEmpty: true,
@@ -333,6 +357,12 @@ export const NEW_PRICING_CODE = {
     notEmpty: true,
   },
   code: {
+    notEmpty: true,
+  }
+};
+
+export const STRIPE_TOKEN = {
+  token: {
     notEmpty: true,
   }
 };

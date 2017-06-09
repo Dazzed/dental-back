@@ -264,6 +264,38 @@ export function injectMembership(membershipParamName = 'membershipId', localVarN
       id: req.params[membershipParamName],
     })
     .then((mem) => {
+      if (!mem) throw new Error('Membership does not exist!');
+      membership = mem.toJSON();
+      return mem.getPlanCosts();
+    })
+    .then((planCosts) => {
+      membership = Object.assign({}, membership, planCosts);
+      membership = _(membership).omit(['stripePlanId', 'userId', 'price']);
+      req.locals[localVarName] = membership;
+      next();
+    })
+    .catch(err => next(err));
+  };
+}
+
+/**
+ * Injects the dentist's memnbership record into req.locals for processing
+ *
+ * @param {string} [membershipParamName='membershipId'] - the url param name to find the membership id
+ * @param {string} [dentistParamName='dentistId'] - the url param name to find the dentist id
+ * @param {string} [localVarName='membership'] - where the membership object will be stored in req.locals
+ * @returns {Function} - the middleware function
+ */
+export function injectDentistMembership(membershipParamName = 'membershipId', dentistParamName = 'dentistId', localVarName = 'membership') {
+  return (req, res, next) => {
+    let membership = {};
+
+    db.Membership.find({
+      id: req.params[membershipParamName],
+      userId: req.params[dentistParamName],
+    })
+    .then((mem) => {
+      if (!mem) throw new Error('Membership does not exist!');
       membership = mem.toJSON();
       return mem.getPlanCosts();
     })
@@ -396,5 +428,69 @@ export function validateBody(schemaObject = {}, bodyPrepCb = body => body) {
     .then(next, (err) => {
       next(new BadRequestError(err));
     });
+  };
+}
+
+/**
+ * Validates the body of a request based on the provided schema
+ *
+ * @param {Object} [schemaObject={}] - the body content to validate
+ * @param {Function} [paramsPrepCb=params=>params] - a callback to prepare the params before validating
+ * @returns {Function} - the middleware function
+ */
+export function validateParams(schemaObject = {}, paramsPrepCb = params => params) {
+  return (req, res, next) => {
+    const temp = req.body;
+    req.body = paramsPrepCb(req.body);
+    req.checkParams(schemaObject);
+    req.body = temp;
+
+    req.asyncValidationErrors(true)
+    .then(next, (err) => {
+      next(new BadRequestError(err));
+    });
+  };
+}
+
+/**
+ * Checks if the current logged in user is allowed to modify
+ * payment information on the requested user object
+ *
+ * @param {string} [userParamName='userId'] - the param to use for finding the requested user id
+ * @param {string} [localUserVarName='user'] - where to store the user variable
+ * @param {string} [localSubVarName='subscription'] - where to store the requested user subscription
+ * @param {string} [localPayVarName='paymentProfile'] - where to store the payment profile of the requested user
+ * @returns {Function} - the middleware function
+ */
+export function validatePaymentManager(userParamName = 'userId', localUserVarName = 'user', localSubVarName = 'subscription', localPayVarName = 'paymentProfile') {
+  return (req, res, next) => {
+    const sessionUserId = req.locals.user.get('id');
+    const requestedUserId = req.params[userParamName];
+    let isDentist = false;
+
+    db.User.find({ where: { id: requestedUserId } })
+    .then((user) => {
+      if (!user) throw new Error('Requested user does not exist');
+      req.locals[localUserVarName] = user;
+      return db.Subscription.find({ where: { clientId: requestedUserId } });
+    })
+    .then((sub) => {
+      // Validate the user has an active subscription
+      // or current session user is the dentist owner
+      if (!sub) throw new Error('User has no valid subscription');
+      if (sessionUserId === sub.dentistId) isDentist = true;
+      req.locals[localSubVarName] = sub;
+      // Get the users payment profile next
+      return db.PaymentProfile.find({ where: { id: sub.paymentProfileId } });
+    })
+    .then((profile) => {
+      // Validate the access (only primary account holder and user's dentist is allowed)
+      if ((sessionUserId !== profile.primaryAccountHolderId) && !isDentist) {
+        throw new Error('User does not have access to this user account');
+      }
+      req.locals[localPayVarName] = profile;
+      next();
+    })
+    .catch(err => next(new BadRequestError(err)));
   };
 }

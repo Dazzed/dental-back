@@ -1,9 +1,8 @@
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
-import { SUBSCRIPTION_STATES, SUBSCRIPTION_TYPES } from '../config/constants';
+import { SUBSCRIPTION_STATES } from '../config/constants';
 import { instance, model } from '../orm-methods/subscriptions';
-import stripe from '../controllers/stripe';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MODEL
@@ -14,10 +13,10 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.ENUM(SUBSCRIPTION_STATES),
       defaultValue: 'inactive',
     },
-    // stripeSubscriptionId: {
-    //   type: DataTypes.STRING,
-    //   allowNull: true,
-    // },
+    stripeSubscriptionId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   }, {
     tableName: 'subscriptions',
 

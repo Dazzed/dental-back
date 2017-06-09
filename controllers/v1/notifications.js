@@ -6,6 +6,8 @@ import {
   userRequired,
 } from '../middlewares';
 
+import { BadRequestError } from '../errors';
+
 import db from '../../models';
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -16,6 +18,7 @@ import db from '../../models';
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
 function getUnreadCount(req, res, next) {
   const where = {
@@ -24,13 +27,13 @@ function getUnreadCount(req, res, next) {
   };
 
   db.Notification
-    .count({ where })
-    .then((count) => {
-      res.json({
-        data: { unread_count: count }
-      });
-    })
-    .catch(next);
+  .count({ where })
+  .then((count) => {
+    res.json({
+      data: { unread_count: count }
+    });
+  })
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -38,16 +41,17 @@ function getUnreadCount(req, res, next) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
 function makeAllRead(req, res, next) {
   const where = { recipientId: req.user.get('id') };
 
   db.Notification
-    .update({ isRead: true }, { where })
-    .then(() => {
-      res.json({});
-    })
-    .catch(next);
+  .update({ isRead: true }, { where })
+  .then(() => {
+    res.json({});
+  })
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -66,7 +70,7 @@ function getNotifications(req, res, next) {
       data: notifications
     });
   })
-  .catch(next);
+  .catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

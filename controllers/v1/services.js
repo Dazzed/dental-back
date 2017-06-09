@@ -17,11 +17,12 @@ import {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getServices(req, res) {
+function getServices(req, res, next) {
   return db.Service.findAll({ orderBy: 'createdAt', attributes: ['id', 'name'] })
   .then(services => res.json({ data: services || [] }))
-  .catch((error) => { res.json(new BadRequestError(error)); });
+  .catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

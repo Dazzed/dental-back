@@ -5,6 +5,7 @@ import { Router } from 'express';
 
 import db from '../../models';
 import { userRequired, adminRequired } from '../middlewares';
+import { BadRequestError } from '../errors';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -44,14 +45,15 @@ function getActiveUserCount() {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getStats(req, res) {
+function getStats(req, res, next) {
   Promise.all([
     getDentistsCount(),
     getActiveUserCount(),
   ]).then((stats) => {
     res.json({ data: stats.reduce((a, b) => Object.assign(a, b)) });
-  });
+  }).catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
