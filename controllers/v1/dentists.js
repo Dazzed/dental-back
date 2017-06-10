@@ -34,6 +34,7 @@ import {
   UPDATE_DENTIST,
   INVITE_PATIENT,
   CONTACT_SUPPORT,
+  PATIENT_CARD_UPDATE,
 } from '../../utils/schema-validators';
 
 import {
