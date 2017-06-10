@@ -11,7 +11,8 @@ export const PATIENT_CARD_UPDATE = {
   periodontalDiseaseWaiver: { notEmpty: true },
   cancellationFeeWaiver: { notEmpty: true },
   reEnrollmentFeeWaiver: { notEmpty: true },
-  termsAndConditions: { notEmpty: true }
+  termsAndConditions: { notEmpty: true },
+  stripeToken: { notEmpty: true }
 };
 
 

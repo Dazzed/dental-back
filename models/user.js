@@ -226,7 +226,7 @@ export default function (sequelize, DataTypes) {
         });
 
         User.hasOne(models.PaymentProfile, {
-          foreignKey: 'primaryAccountHolderId',
+          foreignKey: 'primaryAccountHolder',
           as: 'primaryPaymentProfile',
           allowNull: true,
         });

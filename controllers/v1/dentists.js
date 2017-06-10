@@ -7,11 +7,16 @@ import _ from 'lodash';
 
 import {
   userRequired,
+  dentistRequired,
+  injectSubscribedPatient,
   adminRequired,
   validateBody,
 } from '../middlewares';
 
 import db from '../../models';
+
+import stripe from '../stripe';
+
 import { mailer } from '../../services/mailer';
 
 import {
@@ -199,34 +204,44 @@ function contactSupportNoAuth(req, res) {
   });
 }
 
-// /**
-//  * Updates a Patient Card
-//  *
-//  * @param {Object} req - express request
-//  * @param {Object} res - express response
-//  * @param {Function} next - the express next request handler
-//  */
-// function updatePatientCard(req, res, next) {
-//   Promise.resolve()
-//   .then(() => {
-//     const body = _.pick(req.body, [
-//       'periodontalDiseaseWaiver',
-//       'cancellationFeeWaiver',
-//       'reEnrollmentFeeWaiver',
-//       'termsAndConditions'
-//     ]);
+/**
+ * Updates a Patient Card
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ */
+function updatePatientCard(req, res) {
+  let patient = req.locals.client;
+  // let dentist = req.user;
 
-//     if (!req.locals.client.get('waiverCreatedAt')) {
-//       body.waiverCreatedAt = new Date();
-//     }
+  patient.getPaymentProfile()
+  .then((paymentProfile) => {
+    if(!paymentProfile.primaryAccountHolder) {
+      return res.json(new BadRequestError('Cannot update the card of a non-primary account holder patient.'));
+    }
 
-//     return req.locals.client.update(body);
-//   })
-//   .then(() => {
-//     const client = req.locals.client.toJSON();
-//     res.json({ data: client });
-//   }).catch(err => next(new BadRequestError(err)));
-// }
+    return stripe.updateCustomer(paymentProfile.stripeCustomerId, {
+      source: req.body.stripeToken
+    })
+    .then(() => {
+      let patientUpdate = _.pick(req.body, [
+        'periodontalDiseaseWaiver',
+        'cancellationFeeWaiver',
+        'reEnrollmentFeeWaiver',
+        'termsAndConditions'
+      ]);
+
+      if(!patient.get('waiverCreatedAt')) {
+        patientUpdate.waiverCreatedAt = new Date();
+      }
+
+      patient.update(patientUpdate)
+      .then(() => {
+        return res.json({ data : patient.get({plain: true}) });
+      });
+    });
+  });
+}
 
 /**
  * Gets a dentist record without authorization
@@ -339,15 +354,14 @@ router
     userRequired,
     deleteReview);
 
-// TODO: removed since Stripe.js handles card auth
-// router
-//   .route('/patients/:patientId/update-card')
-//   .put(
-//     userRequired,
-//     validateBody(PATIENT_CARD_UPDATE),
-//     injectSubscribedPatient(),
-//     // validateCreditCard,
-//     updatePatientCard);
+router
+  .route('/patients/:patientId/update-card')
+  .put(
+    userRequired,
+    dentistRequired,
+    validateBody(PATIENT_CARD_UPDATE),
+    injectSubscribedPatient(),
+    updatePatientCard);
 
 router
   .route('/details/:dentistId/no-auth')
