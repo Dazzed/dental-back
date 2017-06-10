@@ -22,8 +22,9 @@ import {
  *
  * @param {object} req - the express request
  * @param {object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getMembers(req, res) {
+function getMembers(req, res, next) {
   if (req.params.dentistId === 'me') {
     req.params.dentistId = req.user.get('id');
   }
@@ -38,7 +39,7 @@ function getMembers(req, res) {
     })
     .catch((err) => { throw new Error(err); });
   })
-  .catch(err => res.json(new BadRequestError(err)));
+  .catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

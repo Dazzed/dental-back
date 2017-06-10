@@ -16,14 +16,15 @@ import { BadRequestError } from '../errors';
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getOffices(req, res) {
+function getOffices(req, res, next) {
   db.DentistInfo.findAll()
   .then(offices => Promise.all(offices.map(o => o.getFullOffice())))
   .then((offices) => {
     res.json({ data: offices });
   })
-  .catch(err => res.json(new BadRequestError(err)));
+  .catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

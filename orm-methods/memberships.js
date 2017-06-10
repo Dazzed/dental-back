@@ -28,9 +28,9 @@ export const instance = {
         annualPrice = annualPrice > 0 ? annualPrice / 100 : annualPrice;
 
         resolve({
+          type,
           monthlyPrice,
           annualPrice,
-          type,
         });
       })
       .catch(reject);

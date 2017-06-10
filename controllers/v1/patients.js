@@ -4,76 +4,53 @@
 import { Router } from 'express';
 
 import db from '../../models';
-import {
-  userRequired,
-  adminRequired,
-} from '../middlewares';
-
-import {
-  BadRequestError,
-  NotFoundError,
-} from '../errors';
+import { BadRequestError } from '../errors';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
 /**
- * Gets all related reviews for the associated dentist
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the express next request handler
- */
-function getReviews(req, res, next) {
-  const dentistId = req.params.dentistId;
-
-  db.User.find({
-    where: {
-      id: dentistId,
-      type: 'dentist'
-    },
-    include: [{
-      model: db.Review,
-      as: 'dentistReviews',
-      attributes: {
-        exclude: ['clientId', 'dentistId', 'updatedAt']
-      },
-      include: [{
-        model: db.User,
-        as: 'client',
-        attributes: {
-          include: ['firstName', 'lastName']
-        }
-      }]
-    }]
-  })
-  .then((user) => {
-    res.json({ data: user.get('dentistReviews') });
-  })
-  .catch(err => next(new BadRequestError(err)));
-}
-
-/**
- * Deletes a review by id
+ * Toggles the cancellation fee waiver flag on a user record.
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
  * @param {Function} next - the next middleware function
  */
-function deleteReview(req, res, next) {
-  db.Review.destroy({
-    where: {
-      id: req.params.reviewId,
-      dentistId: req.params.dentistId
-    }
-  })
-  .then((review) => {
-    if (!review) {
-      throw new NotFoundError('The review was not found.');
-    }
+function toggleCancellationFeeWaiver(req, res, next) {
+  let user = {};
 
-    res.json({});
+  // Get the requested user's subscription
+  db.User.find({ where: { id: req.params.patientId } })
+  .then((userObj) => {
+    user = userObj;
+    user.cancellationFeeWaiver = !user.cancellationFeeWaiver;
+    user.save();
   })
+  .then(() => user.getFullClient())
+  .then(data => res.json({ data }))
+  .catch(err => next(new BadRequestError(err)));
+}
+
+/**
+ * Toggles the re-enrollment fee waiver flag on a user record. Enabled here
+ * for admins only because the flag would allow free enrollment on any plan for any dentist
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
+function toggleReEnrollmentFeeWaiver(req, res, next) {
+  let user = {};
+
+  // Get the requested user's subscription
+  db.User.find({ where: { id: req.params.patientId } })
+  .then((userObj) => {
+    user = userObj;
+    user.reEnrollmentFeeWaiver = !user.reEnrollmentFeeWaiver;
+    user.save();
+  })
+  .then(() => user.getFullClient())
+  .then(data => res.json({ data }))
   .catch(err => next(new BadRequestError(err)));
 }
 
@@ -83,17 +60,11 @@ function deleteReview(req, res, next) {
 const router = new Router({ mergeParams: true });
 
 router
-  .route('/')
-  .get(
-    userRequired,
-    adminRequired,
-    getReviews);
+  .route('/:patientId/toggle-cancellation-waiver')
+  .put(toggleCancellationFeeWaiver);
 
 router
-  .route('/:reviewId')
-  .delete(
-    userRequired,
-    adminRequired,
-    deleteReview);
+  .route('/:patientId/toggle-reenrollment-waiver')
+  .put(toggleReEnrollmentFeeWaiver);
 
 export default router;

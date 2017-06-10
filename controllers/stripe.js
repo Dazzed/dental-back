@@ -84,21 +84,6 @@ export default {
   },
 
   /**
-   * Deletes a customer profile on Stripe
-   *
-   * @param {string} custId - the stripe customer id
-   * @returns {Promise<Confirmation>}
-   */
-  deleteCustomer(custId) {
-    return new Promise((resolve, reject) => {
-      stripe.customers.del(custId, (err, confirm) => {
-        if (err) reject(verboseError(err));
-        resolve(confirm);
-      });
-    });
-  },
-
-  /**
    * Gets details about the customer from Stripe
    *
    * @param {string} customerId - the stripe customer id
@@ -113,6 +98,21 @@ export default {
           resolve(customer);
         }
       );
+    });
+  },
+
+  /**
+   * Deletes a customer profile on Stripe
+   *
+   * @param {string} custId - the stripe customer id
+   * @returns {Promise<Confirmation>}
+   */
+  deleteCustomer(custId) {
+    return new Promise((resolve, reject) => {
+      stripe.customers.del(custId, (err, confirm) => {
+        if (err) reject(verboseError(err));
+        resolve(confirm);
+      });
     });
   },
 
@@ -149,20 +149,95 @@ export default {
   },
 
   /**
+   * Gets the details about a specfic payment source
+   *
+   * @param {string} customerId - the stripe customer id
+   * @param {string} cardToken - the stripe card token
+   * @returns {Promise<Card>}
+   */
+  getPaymentMethod(customerId, cardToken) {
+    return new Promise((resolve, reject) => {
+      stripe.customers.retrieveCard(
+        customerId,
+        cardToken,
+      (err, card) => {
+        if (err) reject(verboseError(err));
+        resolve(card);
+      });
+    });
+  },
+
+  /**
+   * Adds a new payment source to the stripe customer
+   *
+   * @param {string} customerId - the stripe customer id
+   * @param {string} sourceToken - the stripe generated source token
+   * @returns {Promise<Card>}
+   */
+  addPaymentSource(customerId, sourceToken) {
+    return new Promise((resolve, reject) => {
+      stripe.customers.createSource(
+        customerId,
+        { source: sourceToken },
+      (err, card) => {
+        if (err) reject(verboseError(err));
+        resolve(card);
+      });
+    });
+  },
+
+  /**
+   * Updates the customers default payment source
+   *
+   * @param {string} customerId - the stripe customer id
+   * @param {string} sourceToken - the stripe generated source token
+   * @returns {Promise<Customer>}
+   */
+  setDefaultPaymentSource(customerId, cardToken) {
+    return new Promise((resolve, reject) => {
+      stripe.customers.update(customerId, {
+        default_source: cardToken
+      }, (err, customer) => {
+        if (err) reject(verboseError(err));
+        resolve(customer);
+      });
+    });
+  },
+
+  /**
+   * Deletes a payment source linked to a stripe customer
+   *
+   * @param {string} customerId - the stripe customer id
+   * @param {string} cardToken - the stripe card token
+   * @returns {Promise<Confirmation>}
+   */
+  deletePaymentSource(customerId, cardToken) {
+    return new Promise((resolve, reject) => {
+      stripe.customers.deleteCard(
+        customerId,
+        cardToken,
+      (err, confirmation) => {
+        if (err) reject(verboseError(err));
+        resolve(confirmation);
+      });
+    });
+  },
+
+  /**
    * Issues a new charge against the customer
    *
    * @param {number} amount - the amount to charge
-   * @param {string} chargeToken - the stripe generated charge token
+   * @param {string} customerId - the id of the customer
    * @param {string} description - the description of the charge
    * @returns {Promise<Charge>}
    */
-  issueCharge(amount, chargeToken, description) {
+  issueCharge(amount, customerId, description) {
     return new Promise((resolve, reject) => {
       stripe.charges.create({
         amount,
         description,
         currency: 'usd',
-        source: chargeToken, // obtained with Stripe.js
+        customer: customerId,
       }, (err, charge) => {
         if (err) reject(verboseError(err));
         resolve(charge);
@@ -245,7 +320,7 @@ export default {
    * @returns {Promise<null>}
    */
   updateMembershipPlanPrice(membershipId, planId, name, price = 0, interval = 'month', trialPeriodDays = 0) {
-    price *= 100;
+    price *= 100; // adjust pricing to stripe's requirement
 
     return new Promise((resolve, reject) => {
       // Delete the old plan
@@ -281,19 +356,46 @@ export default {
   /**
    * Creates a new subscription
    *
-   * @param {string} subscriptionId - the id of the stripe subscription
+   * @param {string} planId - the id of the stripe plan to subscribe to
    * @param {string} customerId - the id of the customer to subscribe
    * @returns {Promise<Subscription>}
    */
-  createSubscription(subscriptionId, customerId) {
+  createSubscription(planId, customerId) {
     return new Promise((resolve, reject) => {
       stripe.subscriptions.create({
         customer: customerId,
-        plan: subscriptionId,
+        plan: planId,
+        // INFO: Add the line below to give 100% off (applied on each invoice)
+        // application_fee_percent: 100
       }, (err, subscription) => {
         if (err) reject(verboseError(err));
         resolve(subscription);
       });
+    });
+  },
+
+  /**
+   * Updates a user subscription
+   *
+   * @param {string} subscriptionId - the id of the subscription
+   * @param {string} planId - the id of stripe plan to change to
+   * @returns {Promise<Subscription>}
+   */
+  updateSubscription(subscriptionId, planId, prorate = true) {
+    return new Promise((resolve, reject) => {
+      stripe.subscriptions.update(
+        subscriptionId,
+        {
+          plan: planId,
+          prorate,
+          // INFO: Add this property to give 100% off (applied on each invoice)
+          // application_fee_percent: 100
+        },
+        (err, subscription) => {
+          if (err) reject(verboseError(err));
+          resolve(subscription);
+        }
+      );
     });
   },
 
@@ -331,6 +433,6 @@ export default {
         }
       );
     });
-  }
+  },
 
 };

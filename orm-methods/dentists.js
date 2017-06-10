@@ -28,7 +28,7 @@ export default {
     return new Promise((resolve, reject) => {
       userId = (parseInt(userId, 10) || 0);
       UserInstance.getFullDentist(userId)
-      .then(d => {
+      .then((d) => {
         if (d === null) resolve(null);
         else {
           // Retrieve Price Codes
@@ -38,7 +38,7 @@ export default {
               model: db.PriceCodes,
               as: 'priceCode'
             }]
-          }).then(items => {
+          }).then((items) => {
             d.dentistInfo.priceCodes = items.map(i => {
               const temp = i.priceCode.toJSON();
               temp.price = i.get('price');
@@ -50,14 +50,14 @@ export default {
               d.dentistInfo.membership.id,
               d.dentistInfo.childMembership.id,
             ])
-            .then(fullCosts => {
-              fullCosts.forEach(cost => {
+            .then((fullCosts) => {
+              fullCosts.forEach((cost) => {
                 if (d.dentistInfo.membership.id === cost.membershipId) {
                   d.dentistInfo.membership.fullCost = cost.fullCost;
-                  d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
+                  d.dentistInfo.membership.savings = Math.max((cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12)), 0);
                 } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
                   d.dentistInfo.childMembership.fullCost = cost.fullCost;
-                  d.dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
+                  d.dentistInfo.childMembership.savings = Math.max((cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12)), 0);
                 }
               });
 
@@ -67,7 +67,7 @@ export default {
                   dentistId: d.dentistInfo.id,
                   status: 'active',
                 }
-              }).then(activeMemberCount => {
+              }).then((activeMemberCount) => {
                 d.dentistInfo.activeMemberCount = activeMemberCount;
                 resolve(d);
               }).catch(reject);

@@ -24,8 +24,9 @@ const excludeMembershipFields = ['stripePlanId', 'userId', 'price'];
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getMemberships(req, res) {
+function getMemberships(req, res, next) {
   let memberships = [];
 
   return db.Membership.findAll({
@@ -46,9 +47,7 @@ function getMemberships(req, res) {
 
     res.json({ data: memberships || [] });
   })
-  .catch((error) => {
-    res.json(new BadRequestError(error));
-  });
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**

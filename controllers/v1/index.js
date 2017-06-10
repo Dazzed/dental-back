@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { userRequired, adminRequired, injectUser } from '../middlewares';
+import { userRequired, dentistRequired, adminRequired, injectUser } from '../middlewares';
 import { checkUserDentistPermission } from '../../utils/permissions';
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -10,6 +10,7 @@ import auth from './auth';
 import dentists from './dentists';
 import myDentist from './my-dentist';
 import dentistMembers from './dentist-members';
+import dentistMemberships from './dentist-memberships';
 import dentistSpecialties from './dentist-specialties';
 import dentistInfo from './dentist-info';
 import members from './members';
@@ -17,11 +18,13 @@ import memberships from './memberships';
 import messages from './messages';
 import notifications from './notifications';
 import offices from './offices';
+import patients from './patients';
 import pricing from './pricing';
 import reports from './reports';
 import reviews from './reviews';
 import services from './services';
 import stats from './stats';
+import subscriptions from './subscriptions';
 import users from './users';
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -44,11 +47,13 @@ router.use('/users/:userId/notifications', notifications);
 // ────────────────────────────────────────────────────────────────────────────────
 // DENTIST ENDPOINTS
 
-// FIXME: Need to break apart the `dentists` routes so as
-// to not interfere with other dentist endpoints
+// FIXME: Need to break apart the `/dentists` routes a bit
+// more so as to not interfere with other dentist endpoints
 router.use('/dentists', dentists);
-router.use('/dentists/:dentistId/reviews', reviews);
 router.use('/dentists/:dentistId/members', dentistMembers);
+router.use('/dentists/:dentistId/memberships', userRequired, dentistRequired, dentistMemberships);
+router.use('/dentists/:dentistId/reviews', reviews);
+router.use('/dentists/:dentistId/subscription', userRequired, subscriptions);
 
 // ────────────────────────────────────────────────────────────────────────────────
 // DENTIST SPECIALTIES
@@ -61,11 +66,6 @@ router.use('/dentist-specialties', dentistSpecialties);
 router.use('/pricing', pricing);
 
 // ────────────────────────────────────────────────────────────────────────────────
-// MEMBERSHIPS
-
-router.use('/memberships', memberships);
-
-// ────────────────────────────────────────────────────────────────────────────────
 // SERVICES
 
 router.use('/services', services);
@@ -75,7 +75,7 @@ router.use('/services', services);
 router.use('/admin', userRequired, adminRequired);
 
 router.use('/admin/stats', stats);
-router.use('/admin/dentists/members', members);
+router.use('/admin/dentists/patients', patients);
 router.use('/admin/dentists/memberships', memberships);
 router.use('/admin/dentists/reports', reports);
 

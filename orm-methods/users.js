@@ -21,7 +21,7 @@ export const instance = {
    *
    * @returns {Promise<SubscriptionDetails>}
    */
-  getSubscription() {
+  getMySubscription() {
     const userId = this.get('id');
     let subscriptionObj = {};
 
@@ -29,30 +29,28 @@ export const instance = {
       throw new Error('Dentist cannot have a subscription');
     }
 
-    return new Promise((resolve, reject) => {
-      db.Subscription.findAll({
-        where: { clientId: userId },
-        include: [{
-          model: db.Membership,
-          as: 'membership'
-        }]
-      })
-      .then((sub) => {
-        if (!sub || !!sub.membership) resolve({});
-        subscriptionObj = sub;
-        return sub.membership.getPlanCosts();
-      })
-      .then((planCosts) => {
-        resolve(Object.assign(
-          {},
-          planCosts,
-          {
-            status: subscriptionObj.status
-          })
-        );
-      })
-      .catch(reject);
-    });
+    return db.Subscription.find({
+      where: { clientId: userId },
+      include: [{
+        model: db.Membership,
+        as: 'membership'
+      }]
+    })
+    .then((sub) => {
+      if (!sub || !sub.membership) return Promise.resolve({});
+      subscriptionObj = sub;
+      return sub.getStripeDetails();
+    })
+    .then((subDetails) => {
+      subscriptionObj.started = subDetails.start;
+      return subscriptionObj.membership.getPlanCosts();
+    })
+    .then(planCosts => ({
+      costs: planCosts,
+      since: subscriptionObj.started,
+      status: subscriptionObj.status,
+      plan: subscriptionObj.membership.name,
+    }));
   },
 
   /**
@@ -105,6 +103,9 @@ export const instance = {
             model: db.Review,
             as: 'clientReviews',
             attributes: { exclude: ['clientId', 'dentistId'] },
+          }, {
+            model: db.Address,
+            as: 'addresses'
           }]
         }]
       })
@@ -290,9 +291,13 @@ export const instance = {
             model: db.User,
             as: 'dentist',
             attributes: {
-              exclude: userFieldsExcluded
+              exclude: userFieldsExcluded,
             },
           }],
+        }, {
+          model: db.Subscription,
+          as: 'clientSubscription',
+          attributes: ['stripeSubscriptionId'],
         }]
       })
     ))
@@ -300,10 +305,11 @@ export const instance = {
       // Get the user's subscription
       if (!userObj) throw new Error('User does not exist');
       user = userObj.toJSON();
-      return userObj.getSubscription();
+      return userObj.getMySubscription();
     })
-    .then((sub) => {
-      user.subscription = sub;
+    .then((subscription) => {
+      user.subscription = subscription;
+      delete user.clientSubscription;
       return user;
     });
   },
@@ -434,10 +440,10 @@ export const instance = {
       fullCosts.forEach((cost) => {
         if (d.dentistInfo.membership.id === cost.membershipId) {
           d.dentistInfo.membership.fullCost = cost.fullCost;
-          d.dentistInfo.membership.savings = (cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12));
+          d.dentistInfo.membership.savings = Math.max((cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12)), 0);
         } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
           d.dentistInfo.childMembership.fullCost = cost.fullCost;
-          d.dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12));
+          d.dentistInfo.childMembership.savings = Math.max((cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12)), 0);
         }
       });
 
@@ -458,7 +464,8 @@ export const instance = {
     })
     .then(membership => membership.getPlanCosts())
     .then((planCosts) => {
-      d.dentistInfo.membership = planCosts;
+      delete d.dentistInfo.membership.stripePlanId;
+      d.dentistInfo.membership = Object.assign({}, d.dentistInfo.membership, planCosts);
       // Expand Child Membership
       return db.Membership.find({
         where: { id: d.dentistInfo.childMembership.id }
@@ -466,7 +473,8 @@ export const instance = {
     })
     .then(membership => membership.getPlanCosts())
     .then((planCosts) => {
-      d.dentistInfo.childMembership = planCosts;
+      delete d.dentistInfo.childMembership.stripePlanId;
+      d.dentistInfo.childMembership = Object.assign({}, d.dentistInfo.childMembership, planCosts);
       return Promise.resolve(d);
     });
   },
@@ -483,11 +491,17 @@ export const instance = {
       where: { clientId: this.get('id') }
     })
     // 2. Get the payment profile
-    .then(sub => db.PaymentProfile.find({ where: { id: sub.paymentProfileId } }))
-    .then(profile => ({
-      primaryAccountHolder: (userId === profile.primaryAccountHolder),
-      stripeCustomerId: profile.stripeCustomerId,
-    }));
+    .then((sub) => {
+      if (!sub) throw new Error('User has no active subscription');
+      return db.PaymentProfile.find({ where: { id: sub.paymentProfileId } });
+    })
+    .then((profile) => {
+      if (!profile) throw new Error('User has no payment profile');
+      return {
+        primaryAccountHolder: (userId === profile.primaryAccountHolderId),
+        stripeCustomerId: profile.stripeCustomerId,
+      };
+    });
   },
 };
 

@@ -17,14 +17,15 @@ const Change = changeFactory();
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getDentist(req, res) {
+function getDentist(req, res, next) {
   req.user.getMyDentist()
   .then((data) => {
     delete data.email;
     res.json({ data });
   })
-  .catch(err => res.json(new BadRequestError(err)));
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -33,8 +34,9 @@ function getDentist(req, res) {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getPendingAmount(req, res) {
+function getPendingAmount(req, res, next) {
   let userId = req.params.userId;
 
   if (userId === 'me' && req.user.get('type') === 'dentist') {
@@ -47,9 +49,7 @@ function getPendingAmount(req, res) {
   .then((total) => {
     res.json({ data: total });
   })
-  .catch((err) => {
-    res.json(new BadRequestError(err));
-  });
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -140,9 +140,7 @@ function generateReport(req, res, next) {
 
     // format data
     res.csv(result, true);
-  }).catch((error) => {
-    next(error);
-  });
+  }).catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

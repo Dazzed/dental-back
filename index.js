@@ -1,16 +1,8 @@
 require('dotenv').config();
 require('babel-register');
 
-// Load dotenv if needed
 const fs = require('fs');
 const path = require('path');
-
-const rootDir = path.normalize(path.join(__dirname, '.'));
-
-// Test if dot env exists.
-if (fs.existsSync(path.join(rootDir, '.env'))) {
-  require('dotenv').load();  // eslint-disable-line global-require
-}
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
