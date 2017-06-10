@@ -7,7 +7,7 @@ import { Router } from 'express';
 
 import db from '../../models';
 
-import { UPDATE_MEMBERSHIP } from '../../utils/schema-validators';
+import { MEMBERSHIP_FIELDS } from '../../utils/schema-validators';
 
 import {
   BadRequestError,
@@ -115,11 +115,11 @@ const router = new Router({ mergeParams: true });
 router
   .route('/')
   .get(getMemberships)
-  .post(addMembership);
+  .post(validateBody(MEMBERSHIP_FIELDS), addMembership);
 
 router
   .route('/:membershipId')
   .get(injectDentistMembership(), getMembership)
-  .put(injectDentistMembership(), validateBody(UPDATE_MEMBERSHIP), updateMembership);
+  .put(injectDentistMembership(), validateBody(MEMBERSHIP_FIELDS), updateMembership); // inject to verify the membership exists
 
 export default router;

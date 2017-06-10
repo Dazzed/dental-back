@@ -115,8 +115,8 @@ export const SUBSCRIPTION_STATES = [
 
 
 export const SUBSCRIPTION_TYPES = [
-  'monthly',
-  'annual'
+  'month',
+  'year'
 ];
 
 

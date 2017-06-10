@@ -29,6 +29,7 @@ function subscribe(req, res, next) {
   let subscription = {};
   let membership = {};
   let payProfile = {};
+  let isAnnualSub = false;
   const memberId = req.params.userId || null;
 
   let preFetch = Promise.resolve();
@@ -90,8 +91,21 @@ function subscribe(req, res, next) {
       }
       return Promise.resolve();
     })
-      // 6. Create subscription
-    .then(() => stripe.createSubscription(membership.name, payProfile.stripeCustomerId))
+    // 6. Check if this is an annual subscription, if so, charge the full cost, and give 100% off on the subscription
+    .then(() => {
+      if (membership.interval === 'year') {
+        isAnnualSub = true;
+        return stripe.issueCharge(membership.amount, payProfile.stripeCustomerId, `Annual Subscription: ${membership.name}`);
+      }
+      return Promise.resolve();
+    })
+    .then(() => {
+      if (isAnnualSub) {
+        // 100% off the subscription but register it so our hooks can track when it expires
+        return stripe.createSubscription(membership.name, payProfile.stripeCustomerId, 100);
+      }
+      return stripe.createSubscription(membership.name, payProfile.stripeCustomerId);
+    })
     .then((newSubscription) => {
       subscription.stripeSubscriptionId = newSubscription.id;
       subscription.membershipId = req.params.membershipId;

@@ -294,7 +294,7 @@ export const MEMBERSHIP = {
 };
 
 
-export const UPDATE_MEMBERSHIP = {
+export const MEMBERSHIP_FIELDS = {
   name: {
     optional: true,
   },
@@ -309,7 +309,7 @@ export const UPDATE_MEMBERSHIP = {
     isIn: {
       options: SUBSCRIPTION_TYPES,
     },
-    errorMessage: 'Invalid Membership type provided (i.e. Monthly, Annual, etc)',
+    errorMessage: 'Invalid Membership type provided (i.e. month, year, etc)',
   },
   price: {
     optional: true,
