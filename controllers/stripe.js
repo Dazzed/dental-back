@@ -255,7 +255,7 @@ export default {
    * @param {number} [trialPeriodDays=0] - the number of days for which the subscriber will not be billed
    * @returns {Promise<Plan>}
    */
-  createMembershipPlan(planId, name, price = 0, interval = 'month', trialPeriodDays = 0) {
+  createMembershipPlan(planId, name, price, interval, trialPeriodDays = 0) {
     return new Promise((resolve, reject) => {
       stripe.plans.create({
         id: planId,
@@ -319,7 +319,7 @@ export default {
    * @param {number} [trialPeriodDays=0] - the number of days for which the subscriber will not be billed
    * @returns {Promise<null>}
    */
-  updateMembershipPlanPrice(membershipId, planId, name, price = 0, interval = 'month', trialPeriodDays = 0) {
+  updateMembershipPlanPrice(membershipId, planId, name, price = 0, interval, trialPeriodDays = 0) {
     price *= 100; // adjust pricing to stripe's requirement
 
     return new Promise((resolve, reject) => {
@@ -358,15 +358,16 @@ export default {
    *
    * @param {string} planId - the id of the stripe plan to subscribe to
    * @param {string} customerId - the id of the customer to subscribe
+   * @param {number} discount - how much to discount the subscription for
    * @returns {Promise<Subscription>}
    */
-  createSubscription(planId, customerId) {
+  createSubscription(planId, customerId, discount = 0) {
     return new Promise((resolve, reject) => {
       stripe.subscriptions.create({
         customer: customerId,
         plan: planId,
         // INFO: Add the line below to give 100% off (applied on each invoice)
-        // application_fee_percent: 100
+        application_fee_percent: discount
       }, (err, subscription) => {
         if (err) reject(verboseError(err));
         resolve(subscription);
