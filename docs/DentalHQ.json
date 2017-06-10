@@ -429,7 +429,7 @@
               "uri": "/dentists/3/contact_support",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"name\": \"\",\n\t\"email\": \"\",\n\t\"message\": \"\"\n}"
             },
@@ -495,7 +495,7 @@
               "uri": "/dentists/details/all",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -560,7 +560,7 @@
               "uri": "/dentists/3/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -632,7 +632,7 @@
               "uri": "/dentists/3/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"firstName\": \"\",\n\t\"middleName\": \"\",\n\t\"lastName\": \"\",\n\t\"email\": \"\",\n\t\"phoneNumber\": \"\"\n}"
             },
@@ -698,7 +698,7 @@
               "uri": "/dentists/1/members",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -712,211 +712,6 @@
             "x-testShouldPass": true,
             "x-testEnabled": true,
             "x-testName": "List Members",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/dentists/1": {
-      "put": {
-        "description": "TODO: Add Description",
-        "summary": "Update Dentist",
-        "tags": [
-          "Dentists"
-        ],
-        "operationId": "Update Dentist",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "required": true,
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/UpdateDentistrequest"
-            }
-          },
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "PUT",
-              "uri": "/dentists/1",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
-              },
-              "body": "{\n\t\"middleName\": \"XXX\",\n\t\"phoneNumber\": \"(415) 400-8898\"\n}"
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Update Dentist",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/dentists/details/1": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Get Dentist Info",
-        "tags": [
-          "Dentists"
-        ],
-        "operationId": "Get Dentist Info",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/dentists/details/1",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Get Dentist Info",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
-        "x-operation-settings": {
-          "CollectParameters": false,
-          "AllowDynamicQueryParameters": false,
-          "AllowDynamicFormParameters": false,
-          "IsMultiContentStreaming": false
-        }
-      }
-    },
-    "/dentists/details/1/no-auth": {
-      "get": {
-        "description": "TODO: Add Description",
-        "summary": "Get Dentist - No Auth",
-        "tags": [
-          "Dentists"
-        ],
-        "operationId": "Get Dentist - No Auth",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "Content-Type",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": ""
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "GET",
-              "uri": "/dentists/details/1/no-auth",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Get Dentist - No Auth",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -1002,7 +797,7 @@
               "method": "GET",
               "uri": "/reports/dentist/1/list",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1059,7 +854,7 @@
               "method": "GET",
               "uri": "/reports/dentist/1/general",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1116,7 +911,7 @@
               "method": "GET",
               "uri": "/reports/dentists/2017/1",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1181,7 +976,7 @@
               "uri": "/admin/stats/",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1246,7 +1041,7 @@
               "uri": "/admin/memberships",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1311,7 +1106,7 @@
               "uri": "/admin/memberships/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1376,7 +1171,7 @@
               "uri": "/admin/offices",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1441,7 +1236,7 @@
               "uri": "/admin/dentists/patients/2/toggle-cancellation-waiver",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1506,7 +1301,7 @@
               "uri": "/admin/dentists/patients/2/toggle-reenrollment-waiver",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1563,7 +1358,7 @@
               "method": "GET",
               "uri": "/pricing",
               "headers": {
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1635,7 +1430,7 @@
               "uri": "/pricing",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"description\": \"Lorem Ipsum Dolor\",\n\t\"code\": \"0129382\"\n}"
             },
@@ -1701,7 +1496,7 @@
               "uri": "/users/3/account",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1773,7 +1568,7 @@
               "uri": "/users/3/account",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"confirmNewPassword\": \"\",\n\t\"email\": \"\",\n\t\"specialtyId\": \"\",\n\t\"newEmail\": \"\",\n\t\"confirmEmail\": \"\",\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"birthDate\": \"\",\n\t\"phone\": \"\",\n\t\"sex\": \"\",\n\t\"address\": \"\",\n\t\"city\": \"\",\n\t\"state\": \"\",\n\t\"zipCode\": \"\",\n\t\"contactMethod\": \"\"\n}"
             },
@@ -1837,7 +1632,7 @@
               "uri": "/users/3/account",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -1911,7 +1706,7 @@
               "uri": "/users/3/account/patients/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"phone\": \"\",\n\t\"address\": \"\",\n\t\"city\": \"\",\n\t\"state\": \"\",\n\t\"zipCode\": \"\",\n\t\"contactMethod\": \"\"\n}"
             },
@@ -1986,7 +1781,7 @@
               "uri": "/users/3/verify-password",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"oldPassword\": \"\"\n}"
             },
@@ -2061,7 +1856,7 @@
               "uri": "/users/3/account/change-auth",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"oldPassword\": \"\",\n\t\"newPassword\": \"\",\n\t\"newEmail\": \"\"\n}"
             },
@@ -2127,7 +1922,7 @@
               "uri": "/users/3/account/payment/sources",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2192,7 +1987,7 @@
               "uri": "/users/3/account/payment/sources/tok_1ANaQBECJr7ZmBNOmCns5MMZ",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2257,7 +2052,7 @@
               "uri": "/users/3/account/payment/sources/card_1ANaQBECJr7ZmBNOsmpRAqMy",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2322,7 +2117,7 @@
               "uri": "/users/3/account/payment/sources/card_1AQfPqECJr7ZmBNObXqRiBrO/default",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2387,7 +2182,7 @@
               "uri": "/members",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2452,7 +2247,7 @@
               "uri": "/members/3",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2524,7 +2319,7 @@
               "uri": "/members/3",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"firstName\": \"\",\n\t\"lastName\": \"\",\n\t\"birthDate\": \"\",\n\t\"sex\": \"\",\n\t\"familyRelationship\": \"\"\n}"
             },
@@ -2588,7 +2383,7 @@
               "uri": "/members/3",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2653,7 +2448,7 @@
               "uri": "/users/3/messages/2/unread_count",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2718,7 +2513,7 @@
               "uri": "/users/3/messages/2/mark_all_read",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2783,7 +2578,7 @@
               "uri": "/users/3/messages/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2846,7 +2641,7 @@
               "uri": "/users/3/messages/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2911,7 +2706,7 @@
               "uri": "/users/3/notifications",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -2976,7 +2771,7 @@
               "uri": "/users/3/notifications/unread_count",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3041,7 +2836,7 @@
               "uri": "/users/3/notifications/mark_all_read",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3106,7 +2901,7 @@
               "uri": "/dentists/1/reviews",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3180,7 +2975,7 @@
               "uri": "/dentists/3/review",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"message\": \"\"\n}"
             },
@@ -3255,7 +3050,7 @@
               "uri": "/dentists/3/review/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"message\": \"\"\n}"
             },
@@ -3321,7 +3116,7 @@
               "uri": "/dentists/1/reviews/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3395,7 +3190,7 @@
               "uri": "/dentists//3/invite_patient",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"email\": \"\"\n}"
             },
@@ -3470,7 +3265,7 @@
               "uri": "/dentists//3/patients/2/update-card",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               },
               "body": "{\n\t\"card\": \"\",\n\t\"periodontalDiseaseWaiver\": \"\",\n\t\"cancellationFeeWaiver\": \"\",\n\t\"reEnrollmentFeeWaiver\": \"\",\n\t\"termsAndConditions\": \"\"\n}"
             },
@@ -3503,7 +3298,7 @@
         "tags": [
           "Dentist Info"
         ],
-        "operationId": "Get Dentist Info1",
+        "operationId": "Get Dentist Info",
         "produces": [
           "application/json"
         ],
@@ -3536,7 +3331,7 @@
               "uri": "/users/3/dentist-info/124",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3652,7 +3447,7 @@
               "uri": "/dentist-specialties",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3717,7 +3512,7 @@
               "uri": "/services",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3782,7 +3577,7 @@
               "uri": "/offices",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3847,7 +3642,7 @@
               "uri": "/users/3/my-dentist",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3912,7 +3707,7 @@
               "uri": "/users/3/my-dentist/pending-amount",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -3977,7 +3772,7 @@
               "uri": "//dentists/1/subscription/plan/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -4042,7 +3837,7 @@
               "uri": "//dentists/1/subscription/members/3/plan/2",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -4107,7 +3902,7 @@
               "uri": "//dentists/1/subscription//plan/2/user/3",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -4172,7 +3967,7 @@
               "uri": "//dentists/1/subscription/plan",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -4235,7 +4030,7 @@
               "uri": "//dentists/1/subscription/plan",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -4300,7 +4095,7 @@
               "uri": "//dentists/1/subscription/members/3/plan",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -4363,7 +4158,7 @@
               "uri": "//dentists/1/subscription/members/3/plan",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -4428,7 +4223,7 @@
               "uri": "//dentists/1/subscription/patients/3/toggle-cancellation-waiver",
               "headers": {
                 "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNDk2NzE5MjYyfQ.clBcXZhIoyR3-ZeaYmhbVSmZAjPDYJlqJrSylNWI_eU"
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
               }
             },
             "expectedResponse": {
@@ -4442,6 +4237,414 @@
             "x-testShouldPass": true,
             "x-testEnabled": true,
             "x-testName": "Toggle Cancellation Fee Waiver",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/dentists/details/1": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get Dentist Info",
+        "tags": [
+          "Dentist"
+        ],
+        "operationId": "Get Dentist Info1",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/dentists/details/1",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get Dentist Info",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/dentists/details/1/no-auth": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get Dentist - No Auth",
+        "tags": [
+          "Dentist"
+        ],
+        "operationId": "Get Dentist - No Auth",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/dentists/details/1/no-auth",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get Dentist - No Auth",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/dentists/1": {
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Update Dentist",
+        "tags": [
+          "Dentist"
+        ],
+        "operationId": "Update Dentist",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/UpdateDentistrequest"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/dentists/1",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
+              },
+              "body": "{\n\t\"middleName\": \"XXX\",\n\t\"phoneNumber\": \"(415) 400-8898\"\n}"
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Update Dentist",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/dentists/1/memberships": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "List Memberships",
+        "tags": [
+          "Dentist"
+        ],
+        "operationId": "List Memberships",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/dentists/1/memberships",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "List Memberships",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
+    "/dentists/1/memberships/2": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "Get Membership Details",
+        "tags": [
+          "Dentist"
+        ],
+        "operationId": "Get Membership Details",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/dentists/1/memberships/2",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Get Membership Details",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      },
+      "put": {
+        "description": "TODO: Add Description",
+        "summary": "Update Membership",
+        "tags": [
+          "Dentist"
+        ],
+        "operationId": "Update Membership",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/UpdateMembershiprequest"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "PUT",
+              "uri": "/dentists/1/memberships/2",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
+              },
+              "body": "{\n\t\"name\": \"default child membership\",\n    \"description\": \"Default child membership!\",\n    \"discount\": 0,\n    \"type\": \"monthly\",\n    \"monthlyPrice\": 20.5,\n    \"annualPrice\": 246\n}"
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "Update Membership",
             "x-testDescription": "TODO: Add Description"
           }
         ],
@@ -4860,24 +5063,6 @@
         "message"
       ]
     },
-    "UpdateDentistrequest": {
-      "title": "Update DentistRequest",
-      "type": "object",
-      "properties": {
-        "middleName": {
-          "description": "",
-          "type": "string"
-        },
-        "phoneNumber": {
-          "description": "",
-          "type": "string"
-        }
-      },
-      "required": [
-        "middleName",
-        "phoneNumber"
-      ]
-    },
     "UpdateUser'sDentistrequest": {
       "title": "Update User's DentistRequest",
       "type": "object",
@@ -5206,10 +5391,10 @@
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/User25"
+          "$ref": "#/definitions/User24"
         },
         "officeInfo": {
-          "$ref": "#/definitions/OfficeInfo26"
+          "$ref": "#/definitions/OfficeInfo25"
         },
         "officeImages": {
           "description": "",
@@ -5219,7 +5404,7 @@
           }
         },
         "pricing": {
-          "$ref": "#/definitions/Pricing27"
+          "$ref": "#/definitions/Pricing26"
         },
         "workingHours": {
           "description": "",
@@ -5253,8 +5438,8 @@
         "childMembership"
       ]
     },
-    "User25": {
-      "title": "User25",
+    "User24": {
+      "title": "User24",
       "type": "object",
       "properties": {
         "firstName": {
@@ -5286,8 +5471,8 @@
         "specialtyId"
       ]
     },
-    "OfficeInfo26": {
-      "title": "OfficeInfo26",
+    "OfficeInfo25": {
+      "title": "OfficeInfo25",
       "type": "object",
       "properties": {
         "officeName": {
@@ -5349,8 +5534,8 @@
         "marketplaceOptIn"
       ]
     },
-    "Pricing27": {
-      "title": "Pricing27",
+    "Pricing26": {
+      "title": "Pricing26",
       "type": "object",
       "properties": {
         "codes": {
@@ -5428,6 +5613,65 @@
       "required": [
         "price",
         "discount"
+      ]
+    },
+    "UpdateDentistrequest": {
+      "title": "Update DentistRequest",
+      "type": "object",
+      "properties": {
+        "middleName": {
+          "description": "",
+          "type": "string"
+        },
+        "phoneNumber": {
+          "description": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "middleName",
+        "phoneNumber"
+      ]
+    },
+    "UpdateMembershiprequest": {
+      "title": "Update MembershipRequest",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "",
+          "type": "string"
+        },
+        "description": {
+          "description": "",
+          "type": "string"
+        },
+        "discount": {
+          "description": "",
+          "type": "integer",
+          "format": "int32"
+        },
+        "type": {
+          "description": "",
+          "type": "string"
+        },
+        "monthlyPrice": {
+          "description": "",
+          "type": "number",
+          "format": "double"
+        },
+        "annualPrice": {
+          "description": "",
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "discount",
+        "type",
+        "monthlyPrice",
+        "annualPrice"
       ]
     }
   }
