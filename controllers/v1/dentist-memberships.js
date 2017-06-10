@@ -61,6 +61,28 @@ function getMembership(req, res) {
 }
 
 /**
+ * Adds a new membership plan to the Dentist record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
+function addMembership(req, res, next) {
+  let membership = {};
+
+  db.Membership.create(req.body)
+  .then((mem) => {
+    if (!mem) throw new Error('Failed to create new membership record');
+    membership = mem.toJSON();
+    return mem.getPlanCosts();
+  })
+  .then((costs) => {
+    res.json({ data: Object.assign({}, _.omit(membership, PRIV_MEMBERSHIP_FIELDS), costs) });
+  })
+  .catch(err => next(new BadRequestError(err)));
+}
+
+/**
  * Updates the dentist's membership record
  *
  * @param {Object} req - the express request
@@ -92,7 +114,8 @@ const router = new Router({ mergeParams: true });
 
 router
   .route('/')
-  .get(getMemberships);
+  .get(getMemberships)
+  .post(addMembership);
 
 router
   .route('/:membershipId')
