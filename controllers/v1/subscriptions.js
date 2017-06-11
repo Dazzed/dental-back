@@ -150,8 +150,6 @@ function reEnroll(req, res, next) {
   let subscription = {};
   let membership = {};
   let payProfile = {};
-  let isAnnualSub = false;
-  let endTimeInterval = 'months';
   const memberId = req.params.userId || null;
 
   let preFetch = Promise.resolve();
@@ -182,13 +180,16 @@ function reEnroll(req, res, next) {
     .then((s) => {
       // 1. Get current subscription && validate subscription DNE
       if (!s) throw new Error('User somehow does not have an existing subscription record'); // this should never happen (unless you are a dentist)
-      if ((s.stripeSubscriptionId !== null || s.status === 'expired')) throw new Error('User is already subscribed to a plan');
+      if (s.dentistId !== req.params.dentistId) throw new Error('Patient can only re-enroll into an existing plan. To switch, use change plan.');
+      const isAlmostExpiring = (Moment().subtract(30, 'days').diff(Moment(s.endAt), 'days') >= 0);
+      if ((s.stripeSubscriptionId !== null || s.status === 'expired' || isAlmostExpiring)) throw new Error('User is not qualified to re-enroll or does not have less than 30 days in their current annual plan');
       subscription = s;
-      return db.Membership.find({ where: { id: req.params.membershipId, userId: req.params.dentistId } });
+      return db.Membership.find({ where: { id: s.membershipId, userId: req.params.dentistId } });
     })
     .then((m) => {
       // 2. Get Membership && validate plan exists
       if (!m) throw new Error('Requested membership plan does not exist for Dentist');
+      if (m.type !== 'year') throw new Error('Current membership plan is not an annual plan');
       return stripe.getMembershipPlan(m.stripePlanId);
     })
     .then((m) => {
@@ -206,39 +207,25 @@ function reEnroll(req, res, next) {
     .then((pp) => {
       if (!pp) throw new Error('Current user somehow somehow has no active payment profile'); // this should never happen
       payProfile = pp;
-      // 5. Check if user should be charged for re-enrollment
-      if ((req.user.reEnrollmentFee === true) && (req.user.reEnrollmentFeeWaiver === false)) {
-        // Charge user for re-enrolling
-        return stripe.issueCharge(RE_ENROLLMENT_PENALTY, payProfile.stripeCustomerId, 'Re-Enrollment Penalty Charge');
-      }
       return Promise.resolve();
     })
-    .then(() => {
+    .then(() => (
       // 6. Check if this is an annual subscription, if so, charge the full cost, and give 100% off on the subscription
-      if (membership.interval === 'year') {
-        isAnnualSub = true;
-        endTimeInterval = 'years';
-        return stripe.issueCharge(membership.amount, payProfile.stripeCustomerId, `Annual Subscription: ${membership.name}`);
-      }
-      return Promise.resolve();
-    })
-    .then(() => {
-      if (isAnnualSub) {
-        // 100% off the subscription but register it so our hooks can track when it expires
-        return stripe.createSubscription(membership.name, payProfile.stripeCustomerId, 100);
-      }
-      return stripe.createSubscription(membership.name, payProfile.stripeCustomerId);
-    })
+      stripe.issueCharge(membership.amount, payProfile.stripeCustomerId, `Annual Subscription: ${membership.name}`)
+    ))
+    .then(() => (
+      // 100% off the subscription but register it so our hooks can track when it expires
+      stripe.createSubscription(membership.name, payProfile.stripeCustomerId, 100)
+    ))
     .then((newSubscription) => {
       subscription.stripeSubscriptionId = newSubscription.id;
       subscription.membershipId = req.params.membershipId;
-      subscription.endAt = Moment().add(1, endTimeInterval);
+      subscription.endAt = Moment().add(1, 'year');
       subscription.status = 'active';
       return subscription.save();
     })
     .then(() => {
-      // Prevent the user from hitting a re-enrollment fee
-      req.user.reEnrollmentFee = false;
+      req.user.reEnrollmentFee = true;
       return req.user.save();
     })
     .then(() => res.json({}))
@@ -487,6 +474,10 @@ router
   .get(getSubscription)
   .delete(cancelSubscription);
 
+router
+  .route('/plan/re-enroll')
+  .put(reEnroll);
+
 // Manage subscriptions for members of a family
 
 router
@@ -498,6 +489,10 @@ router
   .route('/members/:userId/plan')
   .get(getSubscription)
   .delete(cancelSubscription);
+
+router
+  .route('/members/:userId/plan/re-enroll')
+  .put(reEnroll);
 
 // ────────────────────────────────────────────────────────────────────────────────
 // WAIVERS
