@@ -765,6 +765,71 @@
         }
       }
     },
+    "/dentists/1/members/pending-amount": {
+      "get": {
+        "description": "TODO: Add Description",
+        "summary": "List Pending Member Bills",
+        "tags": [
+          "Dentists"
+        ],
+        "operationId": "List Pending Member Bills",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [],
+        "x-unitTests": [
+          {
+            "request": {
+              "method": "GET",
+              "uri": "/dentists/1/members/pending-amount",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
+              }
+            },
+            "expectedResponse": {
+              "x-allowExtraHeaders": true,
+              "x-bodyMatchMode": "NONE",
+              "x-arrayOrderedMatching": false,
+              "x-arrayCheckCount": false,
+              "x-matchResponseSchema": true,
+              "headers": {}
+            },
+            "x-testShouldPass": true,
+            "x-testEnabled": true,
+            "x-testName": "List Pending Member Bills",
+            "x-testDescription": "TODO: Add Description"
+          }
+        ],
+        "x-operation-settings": {
+          "CollectParameters": false,
+          "AllowDynamicQueryParameters": false,
+          "AllowDynamicFormParameters": false,
+          "IsMultiContentStreaming": false
+        }
+      }
+    },
     "/reports/dentist/1/list": {
       "get": {
         "description": "TODO: Add Description",
