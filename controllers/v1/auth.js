@@ -67,7 +67,8 @@ function createDentistInfo(user, body, transaction) {
       { transaction }
     ).then((info) => {
       workingHours.forEach((item) => {
-        info.createWorkingHour(item);
+        info.createWorkingHour(item)
+        .catch(e => console.log(e));
       });
 
       // create service records for the dentist.
@@ -77,6 +78,7 @@ function createDentistInfo(user, body, transaction) {
       });
 
       // create pricing records for the dentist.
+      // broken. should query the codes and then link to the pricing code id.
       (pricing.codes || []).forEach((item) => {
         db.MembershipItem.create({
           pricingCodeId: item.code,

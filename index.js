@@ -1,11 +1,14 @@
-require('dotenv').config();
-require('babel-register');
-
 const fs = require('fs');
 const path = require('path');
 
-const isDevelopment = process.env.NODE_ENV !== 'production';
+const rootDir = path.normalize(path.join(__dirname, '.'));
+if (fs.existsSync(path.join(rootDir, '.env'))) {
+  require('dotenv').config();
+}
 
+require('babel-register');
+
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 // Main starting point of the application
 const aws = require('aws-sdk');

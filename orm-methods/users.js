@@ -103,6 +103,9 @@ export const instance = {
             model: db.Review,
             as: 'clientReviews',
             attributes: { exclude: ['clientId', 'dentistId'] },
+          }, {
+            model: db.Address,
+            as: 'addresses'
           }]
         }]
       })
