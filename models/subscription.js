@@ -13,6 +13,10 @@ export default function (sequelize, DataTypes) {
       type: new DataTypes.ENUM(SUBSCRIPTION_STATES),
       defaultValue: 'inactive',
     },
+    endAt: {
+      type: DataTypes.DATE,
+      defaultValue: sequelize.fn('NOW'),
+    },
     stripeSubscriptionId: {
       type: DataTypes.STRING,
       allowNull: true,

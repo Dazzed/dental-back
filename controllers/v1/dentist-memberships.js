@@ -7,7 +7,7 @@ import { Router } from 'express';
 
 import db from '../../models';
 
-import { UPDATE_MEMBERSHIP } from '../../utils/schema-validators';
+import { MEMBERSHIP_FIELDS } from '../../utils/schema-validators';
 
 import {
   BadRequestError,
@@ -61,6 +61,28 @@ function getMembership(req, res) {
 }
 
 /**
+ * Adds a new membership plan to the Dentist record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
+function addMembership(req, res, next) {
+  let membership = {};
+
+  db.Membership.create(req.body)
+  .then((mem) => {
+    if (!mem) throw new Error('Failed to create new membership record');
+    membership = mem.toJSON();
+    return mem.getPlanCosts();
+  })
+  .then((costs) => {
+    res.json({ data: Object.assign({}, _.omit(membership, PRIV_MEMBERSHIP_FIELDS), costs) });
+  })
+  .catch(err => next(new BadRequestError(err)));
+}
+
+/**
  * Updates the dentist's membership record
  *
  * @param {Object} req - the express request
@@ -92,11 +114,12 @@ const router = new Router({ mergeParams: true });
 
 router
   .route('/')
-  .get(getMemberships);
+  .get(getMemberships)
+  .post(validateBody(MEMBERSHIP_FIELDS), addMembership);
 
 router
   .route('/:membershipId')
   .get(injectDentistMembership(), getMembership)
-  .put(injectDentistMembership(), validateBody(UPDATE_MEMBERSHIP), updateMembership);
+  .put(injectDentistMembership(), validateBody(MEMBERSHIP_FIELDS), updateMembership); // inject to verify the membership exists
 
 export default router;

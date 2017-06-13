@@ -19,6 +19,11 @@ export default function (sequelize, DataTypes) {
       allowNull: true,
       defaultValue: '',
     },
+    type: {
+      type: DataTypes.ENUM(['month', 'year']),
+      defaultValue: 'month',
+      allowNull: false,
+    },
     price: {
       type: DataTypes.NUMERIC(6, 2),
       defaultValue: 0,
@@ -64,7 +69,9 @@ export default function (sequelize, DataTypes) {
         new Promise((resolve) => {
           stripe.createMembershipPlan(
             stripe.createUniqueID(membership.userId, membership.name),
+            membership.name,
             membership.price,
+            membership.type,
           ).then((plan) => {
             membership.stripePlanId = plan.id;
             resolve();
@@ -79,6 +86,7 @@ export default function (sequelize, DataTypes) {
             membership.stripePlanId,
             membership.name,
             membership.price,
+            membership.type,
           ).then(() => {
             resolve();
           }).catch(() => { throw new Error('Failed to update membership plan'); });
