@@ -334,10 +334,66 @@ function adminLogin(req, res, next) {
   })(req, res, next);
 }
 
+/**
+ * Send a request to reset the password.
+ */
+function forgotPassword(req, res, next) {
+  if (!req.body.email) return next(new BadRequestError('Missing email'));
+
+  return db.User.find({
+    where: {
+      email: db.sequelize.fn('lower', req.body.email)
+    }
+  })
+    .then(user => {
+      console.log(user.get('email'));
+
+      if (!user) return Promise.reject(new NotFoundError());
+
+      const token = user.getPasswordResetToken();
+
+      return Mailer.passwordResetEmail(res, user, token);
+    })
+    .then(() => res.json({}))
+    .catch(next);
+}
+
+/**
+ * Quickly check password reset validity.
+ */
+function checkResetPassword(req, res, next) {
+  if (!req.query.token) return next(new BadRequestError('Missing token'));
+
+  const { valid } = db.User.resetPasswordTokenValidity(req.query.token);
+
+  return res.json({ valid });
+}
+
+/**
+ * Reset the user password.
+ */
+function resetPassword(req, res, next) {
+  if (!req.body.token) return next(new BadRequestError('Missing token'));
+  if (!req.body.password) return next(new BadRequestError('Missing new password'));
+
+  return db.User.resetPasswordByToken(req.body.token, req.body.password)
+    .then(success => res.json({ success }))
+    .catch(next);
+}
+
 // ────────────────────────────────────────────────────────────────────────────────
 // ENDPOINTS
 
 const router = new Router({ mergeParams: true });
+
+router
+  .route('/forgot-password')
+  .post(forgotPassword);
+
+router
+  .route('/reset-password')
+  .get(checkResetPassword)
+  .post(resetPassword);
 
 router
   .route('/login')
