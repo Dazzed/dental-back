@@ -299,7 +299,7 @@
               "headers": {
                 "Content-Type": "application/json"
               },
-              "body": "{\n\t\"email\": \"john.smith@gmail.com\",\n\t\"confirmEmail\": \"john.smith@gmail.com\",\n\t\"firstName\": \"John\",\n\t\"lastName\": \"Smith\",\n\t\"password\": \"Abc123\",\n\t\"confirmPassword\": \"Abc123\",\n\t\"origin\": \"external\",\n\t\"officeId\": 1, \n\t\"membershipId\": 2\n}"
+              "body": "{\n\t\"email\": \"john.smith@gmail.com\",\n\t\"confirmEmail\": \"john.smith@gmail.com\",\n\t\"firstName\": \"John\",\n\t\"lastName\": \"Smith\",\n\t\"password\": \"Abc123\",\n\t\"confirmPassword\": \"Abc123\",\n\t\"origin\": \"external\",\n\t\"officeId\": 79, \n\t\"membershipId\": 72\n}"
             },
             "expectedResponse": {
               "x-allowExtraHeaders": true,
