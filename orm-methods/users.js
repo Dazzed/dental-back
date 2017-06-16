@@ -3,6 +3,7 @@
 // MODULES
 
 import _ from 'lodash';
+import { timingSafeEqual, createHmac } from 'crypto';
 import db from '../models';
 
 import { MembershipMethods } from '../orm-methods/memberships';
@@ -10,6 +11,8 @@ import { generateRandomEmail } from '../utils/helpers';
 import stripe from '../controllers/stripe';
 
 const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'createdAt', 'updatedAt'];
+
+const PASSWORD_RESET_TIMEOUT = 1000 * 60 * 60 * 24; // 1 day.
 
 // ────────────────────────────────────────────────────────────────────────────────
 // EXPORTS
@@ -503,10 +506,83 @@ export const instance = {
       };
     });
   },
+
+  /**
+   * Create the password reset hash.
+   */
+  createPasswordResetHash(timestamp) {
+    const userId = this.get('id');
+    const hash = createHmac('sha256', process.env.PASSWORD_RESET_SECRET_KEY);
+
+    hash.update([
+      timestamp,
+      userId,
+      this.get('email'),
+      this.get('hash'),
+      this.get('salt')
+    ].join('-'));
+
+    return hash.digest();
+  },
+
+  /**
+   * Get the password reset token.
+   */
+  getPasswordResetToken() {
+    const now = Date.now();
+    const userId = this.get('id');
+    const hash = this.createPasswordResetHash(now);
+
+    return `${now.toString(36)}.${userId.toString(36)}.${hash.toString('hex')}`;
+  },
+
 };
 
 
 export const model = {
+
+  /**
+   * Check token validity.
+   */
+  resetPasswordTokenValidity(token) {
+    const parts = token.split('.');
+    const timestamp = parseInt(parts[0], 36);
+    const userId = parseInt(parts[1], 36);
+    const hash = Buffer.from(parts[2], 'hex');
+    const valid = timestamp + PASSWORD_RESET_TIMEOUT > Date.now();
+
+    return { valid, timestamp, userId, hash };
+  },
+
+  /**
+   * Reset a user password.
+   */
+  resetPasswordByToken(token, newPassword) {
+    const { valid, timestamp, userId, hash } = this.resetPasswordTokenValidity(token);
+
+    if (!valid) return Promise.resolve(false);
+
+    return db.User.find({
+      where: {
+        id: userId
+      }
+    })
+      .then(user => {
+        if (!user) return false
+
+        const generated = user.createPasswordResetHash(timestamp);
+
+        if (!timingSafeEqual(hash, generated)) return false;
+
+        const p = new Promise((resolve, reject) => {
+          return user.setPassword(newPassword, err => {
+            return err ? reject(err) : resolve(true);
+          });
+        });
+
+        return p.then(() => user.save()).then(() => true);
+      });
+  },
 
   /**
    * Gets the associated member object of the user

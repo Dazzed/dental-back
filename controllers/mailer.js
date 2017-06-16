@@ -10,6 +10,12 @@ import {
 
 const site = process.env.SITE;
 
+function mail(mailer, template, locals) {
+  return new Promise((resolve, reject) => {
+    mailer.send(template, locals, (err, info) => err ? reject(err) : resolve(info));
+  });
+}
+
 export default {
 
   /**
@@ -20,16 +26,11 @@ export default {
    * @return {Promise<Info>}
    */
   activationRequestEmail(res, user) {
-    return new Promise((resolve, reject) => {
-      res.mailer.send('auth/dentist/activation_required', {
-        to: user.email,
-        subject: EMAIL_SUBJECTS.client.activation_required,
-        site,
-        user,
-      }, (err, info) => {
-        if (err) reject(err);
-        resolve(info);
-      });
+    return mail(res.mailer, 'auth/dentist/activation_required', {
+      to: user.email,
+      subject: EMAIL_SUBJECTS.client.activation_required,
+      site,
+      user,
     });
   },
 
@@ -41,16 +42,24 @@ export default {
    * @return {Promise<Info>}
    */
   activationCompleteEmail(res, user) {
-    return new Promise((resolve, reject) => {
-      res.mailer.send('auth/activation_complete', {
-        to: user.email,
-        subject: EMAIL_SUBJECTS.activation_complete,
-        site,
-        user,
-      }, (err, info) => {
-        if (err) reject(err);
-        resolve(info);
-      });
+    return mail(res.mailer, 'auth/activation_complete', {
+      to: user.email,
+      subject: EMAIL_SUBJECTS.activation_complete,
+      site,
+      user,
+    });
+  },
+
+  /**
+   * Send an email to reset the users password.
+   */
+  passwordResetEmail(res, user, token) {
+    return mail(res.mailer, 'auth/password_reset', {
+      to: user.email,
+      subject: EMAIL_SUBJECTS.password_reset,
+      token,
+      site,
+      user,
     });
   }
 
