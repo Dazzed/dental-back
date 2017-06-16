@@ -63,6 +63,14 @@ export default {
     });
   }
 
+  dentistSignupEmail(res, user) {
+    return mail(res.mailer, 'auth/dentist_signup', {
+      to: user.email,
+      subject: EMAIL_SUBJECTS.dentist.welcome,
+      site,
+      user
+    });
+  }
   // TODO: add all mailer calls here from endpoints
 
 };
