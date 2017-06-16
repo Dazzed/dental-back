@@ -12,6 +12,8 @@
     "prod": "cross-env NODE_ENV=production node index.js",
     "postinstall": "npm run migrate",
     "migrate": "sequelize db:migrate",
+    "migrate:undo": "sequelize db:migrate:undo",
+    "migrate:create": "sequelize migration:create",
     "seed": "sequelize db:seed:all"
   },
   "engines": {
