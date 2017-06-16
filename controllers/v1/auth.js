@@ -226,14 +226,13 @@ function dentistUserSignup(req, res, next) {
             reject(registerError);
           } else {
             resolve(createdUser);
-            // Create the Dentist Office record
-            createDentistInfo(createdUser, req.body);
-            Mailer.activationRequestEmail(res, createdUser);
           }
         });
       })
       .then(userObj => (
         Promise.all([
+          createDentistInfo(userObj, req.body),
+          Mailer.activationRequestEmail(res, userObj),
           userObj.createPhoneNumber({ number: req.body.user.phone }, { transaction: t }),
           // This should be created so we can edit values
           userObj.createAddress({ value: '' }, { transaction: t }),
@@ -244,7 +243,8 @@ function dentistUserSignup(req, res, next) {
       res
       .status(HTTPStatus.CREATED)
       .json({});
-    });
+    })
+    .catch(next);
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
