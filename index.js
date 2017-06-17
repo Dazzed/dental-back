@@ -146,4 +146,8 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
+// Jobs
+var jobs = require('./jobs/run');
+// jobs();
+
 module.exports = app;
