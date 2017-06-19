@@ -52,7 +52,6 @@ const router = new Router({ mergeParams: true });
 
 router.route('/')
   .get(
-    userRequired,
     getPricingCodes)
   .post(
     userRequired,
