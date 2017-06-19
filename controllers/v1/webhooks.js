@@ -38,7 +38,7 @@ function charge_succeeded(request, response) {
               let activeUserMembership = memberships.find(m => m.id == subscription.membershipId);
               if (activeUserMembership.name == "default child membership") {
                 let adultUserMembership = memberships.find(m => m.id !== activeUserMembership.id);
-                stripe.updateSubscription(stripeSubscriptionId, adultUserMembership.id, true)
+                stripe.updateSubscription(stripeSubscriptionId, adultUserMembership.stripePlanId, true)
                   .then(data => {
                     subscription.membershipId = adultUserMembership.id;
                     subscription.save();
