@@ -15,7 +15,11 @@ services:
             - "3090:3090"
         links:
             - db
+        env_file: .env
     frontend:
         build: ../dentalhq-front-end
         ports:
             - "3000:3000"
+        env_file: ../dentalhq-front-end/.env
+        links:
+            - backend
