@@ -47,7 +47,7 @@ function stripe_webbook(request, response) {
       }
 
       function checkAdultUsers(clientSubscriptions = [], dentistMembershipPlans = [], callback) {
-        let thirteen_years_ago = moment().subtract("13", "years").format("YYYY-MM-DD");
+        let thirteen_years_ago = moment().subtract("13", "years").add("1","month").format("YYYY-MM-DD");
         let clientIds = clientSubscriptions.map(subscription => subscription.clientId);
         if (clientIds.length > 0) {
           db.User.findAll({
@@ -80,6 +80,9 @@ function stripe_webbook(request, response) {
               stripe.updateSubscription(subs.stripeSubscriptionId, dentistAdultMemberShip.stripePlanId, true)
                 .then(data => {
                   subs.membershipId = dentistAdultMemberShip.id;
+                  if(subs.status == "past_due") {
+                    subs.status = "active";
+                  }
                   subs.save();
                   eachCallback();
                 }, (err) => {
