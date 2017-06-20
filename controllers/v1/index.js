@@ -26,6 +26,7 @@ import services from './services';
 import stats from './stats';
 import subscriptions from './subscriptions';
 import users from './users';
+import webhooks from './webhooks';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
@@ -80,5 +81,7 @@ router.use('/admin/dentists/memberships', memberships);
 router.use('/admin/dentists/reports', reports);
 
 router.use('/admin/dentists/offices', offices);
+
+router.use('/webhooks',webhooks)
 
 export default router;
