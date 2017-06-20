@@ -123,6 +123,12 @@ export const SUBSCRIPTION_TYPES = [
 ];
 
 
+export const SUBSCRIPTION_AGE_GROUPS = [
+  'adult',
+  'child'
+];
+
+
 export const RECOMMENDED_DISCOUNT = 25;
 
 
