@@ -7,13 +7,7 @@ var async = require('async');
 
 const router = new Router({ mergeParams: true });
 
-function errorCallback(err) {
-  console.log("Error in charge_succeeded function.");
-  console.log(err);
-  return;
-}
-
-function charge_succeeded(request, response) {
+function stripe_webbook(request, response) {
   ((request, response) => {
 
     var { body } = request;
@@ -77,20 +71,23 @@ function charge_succeeded(request, response) {
       }
 
       function checkAndUpdateChildMembershipPlans(clientSubscriptions = [], dentistMembershipPlans = [], callback) {
-        if (clientSubscriptions.length > 1) {
+        if (clientSubscriptions.length > 1 && dentistMembershipPlans.length > 1) {
           async.each(clientSubscriptions, (subs, eachCallback) => {
             let clientPlan = dentistMembershipPlans.find(plan => plan.id == subs.membershipId);
-            let dentistChildMemberShip = dentistMembershipPlans.find(plan => plan.name == 'default child membership' && plan.type == clientPlanType.type);
-            let dentistAdultMemberShip = dentistMembershipPlans.find(plan => plan.name == 'default membership' && plan.type == clientPlanType.type);
-            if (clientPlan.name !== 'default membership') {
+            let dentistChildMemberShip = dentistMembershipPlans.find(plan => plan.name == 'default child membership' && plan.type == "month");
+            let dentistAdultMemberShip = dentistMembershipPlans.find(plan => plan.name == 'default membership' && plan.type == "month");
+            if (clientPlan.name !== 'default membership' && clientPlan.type == "month" && (subs.status == "active" || subs.status == "past_due")) {
               stripe.updateSubscription(subs.stripeSubscriptionId, dentistAdultMemberShip.stripePlanId, true)
                 .then(data => {
                   subs.membershipId = dentistAdultMemberShip.id;
-                  subscription.save();
+                  subs.save();
                   eachCallback();
                 }, (err) => {
                   eachCallback(err);
                 });
+            }
+            else {
+              eachCallback();
             }
           }, (err) => {
             if (err) {
@@ -118,14 +115,61 @@ function charge_succeeded(request, response) {
         } else {
           console.log(result);
         }
-      })
+      });
+    }
+
+    else if (body.type == "charge.failed") {
+      function queryPaymentProfile(callback) {
+        let stripeCustomerId = body.data.object.customer;
+        db.PaymentProfile.findOne({
+          where: {
+            stripeCustomerId
+          }
+        }).then(paymentProfile => {
+          let paymentProfileId = paymentProfile.id;
+          callback(null, paymentProfileId);
+        });
+      }
+
+      function getClientSubscriptions(paymentProfileId, callback) {
+        db.Subscription.findAll({
+          paymentProfileId
+        }).then(clientSubscriptions => {
+          callback(null, clientSubscriptions);
+        })
+      }
+
+      function markSubscriptionsInactive(clientSubscriptions, callback) {
+        async.each(clientSubscriptions, (subscription, eachCallback) => {
+          clientSubscriptions.updateAttributes({ status: "past_due" });
+          eachCallback();
+        }, err => {
+          if (err) {
+            callback(err);
+          } else {
+            callback(null, "charge.failed hook executed Successfully")
+          }
+        });
+      }
+
+      async.waterfall([
+        queryPaymentProfile,
+        getClientSubscriptions,
+        markSubscriptionsInactive
+      ], (err, result) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log(result);
+        }
+      });
     }
   })(request, response);
   response.status(200).send({});
 }
 
 router
-  .route('/charge_succeeded')
-  .post(charge_succeeded);
+  .route('/stripe_webbook')
+  .post(stripe_webbook);
 
-export default router;  
+export default router;
