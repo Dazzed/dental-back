@@ -61,7 +61,7 @@ export default {
       site,
       user,
     });
-  }
+  },
 
   dentistSignupEmail(res, user) {
     return mail(res.mailer, 'auth/dentist_signup', {

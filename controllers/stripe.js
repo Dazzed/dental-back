@@ -5,6 +5,8 @@
 import Stripe from 'stripe';
 import db from '../models';
 
+import notifyMembershipPriceUpdate from '../jobs/member_ship_fee_notification';
+
 const stripe = Stripe(process.env.STRIPE_API_KEY);
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -333,7 +335,7 @@ export default {
           where: { membershipId },
           attributes: ['stripeSubscriptionId'],
         }).then((subscriptions = []) => {
-          subscriptions.forEach(sub =>
+          subscriptions.forEach(sub => {
             // Update the old subscriptions with the new plan
             stripe.subscriptions.update(
               sub.stripeSubscriptionId,
@@ -344,8 +346,10 @@ export default {
                   sub.save();
                 }
               }
-            )
-          );
+            );
+            if(sub.status == "active")
+              notifyMembershipPriceUpdate(sub.clientId);
+          });
           resolve();
         });
       })

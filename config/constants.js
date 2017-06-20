@@ -94,6 +94,7 @@ export const CONTACT_SUPPORT_EMAIL = 'info@dentalhq.com';
 export const EMAIL_SUBJECTS = {
   client: {
     welcome: 'Welcome to the Dental Marketplace!',
+    membershipPriceUpdate: 'Membership Price Update'
   },
   dentist: {
     welcome: 'Welcome to the Dental Marketplace!',
