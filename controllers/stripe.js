@@ -5,7 +5,7 @@
 import Stripe from 'stripe';
 import db from '../models';
 
-import notifyMembershipPriceUpdate from '../jobs/member_ship_fee_notification';
+import {notifyMembershipPriceUpdateAdvance} from '../jobs/member_ship_fee_notification';
 
 const stripe = Stripe(process.env.STRIPE_API_KEY);
 
@@ -324,36 +324,57 @@ export default {
   updateMembershipPlanPrice(membershipId, planId, name, price = 0, interval, trialPeriodDays = 0) {
     price *= 100; // adjust pricing to stripe's requirement
 
+    // return new Promise((resolve, reject) => {
+    //   // Delete the old plan
+    //   this.deleteMembershipPlan(planId)
+    //   // Create the new plan
+    //   .then(() => this.createMembershipPlan(planId, name, price, interval, trialPeriodDays))
+    //   .then((plan) => {
+    //     // Update related subscriptions
+    //     db.Subscription.findAll({
+    //       where: { membershipId },
+    //       attributes: ['stripeSubscriptionId'],
+    //     }).then((subscriptions = []) => {
+    //       subscriptions.forEach(sub => {
+    //         // Update the old subscriptions with the new plan
+    //         stripe.subscriptions.update(
+    //           sub.stripeSubscriptionId,
+    //           { plan, prorate: true, },
+    //           (err, s) => {
+    //             if (!err) {
+    //               sub.stripeSubscriptionId = s.id;
+    //               sub.save();
+    //             }
+    //           }
+    //         );
+    //         if(sub.status == "active")
+    //           notifyMembershipPriceUpdate(sub.clientId);
+    //       });
+    //       resolve();
+    //     });
+    //   })
+    //   .catch(reject);
+    // });
+
     return new Promise((resolve, reject) => {
-      // Delete the old plan
-      this.deleteMembershipPlan(planId)
-      // Create the new plan
-      .then(() => this.createMembershipPlan(planId, name, price, interval, trialPeriodDays))
-      .then((plan) => {
-        // Update related subscriptions
+      db.MembershipUpdateRequest.create({
+        membershipId,
+        newPlanName: name,
+        newPrice: price
+      }).then(data => {
+        resolve();
         db.Subscription.findAll({
           where: { membershipId },
           attributes: ['stripeSubscriptionId'],
         }).then((subscriptions = []) => {
           subscriptions.forEach(sub => {
-            // Update the old subscriptions with the new plan
-            stripe.subscriptions.update(
-              sub.stripeSubscriptionId,
-              { plan, prorate: true, },
-              (err, s) => {
-                if (!err) {
-                  sub.stripeSubscriptionId = s.id;
-                  sub.save();
-                }
-              }
-            );
-            if(sub.status == "active")
-              notifyMembershipPriceUpdate(sub.clientId);
+            if(sub.status == "active") {
+              notifyMembershipPriceUpdateAdvance(sub.clientId);
+            }
           });
-          resolve();
-        });
+        })
       })
-      .catch(reject);
+      .catch(reject)
     });
   },
 
