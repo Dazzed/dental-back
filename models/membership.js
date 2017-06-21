@@ -5,6 +5,11 @@ import stripe from '../controllers/stripe';
 
 import { instance } from '../orm-methods/memberships';
 
+import {
+  SUBSCRIPTION_TYPES,
+  SUBSCRIPTION_AGE_GROUPS
+} from '../config/constants';
+
 // ────────────────────────────────────────────────────────────────────────────────
 // MODEL
 
@@ -20,8 +25,8 @@ export default function (sequelize, DataTypes) {
       defaultValue: '',
     },
     type: {
-      type: DataTypes.ENUM(['month', 'year']),
-      defaultValue: 'month',
+      type: DataTypes.ENUM(SUBSCRIPTION_TYPES),
+      defaultValue: SUBSCRIPTION_TYPES[0],
       allowNull: false,
     },
     price: {
@@ -36,7 +41,13 @@ export default function (sequelize, DataTypes) {
     stripePlanId: {
       type: DataTypes.STRING,
       allowNull: true,
-    }
+    },
+    // sorry for snake casing.. no time right now to change things.. :(
+    subscription_age_group: {
+      type: DataTypes.ENUM(SUBSCRIPTION_AGE_GROUPS),
+      defaultValue: SUBSCRIPTION_AGE_GROUPS[0],
+      allowNull: false,
+    },
   }, {
     tableName: 'memberships',
 
@@ -46,20 +57,17 @@ export default function (sequelize, DataTypes) {
 
     classMethods: {
       associate(models) {
+
         Membership.belongsTo(models.User, {
           foreignKey: 'userId',
           as: 'owner'
         });
 
-        Membership.hasOne(models.DentistInfo, {
-          foreignKey: 'membershipId',
-          as: 'dentistInfo',
+        Membership.belongsTo(models.DentistInfo, {
+          foreignKey: 'dentistInfoId',
+          as: 'ownerInfo'
         });
 
-        Membership.hasOne(models.DentistInfo, {
-          foreignKey: 'childMembershipId',
-          as: 'childDentistInfo',
-        });
       }
     },
 
