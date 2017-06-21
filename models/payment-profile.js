@@ -17,7 +17,7 @@ export default function (sequelize, DataTypes) {
     classMethods: {
       associate(models) {
         PaymentProfile.belongsTo(models.User, {
-          foreignKey: 'primaryAccountHolderId',
+          foreignKey: 'primaryAccountHolder',
           allowNull: false,
         });
         PaymentProfile.hasMany(models.Subscription, {
