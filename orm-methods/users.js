@@ -223,9 +223,9 @@ export const instance = {
       db.PaymentProfile.find({
         where: {
           $or: [{
-            primaryAccountHolderId: this.get('id'),
+            primaryAccountHolder: this.get('id'),
           }, {
-            primaryAccountHolderId: this.get('addedBy'),
+            primaryAccountHolder: this.get('addedBy'),
           }]
         }
       })
@@ -501,7 +501,7 @@ export const instance = {
     .then((profile) => {
       if (!profile) throw new Error('User has no payment profile');
       return {
-        primaryAccountHolder: (userId === profile.primaryAccountHolderId),
+        primaryAccountHolder: (userId === profile.primaryAccountHolder),
         stripeCustomerId: profile.stripeCustomerId,
       };
     });

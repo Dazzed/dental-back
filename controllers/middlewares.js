@@ -485,7 +485,7 @@ export function validatePaymentManager(userParamName = 'userId', localUserVarNam
     })
     .then((profile) => {
       // Validate the access (only primary account holder and user's dentist is allowed)
-      if ((sessionUserId !== profile.primaryAccountHolderId) && !isDentist) {
+      if ((sessionUserId !== profile.primaryAccountHolder) && !isDentist) {
         throw new Error('User does not have access to this user account');
       }
       req.locals[localPayVarName] = profile;

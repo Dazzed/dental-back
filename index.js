@@ -75,16 +75,16 @@ app.use('/s3', require('react-s3-uploader/s3router')({
 
 let mailerOptions = { transportMethod: 'Stub' };
 
-if (process.env.NODE_ENV === 'production') {
-  mailerOptions = {
-    transportMethod: 'SendGrid',
-    from: 'Dental Marketplace <donotreply@dental-marketplace.com>',
-    auth: {
-      user: process.env.SENDGRID_USERNAME,
-      pass: process.env.SENDGRID_PASSWORD,
-    }
-  };
-}
+// if (process.env.NODE_ENV === 'production') {
+mailerOptions = {
+  transportMethod: 'SendGrid',
+  from: 'Dental Marketplace <donotreply@dental-marketplace.com>',
+  auth: {
+    user: process.env.SENDGRID_USERNAME,
+    pass: process.env.SENDGRID_PASSWORD,
+  }
+};
+// }
 
 mailer.extend(app, mailerOptions);
 
