@@ -243,7 +243,7 @@ function dentistUserSignup(req, res, next) {
       res
       .status(HTTPStatus.CREATED)
       .json({});
-      Mailer.dentistSignupEmail(res, req.body.user);
+      // Mailer.dentistSignupEmail(res, req.body.user);
     })
     .catch(next);
   })

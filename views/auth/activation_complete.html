@@ -1,38 +1,38 @@
-{% extends '../layout.html' %}
-
-{% block body %}
+{% extends '../layout.html' %} {% block body %}
 
 <table width="100%" cellpadding="0" cellspacing="0">
 
-<tr>
-    <td class="content-block title">
-        <h2>Hi, {{ user.firstName }}</h2>
-    </td>
-</tr>
+    <tr>
+        <td class="content-block title">
+            <h2>Hi, {{ user.firstName }}</h2>
+        </td>
+    </tr>
 
 
-<tr>
-    <td class="content-block content">
-        Your account has been activated successfully!
-    </td>
-</tr>
+    <tr>
+        <td class="content-block content">
+            Thank you for taking the first step in partnering with DentalHQ to provide a fully branded in-office dental membership plan.
+            Your account manager has now reviewed and activated your account. Please follow the link below to log into your
+            dashboard. If you have any questions please give us a call. Welcome Aboard!
+        </td>
+    </tr>
 
-<tr>
-    <td class="content-block content">
-        Try everything out and enjoy.
-    </td>
-</tr>
-
-<tr>
-    <td class="content-block" style="padding-bottom:0;">
-        <!-- <% if (user.type === 'dentist') { %> -->
+    <tr>
+        <td class="content-block" style="padding-bottom:0;">
+            <!-- <% if (user.type === 'dentist') { %> -->
             <!-- <a href="{{ site }}accounts/login" class="btn-primary btn-cyan" itemprop="url">Explore</a>     -->
-        <!-- <% } else { %> -->
-            <a href="{{ site }}accounts/login" class="btn-primary btn-green" itemprop="url">Explore</a>
-        <!-- <% } %> -->
-    </td>
-</tr>
+            <!-- <% } else { %> -->
+            <div>
+                <span>
+                    <img style="width: 25%;" src="https://s3.amazonaws.com/dentalman_uploads/dentalhq_logo?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIBJK42DMDOTY5QIQ%2F20170621%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20170621T095740Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ac1832771051a37182380be24b790cff0701ab12f460079bd1d7839dc18feb7d" />
+                </span>
+                <span>
+                    <a style="position:relative;bottom:10px;float:right;" href="{{ site }}accounts/login" class="btn-primary btn-green" itemprop="url">Login</a>
+                </span>
+            </div>
+            <!-- <% } %> -->
+        </td>
+    </tr>
 
 </table>
 {% endblock %}
-
