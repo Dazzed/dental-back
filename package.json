@@ -14,7 +14,8 @@
     "migrate": "sequelize db:migrate",
     "migrate:undo": "sequelize db:migrate:undo",
     "migrate:create": "sequelize migration:create",
-    "seed": "sequelize db:seed:all"
+    "seed": "sequelize db:seed:all",
+    "delete-stripe-data": "node scripts/stripe-delete-all"
   },
   "engines": {
     "node": "7.5.0"
