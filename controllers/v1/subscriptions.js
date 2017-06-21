@@ -76,9 +76,9 @@ function subscribe(req, res, next) {
       // 4. Get Payment Profile
       return db.PaymentProfile.find({
         $or: [{
-          primaryAccountHolderId: req.user.get('id'),
+          primaryAccountHolder: req.user.get('id'),
         }, {
-          primaryAccountHolderId: req.user.addedBy,
+          primaryAccountHolder: req.user.addedBy,
         }],
       });
     })
@@ -198,9 +198,9 @@ function reEnroll(req, res, next) {
       // 4. Get Payment Profile
       return db.PaymentProfile.find({
         $or: [{
-          primaryAccountHolderId: req.user.get('id'),
+          primaryAccountHolder: req.user.get('id'),
         }, {
-          primaryAccountHolderId: req.user.addedBy,
+          primaryAccountHolder: req.user.addedBy,
         }],
       });
     })
@@ -396,9 +396,9 @@ function cancelSubscription(req, res, next) {
       // 5. Get Payment Profile
       return db.PaymentProfile.find({
         $or: [{
-          primaryAccountHolderId: currentUserId,
+          primaryAccountHolder: currentUserId,
         }, {
-          primaryAccountHolderId: user.addedBy,
+          primaryAccountHolder: user.addedBy,
         }],
       });
     }

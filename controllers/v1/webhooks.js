@@ -7,7 +7,7 @@ var async = require('async');
 
 const router = new Router({ mergeParams: true });
 
-function stripe_webbook(request, response) {
+function stripe_webhook(request, response) {
   ((request, response) => {
 
     var { body } = request;
@@ -19,6 +19,9 @@ function stripe_webbook(request, response) {
             stripeCustomerId
           }
         }).then(paymentProfile => {
+          if (!paymentProfile) {
+            return callback('No matching records in payment profile');
+          }
           let paymentProfileId = paymentProfile.id;
           callback(null, paymentProfileId);
         });
@@ -172,7 +175,7 @@ function stripe_webbook(request, response) {
 }
 
 router
-  .route('/stripe_webbook')
-  .post(stripe_webbook);
+  .route('/stripe_webhook')
+  .post(stripe_webhook);
 
 export default router;
