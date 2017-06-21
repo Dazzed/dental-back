@@ -4,6 +4,7 @@
 
 import Stripe from 'stripe';
 import db from '../models';
+import uuid from 'uuid/v4';
 
 import notifyMembershipPriceUpdate from '../jobs/member_ship_fee_notification';
 
@@ -64,7 +65,7 @@ export default {
    * @returns {string} - the unique plan name
    */
   createUniqueID(officeName, name) {
-    return `${officeName}__${name.split(' ').join('-')}`;
+    return `${officeName}__${name.split(' ').join('-')}__${uuid()}`;
   },
 
   /**
