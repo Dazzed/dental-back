@@ -29,7 +29,9 @@ function stripe_webhook(request, response) {
 
       function getClientSubscriptions(paymentProfileId, callback) {
         db.Subscription.findAll({
-          paymentProfileId
+          where: {
+            paymentProfileId
+          }
         }).then(clientSubscriptions => {
           callback(null, clientSubscriptions);
         })
@@ -39,7 +41,9 @@ function stripe_webhook(request, response) {
         if (clientSubscriptions.length > 0) {
           let { dentistId } = clientSubscriptions[0];
           db.Membership.findAll({
-            userId: dentistId
+            where:{
+              userId: dentistId
+            }
           }).then(dentistMembershipPlans => {
             callback(null, clientSubscriptions, dentistMembershipPlans);
           })
@@ -74,7 +78,8 @@ function stripe_webhook(request, response) {
       }
 
       function checkAndUpdateChildMembershipPlans(clientSubscriptions = [], dentistMembershipPlans = [], callback) {
-        if (clientSubscriptions.length > 1 && dentistMembershipPlans.length > 1) {
+
+        if (clientSubscriptions.length > 0 && dentistMembershipPlans.length > 0) {
           async.each(clientSubscriptions, (subs, eachCallback) => {
             let clientPlan = dentistMembershipPlans.find(plan => plan.id == subs.membershipId);
             let dentistChildMemberShip = dentistMembershipPlans.find(plan => plan.name == 'default child membership' && plan.type == "month");
@@ -100,7 +105,7 @@ function stripe_webhook(request, response) {
               callback(err);
             }
             else {
-              callback(null, "charge_succeeded hook executed Successfully WITH changes.");
+              callback(null, "charge_succeeded hook executed Successfully.");
             }
           });
         }
@@ -139,7 +144,9 @@ function stripe_webhook(request, response) {
 
       function getClientSubscriptions(paymentProfileId, callback) {
         db.Subscription.findAll({
-          paymentProfileId
+          where:{
+            paymentProfileId
+          }
         }).then(clientSubscriptions => {
           callback(null, clientSubscriptions);
         })
