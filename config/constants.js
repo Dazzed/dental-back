@@ -110,10 +110,13 @@ export const EMAIL_SUBJECTS = {
 
 
 export const SUBSCRIPTION_STATES = [
+  'trialing',
   'active',
-  'canceled',
   'inactive',
   'past_due',
+  'canceled',
+  'unpaid',
+  'expired'
 ];
 
 
