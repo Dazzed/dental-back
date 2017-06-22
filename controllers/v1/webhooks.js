@@ -144,7 +144,9 @@ function stripe_webhook(request, response) {
 
       function getClientSubscriptions(paymentProfileId, callback) {
         db.Subscription.findAll({
-          paymentProfileId
+          where:{
+            paymentProfileId
+          }
         }).then(clientSubscriptions => {
           callback(null, clientSubscriptions);
         })
