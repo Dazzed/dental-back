@@ -26,5 +26,3 @@ module.exports = () => {
   run_stripe_subscription_job();
   run_membership_price_watcher_job();
 };
-
-membership_price_watcher_job();
