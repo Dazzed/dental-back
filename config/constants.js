@@ -126,6 +126,24 @@ export const SUBSCRIPTION_TYPES = [
 ];
 
 
+export const SUBSCRIPTION_TYPES_LOOKUP = {
+  month: SUBSCRIPTION_TYPES[0],
+  year: SUBSCRIPTION_TYPES[1],
+};
+
+
+export const SUBSCRIPTION_AGE_GROUPS = [
+  'adult',
+  'child'
+];
+
+
+export const SUBSCRIPTION_AGE_GROUPS_LOOKUP = {
+  adult: SUBSCRIPTION_AGE_GROUPS[0],
+  child: SUBSCRIPTION_AGE_GROUPS[1],
+};
+
+
 export const RECOMMENDED_DISCOUNT = 25;
 
 

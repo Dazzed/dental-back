@@ -77,19 +77,10 @@ export default function (sequelize, DataTypes) {
     instanceMethods: instance,
     classMethods: Object.assign({
       associate(models) {
+
         DentistInfo.hasMany(models.DentistInfoService, {
           foreignKey: 'dentistInfoId',
           as: 'services'
-        });
-
-        DentistInfo.belongsTo(models.Membership, {
-          foreignKey: 'membershipId',
-          as: 'membership'
-        });
-
-        DentistInfo.belongsTo(models.Membership, {
-          foreignKey: 'childMembershipId',
-          as: 'childMembership'
         });
 
         DentistInfo.hasMany(models.WorkingHours, {
@@ -105,6 +96,11 @@ export default function (sequelize, DataTypes) {
         DentistInfo.hasMany(models.DentistInfoPhotos, {
           foreignKey: 'dentistInfoId',
           as: 'officeImages'
+        });
+
+        DentistInfo.hasMany(models.Membership, {
+          foreignKey: 'dentistInfoId',
+          as: 'memberships'
         });
 
         DentistInfo.belongsTo(models.User, {

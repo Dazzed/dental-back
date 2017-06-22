@@ -5,6 +5,7 @@
 import Stripe from 'stripe';
 import db from '../models';
 import uuid from 'uuid/v4';
+import _ from 'lodash';
 
 import notifyMembershipPriceUpdate from '../jobs/member_ship_fee_notification';
 
@@ -264,7 +265,7 @@ export default {
         id: planId,
         interval,
         name: planId,
-        amount: price.toString(),
+        amount: _.floor(_.toNumber(price)*100),
         currency: 'usd',
         interval_count: 1,
         trial_period_days: trialPeriodDays,
@@ -323,7 +324,7 @@ export default {
    * @returns {Promise<null>}
    */
   updateMembershipPlanPrice(membershipId, planId, name, price = 0, interval, trialPeriodDays = 0) {
-    price *= 100; // adjust pricing to stripe's requirement
+    price = _.floor(_.toNumber(price)*100); // adjust pricing to stripe's requirement
 
     return new Promise((resolve, reject) => {
       // Delete the old plan
