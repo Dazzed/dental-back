@@ -10,6 +10,7 @@ import db from '../../models';
 
 import { userRequired, injectDentistInfo } from '../middlewares';
 import { MembershipMethods } from '../../orm-methods/memberships';
+import { SUBSCRIPTION_STATES_LOOKUP } from '../../config/constants';
 
 import {
   ForbiddenError,
@@ -31,7 +32,7 @@ function getDentistInfo(req, res, next) {
   const userId = req.user.get('type') === 'admin' ? req.params.userId : req.user.get('id');
   dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId', 'pricing']);
 
-  Promise.resolve()
+  return Promise.resolve()
   .then(() => (
     db.MembershipItem.findAll({
       where: { dentistInfoId: dentistInfo.id },
@@ -52,29 +53,10 @@ function getDentistInfo(req, res, next) {
     // Unwrap the services
     dentistInfo.services = dentistInfo.services.map(item => item.service);
 
-    // Fetch the estimated savings for memberships
-    return MembershipMethods.calculateCosts(dentistInfo.id, [
-      dentistInfo.membership.id,
-      dentistInfo.childMembership.id,
-    ]);
-  })
-  .then((fullCosts) => {
-    // Inject estimated savings
-    fullCosts.forEach((cost) => {
-      if (dentistInfo.membership.id === cost.membershipId) {
-        dentistInfo.membership.fullCost = cost.fullCost;
-        dentistInfo.membership.savings = (cost.fullCost - (parseInt(dentistInfo.membership.price, 10) * 12));
-      } else if (dentistInfo.childMembership.id === cost.membershipId) {
-        dentistInfo.childMembership.fullCost = cost.fullCost;
-        dentistInfo.childMembership.savings = (cost.fullCost - (parseInt(dentistInfo.childMembership.price, 10) * 12));
-      }
-    });
-
-    // Determine # of active members
     return db.Subscription.count({
       where: {
         dentistId: userId,
-        status: 'active'
+        status: SUBSCRIPTION_STATES_LOOKUP.active,
       }
     });
   })

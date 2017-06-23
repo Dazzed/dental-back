@@ -107,15 +107,9 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
         }
       }, {
         model: db.Membership,
-        as: 'membership',
+        as: 'memberships',
         attributes: {
-          exclude: ['userId'],
-        },
-      }, {
-        model: db.Membership,
-        as: 'childMembership',
-        attributes: {
-          exclude: ['userId'],
+          exclude: ['userId', 'dentistInfoId', 'stripePlanId'],
         },
       }, {
         model: db.DentistInfoService,
@@ -133,16 +127,19 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
         as: 'officeImages',
         attributes: ['url']
       }],
-      order: [
-        [
-          { model: db.Membership, as: 'membership' },
-          'id', 'asc'
-        ],
-        [
-          { model: db.Membership, as: 'childMembership' },
-          'id', 'asc'
-        ]
-      ]
+      // Confused as to what the ordering should be here.
+      // Should the orderign be based on the id of the memberships?
+      // Wouldn't that be automatic?
+      // order: [
+      //   [
+      //     { model: db.Membership, as: 'membership' },
+      //     'id', 'asc'
+      //   ],
+      //   [
+      //     { model: db.Membership, as: 'childMembership' },
+      //     'id', 'asc'
+      //   ]
+      // ]
     };
 
     if (req.params.dentistInfoId) {
@@ -154,7 +151,6 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
       query.where.userId = req.user.get('id');
     }
 
-    // console.log(query);
     return db.DentistInfo.find(query).then((dentistInfo) => {
       if (!dentistInfo) {
         return next(new NotFoundError());
@@ -227,6 +223,7 @@ export function injectUser(paramName = 'userId', localVarName = 'user') {
       return next();
     }
 
+    // code in the if block will never execute given the condition above.
     if (req.user && req.user.get('type') === 'client' && userId === 'me') {
       return next(new ForbiddenError());
     }

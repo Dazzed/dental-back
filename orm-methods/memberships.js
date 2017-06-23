@@ -106,6 +106,6 @@ export const MembershipMethods = {
     // Then we can delete the method.
     // I've kept the old code commented above this note, so that whenever a refactor of some
     // API is needed, the old code can be referenced as a starting point to that refactorning.
-    return Promise.reject('Unsupported/broken method call');
+    return Promise.reject(Error('Unsupported/broken method call'))
   }
 };
