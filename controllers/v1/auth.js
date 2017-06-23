@@ -52,86 +52,85 @@ function createDentistInfo(user, body, transaction) {
   const services = body.services || [];
   const officeImages = dentistInfo.officeImages || [];
 
-  return Promise.all([
-    user.createMembership({
+  return user.createDentistInfo(dentistInfo, { transaction })
+  .then((info) => {
+    let promises = [];
+
+    promises.push(user.createMembership({
       name: 'default monthly membership',
       price: !_.isNil(pricing.adultMonthlyFee) && _.isFinite(_.toNumber(pricing.adultMonthlyFee)) ? _.toNumber(pricing.adultMonthlyFee) : 19.99,
       discount: pricing.treatmentDiscount || 0,
       type: SUBSCRIPTION_TYPES_LOOKUP.month,
       subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.adult,
-    }, { transaction }),
+      dentistInfoId: info.id,
+    }, { transaction }));
 
-    user.createMembership({
+    promises.push(user.createMembership({
       name: 'default monthly child membership',
       price: !_.isNil(pricing.childMonthlyFee) && _.isFinite(_.toNumber(pricing.childMonthlyFee)) ? _.toNumber(pricing.childMonthlyFee) : 14.99,
       discount: pricing.treatmentDiscount || 0,
       type: SUBSCRIPTION_TYPES_LOOKUP.month,
       subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.child,
-    }, { transaction }),
+      dentistInfoId: info.id,
+    }, { transaction }));
 
-    !_.isNil(pricing.adultYearlyFeeActivated) && pricing.adultYearlyFeeActivated &&
-      !_.isNil(pricing.adultYearlyFee) && _.isFinite(_.toNumber(pricing.adultYearlyFee)) ?
-    user.createMembership({
-      name: 'default annual membership',
-      price: _.toNumber(pricing.adultYearlyFee),
-      discount: pricing.treatmentDiscount || 0,
-      type: SUBSCRIPTION_TYPES_LOOKUP.year,
-      subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.adult,
-    }, { transaction }) : Promise.resolve(),
+    promises.push(!_.isNil(pricing.adultYearlyFeeActivated) && pricing.adultYearlyFeeActivated &&
+        !_.isNil(pricing.adultYearlyFee) && _.isFinite(_.toNumber(pricing.adultYearlyFee)) ?
+      user.createMembership({
+        name: 'default annual membership',
+        price: _.toNumber(pricing.adultYearlyFee),
+        discount: pricing.treatmentDiscount || 0,
+        type: SUBSCRIPTION_TYPES_LOOKUP.year,
+        subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.adult,
+        dentistInfoId: info.id,
+      }, { transaction }) : Promise.resolve());
 
-    !_.isNil(pricing.childYearlyFeeActivated) && pricing.childYearlyFeeActivated &&
-      !_.isNil(pricing.childYearlyFee) && _.isFinite(_.toNumber(pricing.childYearlyFee)) ?
-    user.createMembership({
-      name: 'default annual child membership',
-      price: _.toNumber(pricing.childYearlyFee),
-      discount: pricing.treatmentDiscount || 0,
-      type: SUBSCRIPTION_TYPES_LOOKUP.year,
-      subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.child,
-    }, { transaction }) : Promise.resolve(),
+    promises.push(!_.isNil(pricing.childYearlyFeeActivated) && pricing.childYearlyFeeActivated &&
+        !_.isNil(pricing.childYearlyFee) && _.isFinite(_.toNumber(pricing.childYearlyFee)) ?
+      user.createMembership({
+        name: 'default annual child membership',
+        price: _.toNumber(pricing.childYearlyFee),
+        discount: pricing.treatmentDiscount || 0,
+        type: SUBSCRIPTION_TYPES_LOOKUP.year,
+        subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.child,
+        dentistInfoId: info.id,
+      }, { transaction }) : Promise.resolve());
 
-  ])
-  .then(() => {
-    return user.createDentistInfo(dentistInfo, { transaction })
-    .then((info) => {
-      let promises = [];
-      workingHours.forEach((item) => {
-        promises.push(
-          info.createWorkingHour(item, { transaction })
-          .catch(e => console.log(e))
-        );
-      });
-
-      // create service records for the dentist.
-      services.forEach((item) => {
-        promises.push(
-          info.createService({ serviceId: item }, { transaction })
-          .catch(e => console.log(e))
-        );
-      });
-
-      // create pricing records for the dentist.
-      // broken. should query the codes and then link to the pricing code id.
-      (pricing.codes || []).forEach((item) => {
-        promises.push(
-          db.MembershipItem.create({
-            pricingCodeId: item.code,
-            price: item.amount,
-            dentistInfoId: info.get('id')
-          }, { transaction })
-        );
-      });
-
-      officeImages.forEach((url) => {
-        promises.push(
-          db.DentistInfoPhotos.create({
-            url, dentistInfoId: info.get('id')
-          }, { transaction })
-        );
-      });
-
-      return Promise.all(promises);
-
+    workingHours.forEach((item) => {
+      promises.push(
+        info.createWorkingHour(item, { transaction })
+        .catch(e => console.log(e))
+      );
     });
+
+    (pricing.codes || []).forEach((item) => {
+      promises.push(
+        db.MembershipItem.create({
+          pricingCodeId: item.code,
+          price: item.amount,
+          dentistInfoId: info.get('id')
+        }, { transaction })
+      );
+    });
+
+    // create service records for the dentist.
+    services.forEach((item) => {
+      promises.push(
+        info.createService({ serviceId: item }, { transaction })
+        .catch(e => console.log(e))
+      );
+    });
+
+    officeImages.forEach((url) => {
+      promises.push(
+        db.DentistInfoPhotos.create({
+          url, dentistInfoId: info.get('id')
+        }, { transaction })
+      );
+    });
+
+    return Promise.all(promises);
+
   });
 }
 
@@ -307,11 +306,11 @@ function activate(req, res, next) {
   .then((user) => {
     if (user) {
       // Activate the User Account
-      user
+      return user
       .update({ verified: true, activationKey: null })
       .then(() => Mailer.activationCompleteEmail(res, user))
       .then(() => {
-        res.json({});
+        return res.json({});
       });
     }
 
