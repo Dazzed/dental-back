@@ -5,6 +5,7 @@
 import _ from 'lodash';
 import { timingSafeEqual, createHmac } from 'crypto';
 import db from '../models';
+import { SUBSCRIPTION_STATES_LOOKUP } from '../config/constants';
 
 import { MembershipMethods } from '../orm-methods/memberships';
 import { generateRandomEmail } from '../utils/helpers';
@@ -324,10 +325,16 @@ export const instance = {
    * @returns {Promise<FullDentist>}
    */
   getFullDentist(id = this.get('id')) {
+
+    let instance = this;
+
+    // the result object.
     let d = {};
 
     return Promise.resolve()
     .then(() => (
+      // get the dentist user with the memberships, dentistInfo (with dentistInfoService, workingHours, officeImages),
+      // dentistReviews (with clients)
       db.User.find({
         where: {
           id,
@@ -340,58 +347,60 @@ export const instance = {
         attributes: {
           exclude: userFieldsExcluded
         },
-        include: [{
-          model: db.DentistInfo,
-          as: 'dentistInfo',
-          attributes: {
-            exclude: ['membershipId', 'userId', 'childMembershipId', 'createdAt', 'updatedAt'],
+        include: [
+          {
+            model: db.Membership,
+            as: 'memberships',
+            attributes: {
+              exclude: ['userId', 'dentistInfoId', 'stripePlanId'],
+            },
           },
-          include: [{
-            model: db.Membership,
-            as: 'membership',
+          {
+            model: db.DentistInfo,
+            as: 'dentistInfo',
             attributes: {
-              exclude: ['userId'],
+              exclude: ['userId', 'createdAt', 'updatedAt'],
             },
-          }, {
-            model: db.Membership,
-            as: 'childMembership',
+            include: [
+              {
+                model: db.DentistInfoService,
+                as: 'services',
+                attributes: ['id', 'dentistInfoId', 'serviceId'],
+                include: [{
+                  model: db.Service,
+                  attributes: ['id', 'name'],
+                  as: 'service'
+                }]
+              },
+              {
+                model: db.WorkingHours,
+                as: 'workingHours',
+                attributes: {
+                  exclude: ['dentistInfoId', 'createdAt', 'updatedAt'],
+                },
+              },
+              {
+                model: db.DentistInfoPhotos,
+                attributes: ['url'],
+                as: 'officeImages'
+              }
+            ]
+          },
+          {
+            model: db.Review,
+            as: 'dentistReviews',
             attributes: {
-              exclude: ['userId'],
+              exclude: ['createdAt', 'updatedAt', 'dentistId'],
             },
-          }, {
-            model: db.DentistInfoService,
-            as: 'services',
-            attributes: ['id', 'dentistInfoId', 'serviceId'],
             include: [{
-              model: db.Service,
-              attributes: ['id', 'name'],
-              as: 'service'
-            }]
-          }, {
-            model: db.WorkingHours,
-            as: 'workingHours',
-            attributes: {
-              exclude: ['dentistInfoId', 'createdAt', 'updatedAt'],
-            },
-          }, {
-            model: db.DentistInfoPhotos,
-            attributes: ['url'],
-            as: 'officeImages'
-          }]
-        }, {
-          model: db.Review,
-          as: 'dentistReviews',
-          attributes: {
-            exclude: ['createdAt', 'updatedAt', 'dentistId'],
-          },
-          include: [{
-            model: db.User,
-            as: 'client',
-            attributes: {
-              exclude: userFieldsExcluded
-            },
-          }],
-        }]
+              model: db.User,
+              as: 'client',
+              attributes: {
+                exclude: userFieldsExcluded
+              },
+            }],
+          }
+        ]
       })
     ))
     .then((dentist) => {
@@ -416,9 +425,6 @@ export const instance = {
         return temp;
       });
 
-      d.dentistInfo.membership = d.dentistInfo.membership || {};
-      d.dentistInfo.childMembership = d.dentistInfo.childMembership || {};
-
       // Hide anonymous reviews
       d.dentistReviews = d.dentistReviews.map((r) => {
         delete r.clientId;
@@ -432,54 +438,17 @@ export const instance = {
         name: (s.service ? s.service.name || null : ''),
       }));
 
-      // Calculate membership costs
-      return MembershipMethods
-      .calculateCosts(d.dentistInfo.id, [
-        d.dentistInfo.membership.id,
-        d.dentistInfo.childMembership.id,
-      ]);
-    })
-    .then((fullCosts) => {
-      fullCosts.forEach((cost) => {
-        if (d.dentistInfo.membership.id === cost.membershipId) {
-          d.dentistInfo.membership.fullCost = cost.fullCost;
-          d.dentistInfo.membership.savings = Math.max((cost.fullCost - (parseInt(d.dentistInfo.membership.price, 10) * 12)), 0);
-        } else if (d.dentistInfo.childMembership.id === cost.membershipId) {
-          d.dentistInfo.childMembership.fullCost = cost.fullCost;
-          d.dentistInfo.childMembership.savings = Math.max((cost.fullCost - (parseInt(d.dentistInfo.childMembership.price, 10) * 12)), 0);
-        }
-      });
-
-      // Retrieve Active Member Count
       return db.Subscription.count({
         where: {
-          dentistId: d.dentistInfo.id,
-          status: 'active',
+          dentistId: id,
+          status: SUBSCRIPTION_STATES_LOOKUP.active,
         }
       });
     })
     .then((activeMemberCount) => {
       d.dentistInfo.activeMemberCount = activeMemberCount;
-      // Fetch membership object
-      return db.Membership.find({
-        where: { id: d.dentistInfo.membership.id }
-      });
     })
-    .then(membership => membership.getPlanCosts())
-    .then((planCosts) => {
-      delete d.dentistInfo.membership.stripePlanId;
-      d.dentistInfo.membership = Object.assign({}, d.dentistInfo.membership, planCosts);
-      // Expand Child Membership
-      return db.Membership.find({
-        where: { id: d.dentistInfo.childMembership.id }
-      });
-    })
-    .then(membership => membership.getPlanCosts())
-    .then((planCosts) => {
-      delete d.dentistInfo.childMembership.stripePlanId;
-      d.dentistInfo.childMembership = Object.assign({}, d.dentistInfo.childMembership, planCosts);
-      return Promise.resolve(d);
-    });
+    .then(() => d)
   },
 
   /**

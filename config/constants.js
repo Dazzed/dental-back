@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const USER_ORIGIN_OPTIONS = ['external', 'internal'];
 
 // TODO: update with real data before go production
@@ -117,6 +119,8 @@ export const SUBSCRIPTION_STATES = [
   'unpaid',
   'expired'
 ];
+
+export const SUBSCRIPTION_STATES_LOOKUP = _.keyBy(SUBSCRIPTION_STATES, state => state);
 
 
 export const SUBSCRIPTION_TYPES = [

@@ -61,37 +61,51 @@ export const MembershipMethods = {
    * @return {Array<[membershipId, fullCost]>}
    */
   calculateCosts(dentistInfoId, memberships) {
-    return Promise.all(memberships.map(membershipId =>
-      new Promise((resolve, reject) => {
-        db.PriceCodes.findAll({
-          include: [{
-            model: db.MembershipItem,
-            as: 'membershipItems',
-            where: {
-              dentistInfoId,
-              membershipId,
-            },
-          }]
-        }).then((priceCodes) => {
-          priceCodes = priceCodes.reduce((obj, pc) => {
-            obj[pc.code] = pc.membershipItems.shift().price || 0;
-            return obj;
-          }, {});
+    // return Promise.all(memberships.map(membershipId =>
+    //   new Promise((resolve, reject) => {
+    //     db.PriceCodes.findAll({
+    //       include: [{
+    //         model: db.MembershipItem,
+    //         as: 'membershipItems',
+    //         where: {
+    //           dentistInfoId,
+    //           membershipId,
+    //         },
+    //       }]
+    //     }).then((priceCodes) => {
+    //       priceCodes = priceCodes.reduce((obj, pc) => {
+    //         obj[pc.code] = pc.membershipItems.shift().price || 0;
+    //         return obj;
+    //       }, {});
 
-          priceCodes = buildPriceCodes(priceCodes);
+    //       priceCodes = buildPriceCodes(priceCodes);
 
-          // Calculate the full cost
-          const fullCost =
-            (priceCodes['1110'] * 2) +
-            (priceCodes['0120'] * 2) +
-             priceCodes['0274'] +
-            (priceCodes['0330'] * 0.3) +
-             priceCodes['0220'] +
-             priceCodes['0140'] || 0;
+    //       // Calculate the full cost
+    //       const fullCost =
+    //         (priceCodes['1110'] * 2) +
+    //         (priceCodes['0120'] * 2) +
+    //          priceCodes['0274'] +
+    //         (priceCodes['0330'] * 0.3) +
+    //          priceCodes['0220'] +
+    //          priceCodes['0140'] || 0;
 
-          resolve({ membershipId, fullCost });
-        }).catch(err => reject(err));
-      }))
-    );
+    //       resolve({ membershipId, fullCost });
+    //     }).catch(err => reject(err));
+    //   }))
+    // );
+    //
+    // NOTE: This method is broken after having changed the schema
+    // to drop the mapping between memberships and membershipItems.
+    // membershipItems also seems to me as a misnomer, since it's actually
+    // storing dentist services and is often aliased as such in the code base.
+    // This method is being called in other API methods, but whether the client
+    // acutally calls these APIs is not known, so in the meantime, the method stays,
+    // but returns a rejected promise.
+    // As and when we see this method being called in APIs that are being used by the
+    // client, we will need to refactor those APIs until this method is no longer being used.
+    // Then we can delete the method.
+    // I've kept the old code commented above this note, so that whenever a refactor of some
+    // API is needed, the old code can be referenced as a starting point to that refactorning.
+    return Promise.reject('Unsupported/broken method call');
   }
 };
