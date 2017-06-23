@@ -7,6 +7,8 @@ import db from '../models';
 import uuid from 'uuid/v4';
 import _ from 'lodash';
 
+import {notifyMembershipPriceUpdateAdvance} from '../jobs/member_ship_fee_notification';
+
 const stripe = Stripe(process.env.STRIPE_API_KEY);
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -325,33 +327,23 @@ export default {
     price = _.floor(_.toNumber(price)*100); // adjust pricing to stripe's requirement
 
     return new Promise((resolve, reject) => {
-      // Delete the old plan
-      this.deleteMembershipPlan(planId)
-      // Create the new plan
-      .then(() => this.createMembershipPlan(planId, name, price, interval, trialPeriodDays))
-      .then((plan) => {
-        // Update related subscriptions
+      db.MembershipUpdateRequest.create({
+        membershipId,
+        newPlanName: name,
+        newPrice: price
+      }).then(data => {
+        resolve();
         db.Subscription.findAll({
-          where: { membershipId },
-          attributes: ['stripeSubscriptionId'],
+          where: { membershipId }
         }).then((subscriptions = []) => {
-          subscriptions.forEach(sub =>
-            // Update the old subscriptions with the new plan
-            stripe.subscriptions.update(
-              sub.stripeSubscriptionId,
-              { plan, prorate: true, },
-              (err, s) => {
-                if (!err) {
-                  sub.stripeSubscriptionId = s.id;
-                  sub.save();
-                }
-              }
-            )
-          );
-          resolve();
-        });
+          subscriptions.forEach(sub => {
+            if(sub.status == "active") {
+              notifyMembershipPriceUpdateAdvance(sub.clientId, name, price);
+            }
+          });
+        })
       })
-      .catch(reject);
+      .catch(reject)
     });
   },
 
