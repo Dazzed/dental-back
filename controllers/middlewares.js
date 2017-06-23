@@ -223,6 +223,7 @@ export function injectUser(paramName = 'userId', localVarName = 'user') {
       return next();
     }
 
+    // code in the if block will never execute given the condition above.
     if (req.user && req.user.get('type') === 'client' && userId === 'me') {
       return next(new ForbiddenError());
     }
