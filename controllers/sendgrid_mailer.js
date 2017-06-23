@@ -30,11 +30,11 @@ export function membershipPriceChangeNotificationAdvance(user, plan_name, price)
   var templateString = fs.readFileSync('./views/notifications/membership_price_update_advance.ejs', 'utf-8');
 
   var template = ejs.compile(templateString);
-
+  var priceS = price.toString();
   let to_email = new sendgrid.Email(user.email);
   let subject = EMAIL_SUBJECTS.client.membershipPriceUpdate;
   let content = new sendgrid.Content(
-    'text/html', template({user, plan_name, price.toString()})
+    'text/html', template({ user, plan_name, priceS })
   );
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
@@ -43,12 +43,13 @@ export function membershipPriceChangeNotificationAdvance(user, plan_name, price)
 export function membershipPriceChangeNotification(user, plan_name, price) {
   var templateString = fs.readFileSync('./views/notifications/membership_price_update.ejs', 'utf-8');
 
+  var priceS = price.toString();
   var template = ejs.compile(templateString);
 
   let to_email = new sendgrid.Email(user.email);
   let subject = EMAIL_SUBJECTS.client.membershipPriceUpdate;
   let content = new sendgrid.Content(
-    'text/html', template({user, plan_name, price.toString()})
+    'text/html', template({ user, plan_name, priceS })
   );
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
