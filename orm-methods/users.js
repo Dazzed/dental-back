@@ -433,10 +433,12 @@ export const instance = {
       });
 
       // Remap services
-      d.dentistInfo.services = d.dentistInfo.services.map(s => ({
-        id: s.id,
-        name: (s.service ? s.service.name || null : ''),
-      }));
+      if (d.dentistInfo.services) {
+        d.dentistInfo.services = d.dentistInfo.services.map(s => ({
+          id: s.id,
+          name: (s.service ? s.service.name || null : ''),
+        }));
+      }
 
       return db.Subscription.count({
         where: {
