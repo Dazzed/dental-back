@@ -106,7 +106,7 @@ function createDentistInfo(user, body, transaction) {
     (pricing.codes || []).forEach((item) => {
       promises.push(
         db.MembershipItem.create({
-          pricingCodeId: item.code,
+          pricingCodeId: item.id,
           price: item.amount,
           dentistInfoId: info.get('id')
         }, { transaction })
