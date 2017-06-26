@@ -82,6 +82,7 @@ router.use('/admin/dentists/reports', reports);
 
 router.use('/admin/dentists/offices', offices);
 
-router.use('/webhooks',webhooks)
+router.use('/webhooks', webhooks);
+router.use('/reports', reports);
 
 export default router;
