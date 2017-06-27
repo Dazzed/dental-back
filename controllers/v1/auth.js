@@ -201,15 +201,23 @@ function normalUserSignup(req, res, next) {
         queries.push(userObj.createAddress({ value: req.body.address || '' }, { transaction: t }));
       }
 
-      // Add family members
-      if (req.body.members) {
-        req.body.members.forEach((member) => {
-          queries.push(db.User.addMember(member, userObj, t));
-        });
-      }
-
-      return Promise.all(queries);
-    });
+      return Promise.all(queries)
+      .then(() => {
+        let membersCreationQueries = [];
+        if(req.body.members) {
+          req.body.members.forEach((member) => {
+            membersCreationQueries.push(db.User.addMember(
+              _.assign({
+                officeId: req.body.officeId
+              }, member),
+              userObj,
+              t
+            ));
+          });
+        }
+        return Promise.all(membersCreationQueries);
+      });
+    })
   })
   .then(() => {
     const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
