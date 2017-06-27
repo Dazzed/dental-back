@@ -3,6 +3,7 @@
 // MODULES
 
 import _ from 'lodash';
+import uuid from 'uuid/v4';
 import { timingSafeEqual, createHmac } from 'crypto';
 import db from '../models';
 import { SUBSCRIPTION_STATES_LOOKUP } from '../config/constants';
@@ -213,43 +214,48 @@ export const instance = {
    * @param {number} dentistId - the ID of the dentist providing the membership
    * @returns {Promise<Subscription>}
    */
-  createSubscription(membershipId, dentistId) {
+  createSubscription(membershipId, dentistId, transaction = null) {
     if (this.get('type') === 'dentist') {
       throw new Error('Dentist type cannot have a subscription');
     }
 
-    const clientId = this.get('id');
+    let clientId = this.get('id');
+    let primaryAccountHolder = this.get('addedBy') ? this.get('addedBy') : this.get('id');
 
-    return new Promise((resolve, reject) => {
-      db.PaymentProfile.find({
-        where: {
-          $or: [{
-            primaryAccountHolder: this.get('id'),
-          }, {
-            primaryAccountHolder: this.get('addedBy'),
-          }]
-        }
-      })
+    let transactionFunction = (transaction) => {
+      return db.PaymentProfile.find({ primaryAccountHolder }, { transaction })
       .then((profile) => {
         if (!profile) throw new Error('User has no associated payment profile');
-        return stripe.createSubscription(
-          stripe.createUniqueID(clientId, dentistId),
-          profile.get('stripeCustomerId'),
-        );
-      })
-      .then(([id, status]) => {
-        db.Subscription.create({
-          stripeSubscriptionId: id,
-          clientId,
-          membershipId,
-          dentistId,
-          status,
+        return db.Membership.find({
+          id: membershipId
+        }, {
+          transaction
         })
-        .then(resolve)
-        .catch(reject);
-      })
-      .catch(reject);
-    });
+        .then((membership) => {
+          return stripe.createSubscription(
+            membership.get('stripePlanId'),
+            profile.get('stripeCustomerId')
+          );
+        })
+        .then((stripeSubscription) => {
+          return db.Subscription.create({
+            stripeSubscriptionId: stripeSubscription.id,
+            clientId: clientId,
+            membershipId: membershipId,
+            dentistId: dentistId,
+            status: stripeSubscription.status
+          }, {
+            transaction
+          });
+        });
+      });
+    };
+
+    if(_.isNull(transaction)) {
+      return db.sequelize.transaction(transaction => transactionFunction(transaction))
+    } else {
+      return transactionFunction(transaction);
+    }
   },
 
   /**
@@ -602,35 +608,18 @@ export const model = {
    * @param {object} user - the parent user
    * @returns {Promise<Member>}
    */
-  addMember(data, user) {
-    const membership = data.subscription;
-    let member;
-
+  addMember(data, user, transaction) {
     data.addedBy = user.get('id');
-    data.hash = 'NOT_SET';
-    data.salt = 'NOT_SET';
+    data.email = _.replace(user.get('email'), '@', `${uuid()}@`);
     data.type = 'client';
-    // FIXME: Why generate a random email?
-    data.email = generateRandomEmail();
-
-    return Promise.resolve()
-    .then(() => db.User.create(data))
-    .then((_member) => {
-      member = _member;
-      return db.Subscription.find({
-        attributes: ['dentistId', 'id'],
-        where: { clientId: user.get('id') }
+    return db.User.create(data, { transaction })
+    .then((member) => {
+      return member.createSubscription(data.membershipId, data.officeId, transaction)
+      .then((subscription) => {
+        let json = member.toJSON();
+        json.subscription = subscription.toJSON();
+        return json;
       });
-    })
-    .then(subscription => member.createSubscription(membership, subscription.dentistId))
-    .then((subscription) => {
-      const response = member.toJSON();
-      response.membership = membership;
-      response.subscription = subscription.toJSON();
-
-      return _.omit(response, ['salt', 'hash', 'verified',
-        'dentistSpecialtyId', 'isDeleted', 'resetPasswordKey'
-      ]);
     });
   }
 };

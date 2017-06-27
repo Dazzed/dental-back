@@ -27,7 +27,7 @@ export default function (sequelize, DataTypes) {
   const User = sequelize.define('User', {
     salt: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     activationKey: {
       type: DataTypes.STRING,
@@ -62,12 +62,12 @@ export default function (sequelize, DataTypes) {
     email: {
       type: DataTypes.STRING,
       unique: true,
-      allowNull: false,
+      allowNull: true,
       validate: { isEmail: true }
     },
     hash: {
       type: new DataTypes.STRING(1024),
-      allowNull: false
+      allowNull: true
     },
     avatar: {
       type: DataTypes.JSON,

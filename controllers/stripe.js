@@ -361,7 +361,7 @@ export default {
         customer: customerId,
         plan: planId,
         // INFO: Add the line below to give 100% off (applied on each invoice)
-        application_fee_percent: discount
+        // application_fee_percent: discount
       }, (err, subscription) => {
         if (err) reject(verboseError(err));
         resolve(subscription);

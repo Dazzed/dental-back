@@ -153,7 +153,7 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
 
     return db.DentistInfo.find(query).then((dentistInfo) => {
       if (!dentistInfo) {
-        return next(new NotFoundError());
+        return next(new NotFoundError("no dentist info found."));
       }
 
       req.locals[localVarName] = dentistInfo;
