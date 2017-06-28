@@ -162,6 +162,7 @@ function normalUserSignup(req, res, next) {
     });
   })
   .then((user) => {
+    console.log(user);
     userObj = user;
     return stripe.createCustomer(user.email);
   })

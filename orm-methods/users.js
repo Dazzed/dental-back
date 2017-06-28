@@ -226,32 +226,21 @@ export const instance = {
       return db.PaymentProfile.find({ primaryAccountHolder }, { transaction })
       .then((profile) => {
         if (!profile) throw new Error('User has no associated payment profile');
-        return db.Membership.find({
-          id: membershipId
-        }, {
-          transaction
-        })
-        .then((membership) => {
-          return stripe.createSubscription(
-            membership.get('stripePlanId'),
-            profile.get('stripeCustomerId')
-          );
-        })
-        .then((stripeSubscription) => {
-          return db.Subscription.create({
-            stripeSubscriptionId: stripeSubscription.id,
+        return db.Subscription.create({
             clientId: clientId,
             membershipId: membershipId,
             dentistId: dentistId,
-            status: stripeSubscription.status
+            paymentProfileId: profile.id,
           }, {
             transaction
-          });
         });
+      })
+      .catch((errors) => {
+          console.log(errors);
       });
     };
 
-    if(_.isNull(transaction)) {
+    if (_.isNull(transaction)) {
       return db.sequelize.transaction(transaction => transactionFunction(transaction))
     } else {
       return transactionFunction(transaction);
