@@ -226,12 +226,6 @@ export const instance = {
       return db.PaymentProfile.find({ primaryAccountHolder }, { transaction })
       .then((profile) => {
         if (!profile) throw new Error('User has no associated payment profile');
-        console.log({
-          clientId,
-          membershipId,
-          dentistId,
-          paymentProfileId: profile.id
-        });
         return db.Subscription.create({
             clientId: clientId,
             membershipId: membershipId,
@@ -609,7 +603,6 @@ export const model = {
     data.type = 'client';
     return db.User.create(data, { transaction })
     .then((member) => {
-      console.log(data);
       return member.createSubscription(data.membershipId, data.officeId, transaction)
       .then((subscription) => {
         let json = member.toJSON();
