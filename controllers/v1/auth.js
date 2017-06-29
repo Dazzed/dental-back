@@ -30,7 +30,7 @@ import {
 
 import {
   NORMAL_USER_REGISTRATION,
-  DENTIST_USER_REGISTRATION
+  DENTIST_SIGNUP,
 } from '../../utils/schema-validators';
 
 import Mailer from '../mailer';
@@ -469,7 +469,7 @@ router
 router
   .route('/dentist-signup')
   .post(
-    validateBody(DENTIST_USER_REGISTRATION, body => body.user),
+    validateBody(DENTIST_SIGNUP),
     dentistUserSignup);
 
 router
