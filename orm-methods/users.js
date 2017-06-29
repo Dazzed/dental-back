@@ -223,7 +223,7 @@ export const instance = {
     let primaryAccountHolder = this.get('addedBy') ? this.get('addedBy') : this.get('id');
 
     let transactionFunction = (transaction) => {
-      return db.PaymentProfile.find({ primaryAccountHolder }, { transaction })
+      return db.PaymentProfile.find({ where: { primaryAccountHolder } , transaction })
       .then((profile) => {
         if (!profile) throw new Error('User has no associated payment profile');
         return db.Subscription.create({

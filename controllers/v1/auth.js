@@ -162,7 +162,6 @@ function normalUserSignup(req, res, next) {
     });
   })
   .then((user) => {
-    console.log(user);
     userObj = user;
     return stripe.createCustomer(user.email);
   })
@@ -218,7 +217,7 @@ function normalUserSignup(req, res, next) {
         }
         return Promise.all(membersCreationQueries);
       });
-    })
+    });
   })
   .then(() => {
     const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
