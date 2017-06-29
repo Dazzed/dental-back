@@ -27,7 +27,6 @@ module.exports = (app) => {
       if (app.get('env') === 'development' || app.get('env') === 'test') {
         res.status(HTTPStatus.INTERNAL_SERVER_ERROR);
         res.json(err);
-        res.send();
       } else {
         res.status(HTTPStatus.INTERNAL_SERVER_ERROR);
         res.send();
