@@ -266,7 +266,12 @@ function getDentistNoAuth(req, res, next) {
   .then((user) => {
     delete user.dentistInfo.priceCodes;
     delete user.dentistInfo.activeMemberCount;
-    res.json({ data: user || {} });
+    let data = user || {};
+    data = {
+      ...data,
+      stripe_public_key: process.env.STRIPE_PUBLIC_KEY
+    };
+    res.json({ data });
   })
   .catch(err => next(new BadRequestError(err)));
 }
