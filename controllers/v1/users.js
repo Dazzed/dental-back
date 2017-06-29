@@ -368,7 +368,7 @@ router
     verifyPassword);
 
 router
-  .route('/payment/sources/:token?')
+  .route('/payment/sources/:token')
   .get(getPaymentSource)
   .post(validateParams(STRIPE_TOKEN), validatePaymentManager(), addPaymentSource)
   .delete(validateParams(STRIPE_TOKEN), validatePaymentManager(), deletePaymentSource);
