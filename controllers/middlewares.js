@@ -421,9 +421,10 @@ export function validateBody(schemaObject = {}, bodyPrepCb = body => body) {
     req.checkBody(schemaObject);
     req.body = temp;
 
-    req.asyncValidationErrors(true)
-    .then(next, (err) => {
-      next(new BadRequestError(err));
+    return req.asyncValidationErrors()
+    .then(next)
+    .catch((errors) => {
+      return next(new BadRequestError(errors));
     });
   };
 }
