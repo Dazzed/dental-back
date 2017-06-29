@@ -604,7 +604,10 @@ export const model = {
       return member.createSubscription(data.membershipId, data.dentistId, transaction)
       .then((subscription) => {
         let json = member.toJSON();
-        json.subscription = subscription.toJSON();
+        if (subscription) {
+          json.subscription = subscription.toJSON();
+        }
+
         return json;
       });
     });
