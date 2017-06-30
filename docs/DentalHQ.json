@@ -2012,7 +2012,7 @@
         }
       }
     },
-    "/users/3/account/payment/sources/tok_1ANaQBECJr7ZmBNOmCns5MMZ": {
+    "/users/3/account/payment/sources/{stripeToken}": {
       "post": {
         "description": "TODO: Add Description",
         "summary": "Add Payment Source",
@@ -2037,6 +2037,13 @@
             "required": true,
             "type": "string",
             "description": ""
+          },
+          {
+            "name": "stripeToken",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
           }
         ],
         "responses": {
@@ -2045,30 +2052,7 @@
           }
         },
         "security": [],
-        "x-unitTests": [
-          {
-            "request": {
-              "method": "POST",
-              "uri": "/users/3/account/payment/sources/tok_1ANaQBECJr7ZmBNOmCns5MMZ",
-              "headers": {
-                "Content-Type": "application/json",
-                "Authorization": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDk2OTg1MDA3fQ.Y9-I6x8beoToot2qw12LKhKIq31AY1r9AxGy29A-HaM"
-              }
-            },
-            "expectedResponse": {
-              "x-allowExtraHeaders": true,
-              "x-bodyMatchMode": "NONE",
-              "x-arrayOrderedMatching": false,
-              "x-arrayCheckCount": false,
-              "x-matchResponseSchema": true,
-              "headers": {}
-            },
-            "x-testShouldPass": true,
-            "x-testEnabled": true,
-            "x-testName": "Add Payment Source",
-            "x-testDescription": "TODO: Add Description"
-          }
-        ],
+        "x-unitTests": [],
         "x-operation-settings": {
           "CollectParameters": false,
           "AllowDynamicQueryParameters": false,
