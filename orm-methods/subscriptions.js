@@ -5,6 +5,7 @@ import Moment from 'moment';
 
 import db from '../models';
 import stripe from '../controllers/stripe';
+import _ from 'lodash';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // EXPORTS
@@ -28,6 +29,10 @@ export const instance = {
    */
   getStripeDetails() {
     const stripeId = this.get('stripeSubscriptionId');
+
+    if(_.isEmpty(stripeId)) {
+      return Promise.resolve({});
+    }
 
     return new Promise((resolve, reject) => {
       stripe.getSubscription(stripeId)
