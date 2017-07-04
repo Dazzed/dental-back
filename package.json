@@ -61,7 +61,7 @@
     "passport": "^0.3.2",
     "passport-jwt": "^2.1.0",
     "passport-local": "^1.0.0",
-    "passport-local-sequelize": "^0.6.0",
+    "passport-local-sequelize": "^0.7.0",
     "pg": "^6.0.3",
     "react-s3-uploader": "^4.0.3",
     "request-promise": "^4.2.1",

@@ -132,9 +132,8 @@ export const instance = {
    *
    * @returns {Promise<User[]>}
    */
-  getMyMembers() {
-    return new Promise((resolve, reject) => {
-      db.User.findAll({
+  async getMyMembers() {
+    const users = await db.User.findAll({
         attributes: { exclude: userFieldsExcluded },
         where: {
           $or: [{
@@ -155,32 +154,30 @@ export const instance = {
           as: 'phoneNumbers',
         }],
         subquery: false,
-      })
-      .then(users => (
-        Promise.all(
-          users.map(userObj => (
-            new Promise((res, rej) => {
-              userObj.getSubscription()
-              .then((subscription) => {
-                const parsed = userObj.toJSON();
+      });
 
-                parsed.subscription = subscription;
+      const parsed = await Promise.all(
+        users.map(userObj => (
+          new Promise(async (res, rej) => {
+            const subscription = await userObj.getMySubscription();
+            const parsed = userObj.toJSON();
 
-                parsed.phone = parsed.phoneNumbers[0] ?
-                  parsed.phoneNumbers[0].number : undefined;
+            parsed.subscription = subscription;
 
-                delete parsed.clientSubscription;
-                delete parsed.phoneNumbers;
+            parsed.phone = parsed.phoneNumbers[0] ?
+            parsed.phoneNumbers[0].number : undefined;
 
-                res(parsed);
-              })
-              .catch(rej);
-            })
-          ))
+            delete parsed.clientSubscription;
+            delete parsed.phoneNumbers;
+            res(parsed);
+          })
+
+          )
         )
-      ))
-      .catch(reject);
-    });
+      ).catch((err) => {
+        console.log(err);
+      });
+      return parsed;
   },
 
   /**
