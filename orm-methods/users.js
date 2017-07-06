@@ -26,7 +26,7 @@ export const instance = {
    *
    * @returns {Promise<SubscriptionDetails>}
    */
-  getMySubscription() {
+  async getMySubscription() {
     const userId = this.get('id');
     let subscriptionObj = {};
 
@@ -34,28 +34,29 @@ export const instance = {
       throw new Error('Dentist cannot have a subscription');
     }
 
-    return db.Subscription.find({
+    const sub = await db.Subscription.find({
       where: { clientId: userId },
       include: [{
         model: db.Membership,
         as: 'membership'
       }]
     })
-    .then((sub) => {
-      if (!sub || !sub.membership) return Promise.resolve({});
-      subscriptionObj = sub;
-      return sub.getStripeDetails();
-    })
-    .then((subDetails) => {
-      subscriptionObj.started = subDetails.start;
-      return subscriptionObj.membership.getPlanCosts();
-    })
-    .then(planCosts => ({
+
+    if (!sub || !sub.membership ) {
+      return {};
+    }
+
+    subscriptionObj = sub;
+    const subDetails = await sub.getStripeDetails();
+    subscriptionObj.started = subDetails.start;
+
+    const planCosts = await subscriptionObj.membership.getPlanCosts();
+    return {
       costs: planCosts,
       since: subscriptionObj.started,
       status: subscriptionObj.status,
       plan: subscriptionObj.membership.name,
-    }));
+    };
   },
 
   /**
