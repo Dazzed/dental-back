@@ -1,3 +1,10 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
+import { instance, model } from '../orm-methods/dentist-info';
+
+// ────────────────────────────────────────────────────────────────────────────────
+
 export default function (sequelize, DataTypes) {
   const DentistInfo = sequelize.define('DentistInfo', {
     officeName: {
@@ -54,25 +61,26 @@ export default function (sequelize, DataTypes) {
     },
     logo: {
       type: DataTypes.STRING
-    }
+    },
+    marketplaceOptIn: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    affordabilityScore: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
   }, {
     tableName: 'dentistInfos',
-    classMethods: {
+    instanceMethods: instance,
+    classMethods: Object.assign({
       associate(models) {
+
         DentistInfo.hasMany(models.DentistInfoService, {
-          // through: 'dentistInfoService',
           foreignKey: 'dentistInfoId',
           as: 'services'
-        });
-
-        DentistInfo.belongsTo(models.Membership, {
-          foreignKey: 'membershipId',
-          as: 'membership'
-        });
-
-        DentistInfo.belongsTo(models.Membership, {
-          foreignKey: 'childMembershipId',
-          as: 'childMembership'
         });
 
         DentistInfo.hasMany(models.WorkingHours, {
@@ -82,7 +90,7 @@ export default function (sequelize, DataTypes) {
 
         DentistInfo.hasMany(models.MembershipItem, {
           foreignKey: 'dentistInfoId',
-          as: 'priceCodes'
+          as: 'pricing'
         });
 
         DentistInfo.hasMany(models.DentistInfoPhotos, {
@@ -90,11 +98,17 @@ export default function (sequelize, DataTypes) {
           as: 'officeImages'
         });
 
+        DentistInfo.hasMany(models.Membership, {
+          foreignKey: 'dentistInfoId',
+          as: 'memberships'
+        });
+
         DentistInfo.belongsTo(models.User, {
-          foreignKey: 'userId'
+          foreignKey: 'userId',
+          as: 'user'
         });
       }
-    }
+    }, model)
   });
 
   return DentistInfo;

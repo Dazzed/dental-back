@@ -10,6 +10,7 @@ module.exports = function(sequelize, DataTypes) {
     //   allowNull: false
     // }
   }, {
+    timestamps: false,
     tableName: 'dentistInfoService',
     classMethods: {
       associate(models) {

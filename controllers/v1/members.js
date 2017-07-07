@@ -1,5 +1,7 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
 import _ from 'lodash';
 import HTTPStatus from 'http-status';
 import moment from 'moment';
@@ -14,13 +16,24 @@ import {
 
 import {
   BadRequestError,
-  NotFoundError
 } from '../errors';
 
+import {
+  userRequired,
+  injectMemberFromUser,
+  validateBody,
+} from '../middlewares';
 
-const router = new Router({ mergeParams: true });
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
-
+/**
+ * Gets a list of member records
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
+ */
 function getMembers(req, res, next) {
   let query;
 
@@ -31,161 +44,46 @@ function getMembers(req, res, next) {
     query = req.user.getMyMembers();
   }
 
-  return query
-    .then(data => res.json({ data }))
-    .catch(next);
+  query
+  .then(data => res.json({ data }))
+  .catch(err => next(new BadRequestError(err)));
 }
-
-
-function addMember(req, res, next) {
-  req.checkBody(MEMBER);
-
-  req
-    .asyncValidationErrors(true)
-    .then(() => {
-      const data = _.pick(req.body, ['firstName', 'lastName',
-        'birthDate', 'familyRelationship', 'sex', 'membershipType']);
-
-      return db.User.addMember(data, req.user);
-
-      // if user is me update id.
-      // if (userId === 'me') {
-      //   data.addedBy = req.user.get('id');
-      // } else {
-      //   data.addedBy = userId;
-      // }
-    })
-    .then(response => {
-      res.status(HTTPStatus.CREATED);
-      res.json({ data: response });
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
-
-      return next(errors);
-    });
-}
-
-
-function updateMember(req, res, next) {
-  const memberValidator = MEMBER;
-
-  // if (req.locals.member.email === req.body.email) {
-  //   delete memberValidator.email;
-  // }
-
-  req.checkBody(memberValidator);
-
-  const data = _.pick(req.body, ['firstName', 'lastName',
-    'birthDate', 'familyRelationship', 'sex', 'membershipType']);
-
-  let userId = req.params.userId;
-  if (userId === 'me') {
-    userId = req.user.get('id');
-  }
-
-  req
-    .asyncValidationErrors(true)
-    .then(() => db.User.update(data, {
-      where: { addedBy: userId, id: req.params.memberId },
-    }))
-    .then(() => {
-      if (req.body.phone && req.locals.member.phone !== req.body.phone) {
-        return db.Phone.update({ number: req.body.phone }, {
-          where: { userId: req.params.memberId },
-        });
-      }
-
-      return null;
-    })
-    .then(() => {
-      const years = moment().diff(req.body.birthDate, 'years', false);
-      const oldYears = moment().diff(
-        req.locals.member.birthDate, 'years', false);
-      let subscriptionId;
-
-      if (years !== oldYears) {
-        return db.Subscription.find({
-          attributes: ['dentistId', 'id'],
-          where: {
-            clientId: req.params.memberId,
-          },
-          order: '"createdAt" DESC',
-          raw: true,
-        }).then(subscription => {
-          subscriptionId = subscription.id;
-
-          return db.DentistInfo.find({
-            attributes: ['membershipId', 'childMembershipId'],
-            where: {
-              userId: subscription.dentistId,
-            },
-            raw: true,
-          });
-        }).then(info => {
-          if (years < 13) {
-            return db.Membership.find({
-              where: { id: info.childMembershipId }
-            });
-          }
-          return db.Membership.find({ where: { id: info.membershipId } });
-        }).then(membership => {
-          req.locals.member.subscription.total = membership.price;
-          req.locals.member.subscription.monthly = membership.monthly;
-          req.locals.member.subscription.membershipId = membership.id;
-
-          return db.Subscription.update({
-            total: membership.price,
-            monthly: membership.monthly,
-            membershipId: membership.id,
-          }, {
-            where: {
-              clientId: req.locals.member.id,
-              id: subscriptionId,
-            }
-          });
-        });
-      }
-      return null;
-    })
-    .then(() => {
-      Object.assign(req.locals.member, data);
-      req.locals.member.phone = req.body.phone;
-      return next();
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
-
-      return next(errors);
-    });
-}
-
 
 /**
- * Fill req.locals.familyMember with the requested member on url params,
- * if allowed call next middleware.
+ * Adds a member record
  *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getMemberFromParam(req, res, next) {
-  const memberId = req.params.memberId;
-  const userId = req.params.userId;
-  const addedBy = userId === 'me' ? req.user.get('id') : userId;
+function addMember(req, res, next) {
+  Promise.resolve()
+  .then(() => {
+    const data = _.pick(req.body, ['firstName', 'lastName',
+      'birthDate', 'familyRelationship', 'sex', 'membershipType']);
 
-  db.User.getMyMember(addedBy, memberId).then((member) => {
-    if (!member) {
-      return next(new NotFoundError());
+    return db.User.addMember(data, req.user);
+  })
+  .then((response) => {
+    res.status(HTTPStatus.CREATED);
+    res.json({ data: response });
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      next(new BadRequestError(errors));
     }
 
-    req.locals.member = member;
-    return next();
-  }).catch(error => next(error));
+    next(errors);
+  });
 }
 
-
+/**
+ * Gets a specific member record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
+ */
 function getMember(req, res, next) {
   const subscription = req.locals.member.subscription;
   const membershipId = subscription ? subscription.membershipId : 0;
@@ -193,33 +91,94 @@ function getMember(req, res, next) {
   db.Membership.find({
     where: { id: membershipId }
   })
-  .then(membership => {
+  .then((membership) => {
     if (membership) req.locals.member.membership = membership;
     return res.json({ data: req.locals.member });
   })
   .catch(error => next(error));
 }
 
+/**
+ * Updates a member record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
+ */
+function updateMember(req, res, next) {
+  const data = _.pick(req.body, ['firstName', 'lastName',
+    'birthDate', 'familyRelationship', 'sex', 'membershipType']);
 
-function deleteMember(req, res) {
+  let userId = req.params.userId;
+
+  if (userId === 'me') {
+    userId = req.user.get('id');
+  }
+
+  // FIXME: user update does not use a transaction
+
+  Promise.resolve()
+  // Fetch the user record to update
+  .then(() => db.User.update(data, {
+    where: { addedBy: userId, id: req.params.memberId },
+  }))
+  // Update the phone number
+  .then(() => {
+    if (req.body.phone && req.locals.member.phone !== req.body.phone) {
+      return db.Phone.update({ number: req.body.phone }, {
+        where: { userId: req.params.memberId },
+      });
+    }
+
+    return null;
+  })
+  .then(() => {
+    Object.assign(req.locals.member, data);
+    req.locals.member.phone = req.body.phone;
+    res.json();
+  })
+  .catch((errors) => {
+    if (isPlainObject(errors)) {
+      next(new BadRequestError(errors));
+    }
+
+    next(errors);
+  });
+}
+
+/**
+ * Deletes a member record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
+ */
+function deleteMember(req, res, next) {
   const delEmail = `DELETED_${req.locals.member.email}`;
 
   db.User.update({ email: delEmail, isDeleted: true }, {
     where: {
       id: req.locals.member.id,
     },
-  }).then(() => res.json({}));
+  })
+  .then(() => res.json({}))
+  .catch(err => next(new BadRequestError(err)));
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/')
   .get(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     checkUserDentistPermission,
     getMembers)
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
+    validateBody(MEMBER),
     checkUserDentistPermission,
     addMember);
 
@@ -227,18 +186,18 @@ router
 router
   .route('/:memberId')
   .get(
-    passport.authenticate('jwt', { session: false }),
-    getMemberFromParam,
+    userRequired,
+    injectMemberFromUser(),
     getMember)
   .put(
-    passport.authenticate('jwt', { session: false }),
-    getMemberFromParam,
+    userRequired,
+    validateBody(MEMBER),
+    injectMemberFromUser(),
     updateMember,
     getMember)
   .delete(
-    passport.authenticate('jwt', { session: false }),
-    getMemberFromParam,
+    userRequired,
+    injectMemberFromUser(),
     deleteMember);
-
 
 export default router;

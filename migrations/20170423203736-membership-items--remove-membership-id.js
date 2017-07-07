@@ -6,7 +6,7 @@ module.exports = {
       // queryInterface.removeColumn('membershipItems', 'membershipId'),
       queryInterface.addColumn('membershipItems', 'dentistInfoId', {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         onDelete: 'CASCADE',
         references: {
           model: 'dentistInfos',
@@ -16,11 +16,11 @@ module.exports = {
     ]);
   },
 
-  down: function (queryInterface, Sequelize) {
+  down: function (queryInterface) {
     return Promise.all([
       // queryInterface.addColumn('membershipItems', 'membershipId', {
       //   type: Sequelize.INTEGER,
-      //   allowNull: false,
+      //   allowNull: true,
       //   onDelete: 'CASCADE',
       //   references: {
       //     model: 'memberships',

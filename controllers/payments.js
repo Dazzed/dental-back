@@ -59,7 +59,7 @@ export function createCreditCard(user, card) {
   const ctrl =
     new APIControllers.CreateCustomerProfileController(createRequest.getJSON());
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.AUTHORIZE_ENV === 'production') {
     ctrl.setEnvironment(Constants.endpoint.production);
   }
 
@@ -94,7 +94,6 @@ export function createCreditCard(user, card) {
   });
 }
 
-
 export function updateCreditCard(profileId, paymentId, card) {
   const authentication = getAuthentication();
 
@@ -127,7 +126,7 @@ export function updateCreditCard(profileId, paymentId, card) {
     updateRequest.getJSON()
   );
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.AUTHORIZE_ENV === 'production') {
     ctrl.setEnvironment(Constants.endpoint.production);
   }
 
@@ -160,7 +159,6 @@ export function updateCreditCard(profileId, paymentId, card) {
   });
 }
 
-
 export function validateCreditCard(profileId, paymentId, cvc) {
   const authentication = getAuthentication();
 
@@ -175,7 +173,7 @@ export function validateCreditCard(profileId, paymentId, cvc) {
     request.getJSON()
   );
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.AUTHORIZE_ENV === 'production') {
     ctrl.setEnvironment(Constants.endpoint.production);
   }
 
@@ -207,7 +205,6 @@ export function validateCreditCard(profileId, paymentId, cvc) {
   });
 }
 
-
 export function chargeAuthorize(profileId, paymentId, data) {
   const authentication = getAuthentication();
 
@@ -231,18 +228,16 @@ export function chargeAuthorize(profileId, paymentId, data) {
 
   const lineItemList = [];
 
-  data.members.forEach((member, index) => {
+  (data.members || []).forEach((member, index) => {
     const lineItem = new APIContracts.LineItemType();
     lineItem.setItemId(index);
-    lineItem.setName(`${member.firstName} ${member.lastName}`);
+    lineItem.setName(member.fullName);
     // lineItem.setDescription(member.fullName);
     lineItem.setQuantity('1');
     lineItem.setUnitPrice(member.monthly);
     lineItemList.push(lineItem);
   });
 
-  const lineItems = new APIContracts.ArrayOfLineItem();
-  lineItems.setLineItem(lineItemList);
 
   const transactionRequestType = new APIContracts.TransactionRequestType();
   transactionRequestType.setTransactionType(
@@ -250,7 +245,12 @@ export function chargeAuthorize(profileId, paymentId, data) {
   );
   transactionRequestType.setProfile(profileToCharge);
   transactionRequestType.setAmount(data.total);
-  transactionRequestType.setLineItems(lineItems);
+
+  if ((data.members || []).length !== 0) {
+    const lineItems = new APIContracts.ArrayOfLineItem();
+    lineItems.setLineItem(lineItemList);
+    transactionRequestType.setLineItems(lineItems);
+  }
   transactionRequestType.setOrder(orderDetails);
   transactionRequestType.setTransactionSettings(transactionSettings);
 
@@ -262,7 +262,7 @@ export function chargeAuthorize(profileId, paymentId, data) {
     createRequest.getJSON()
   );
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.AUTHORIZE_ENV === 'production') {
     ctrl.setEnvironment(Constants.endpoint.production);
   }
 
@@ -320,7 +320,7 @@ export function chargeAuthorize(profileId, paymentId, data) {
   });
 }
 
-
+// TODO: Replace this function entirely using Stripe
 export function ensureCreditCard(_user, card) {
   return new Promise((resolve, reject) => {
     db.User.find({
@@ -342,9 +342,6 @@ export function ensureCreditCard(_user, card) {
             user.paymentId = paymentId;
             return user;
           });
-      } else if (card) {
-        return updateCreditCard(user.authorizeId, user.paymentId, card)
-          .then(() => user);
       }
       return user;
     })
@@ -359,7 +356,6 @@ export function ensureCreditCard(_user, card) {
   });
 }
 
-
 export function getCreditCardInfo(profileId, paymentId) {
   const authentication = getAuthentication();
 
@@ -372,7 +368,7 @@ export function getCreditCardInfo(profileId, paymentId) {
     getRequest.getJSON()
   );
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.AUTHORIZE_ENV === 'production') {
     ctrl.setEnvironment(Constants.endpoint.production);
   }
 
@@ -421,6 +417,38 @@ export function getCreditCardInfo(profileId, paymentId) {
         }
       } else {
         reject(new Error('No content'));
+      }
+    });
+  });
+}
+
+export function getTransactionDetails(transId) {
+  const merchantAuthenticationType = new APIContracts.MerchantAuthenticationType();
+  merchantAuthenticationType.setName(Constants.apiLoginKey);
+  merchantAuthenticationType.setTransactionKey(Constants.transactionKey);
+
+  const getRequest = new APIContracts.GetTransactionDetailsRequest();
+  getRequest.setMerchantAuthentication(merchantAuthenticationType);
+  getRequest.setTransId(transId);
+
+  const ctrl = new APIControllers.GetTransactionDetailsController(getRequest.getJSON());
+
+  return new Promise((resolve, reject) => {
+    ctrl.execute(() => {
+      const apiResponse = ctrl.getResponse();
+      const response = new APIContracts.GetTransactionDetailsResponse(apiResponse);
+
+      if (response != null) {
+        if (response.getMessages().getResultCode() === APIContracts.MessageTypeEnum.OK) {
+          resolve({
+            authorizeId: response.getTransaction().getCustomer().getId(),
+            transaction: response.getJSON(),
+          });
+        } else {
+          reject(response.getJSON());
+        }
+      } else {
+        reject('No transaction details found!');
       }
     });
   });

@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const USER_ORIGIN_OPTIONS = ['external', 'internal'];
 
 // TODO: update with real data before go production
@@ -50,27 +52,6 @@ export const CHILDREN_MEMBERSHIP_ITEMS_DEFAULTS = [{
   code: '0220',
 }];
 
-export const PRICING_CODES = [
-  { code: '0120' },
-  { code: '0140' },
-  { code: '0150' },
-  { code: '0220' },
-  { code: '0272' },
-  { code: '0274' },
-  { code: '0330' },
-  { code: '1110' },
-  { code: '1120' },
-  { code: '1206' },
-  { code: '2391' },
-  { code: '2392' },
-  { code: '2750' },
-  { code: '3330' },
-  { code: '4341' },
-  { code: '4910' },
-  { code: '7140' }
-];
-
-
 export const DAYS = [
   'sunday',
   'monday',
@@ -117,20 +98,53 @@ export const EMAIL_SUBJECTS = {
     welcome: 'Welcome to the Dental Marketplace!',
   },
   dentist: {
+    welcome: 'Welcome to the Dental Marketplace!',
     activation_required: 'Activate Your Account',
     invite_patient: 'Invitation to join',
+    new_patient: 'New Patient from DentalHQ',
+    new_review: 'You Have a New Review on DentalHQ'
   },
   activation_complete: 'Welcome to the Dental Marketplace!',
   contact_support: 'A New DentalHQ.com Contact Form Message',
+  password_reset: 'Password Reset Request',
 };
 
 
 export const SUBSCRIPTION_STATES = [
+  'trialing',
   'active',
-  'canceled',
   'inactive',
   'past_due',
+  'canceled',
+  'unpaid',
+  'expired'
 ];
+
+export const SUBSCRIPTION_STATES_LOOKUP = _.keyBy(SUBSCRIPTION_STATES, state => state);
+
+
+export const SUBSCRIPTION_TYPES = [
+  'month',
+  'year'
+];
+
+
+export const SUBSCRIPTION_TYPES_LOOKUP = {
+  month: SUBSCRIPTION_TYPES[0],
+  year: SUBSCRIPTION_TYPES[1],
+};
+
+
+export const SUBSCRIPTION_AGE_GROUPS = [
+  'adult',
+  'child'
+];
+
+
+export const SUBSCRIPTION_AGE_GROUPS_LOOKUP = {
+  adult: SUBSCRIPTION_AGE_GROUPS[0],
+  child: SUBSCRIPTION_AGE_GROUPS[1],
+};
 
 
 export const RECOMMENDED_DISCOUNT = 25;
@@ -195,4 +209,31 @@ export const US_STATES = {
   WV: 'West Virginia',
   WI: 'Wisconsin',
   WY: 'Wyoming',
+};
+
+export const EDIT_USER_BY_ADMIN = [
+  'firstName',
+  'middleName',
+  'lastName',
+  'email',
+  'phoneNumber'
+];
+
+/**
+ * Pricing Codes related to calculating the full cost of a membership
+ */
+export const CODES_FOR_CALC_FULL_COST = [
+  '1110',
+  '0120',
+  '0274',
+  '0330',
+  '0220',
+  '0140',
+];
+
+export const AUTHORIZE_HOOK_EVENTS = {
+  REFUND_CREATED: 'net.authorize.payment.refund.created',
+  SUBSCRIPTION_SUSPENDED: 'net.authorize.customer.subscription.suspended',
+  SUBSCRIPTION_TERMINATED: 'net.authorize.customer.subscription.terminated',
+  SUBSCRIPTION_CANCELLED: 'net.authorize.customer.subscription.cancelled',
 };

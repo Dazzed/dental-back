@@ -1,118 +1,89 @@
+/* eslint max-len:0 */
+
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
-import passport from 'passport';
 import _ from 'lodash';
 
 import db from '../../models';
-import { updateTotalMembership } from '../../utils/helpers';
+
+import { userRequired, injectDentistInfo } from '../middlewares';
+import { MembershipMethods } from '../../orm-methods/memberships';
+import { SUBSCRIPTION_STATES_LOOKUP } from '../../config/constants';
 
 import {
-  NotFoundError,
   ForbiddenError,
+  BadRequestError,
 } from '../errors';
 
-
-const router = new Router({ mergeParams: true });
-
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
 
 /**
- * Fill req.locals.dentistInfo with the requested member on url params,
- * if allowed call next middleware.
+ * Gets the dentist info record
  *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getDentistInfoFromParams(req, res, next) {
-  const userId = req.params.userId;
+function getDentistInfo(req, res, next) {
+  let dentistInfo = req.locals.dentistInfo.toJSON();
+  const userId = req.user.get('type') === 'admin' ? req.params.userId : req.user.get('id');
+  dentistInfo = _.omit(dentistInfo, ['membershipId', 'childMembershipId', 'pricing']);
 
-  /*
-   * If user is not admin and try to requests paths not related
-   * to that user will return forbidden.
-   */
-  const canEdit =
-    userId === 'me' || req.user.get('id') === parseInt(userId, 10) ||
-    (req.user.get('type') === 'admin' && userId !== 'me');
-
-  if (!canEdit) {
-    return next(new ForbiddenError());
-  }
-
-  const query = {
-    where: {},
-    attributes: {
-      exclude: ['userId'],
-    },
-    include: [{
-      model: db.WorkingHours,
-      as: 'workingHours',
-      attributes: { exclude: ['dentistInfoId'] },
-      orderBy: 'createdAt DESC',
-    }, {
-      model: db.Membership,
-      as: 'membership',
-      attributes: {
-        exclude: ['isDeleted', 'default', 'userId'],
-      },
+  return Promise.resolve()
+  .then(() => (
+    db.MembershipItem.findAll({
+      where: { dentistInfoId: dentistInfo.id },
       include: [{
-        model: db.MembershipItem,
-        as: 'items',
-        attributes: {
-          exclude: ['membershipId'],
-        },
-      }],
-    }, {
-      model: db.Membership,
-      as: 'childMembership',
-      attributes: {
-        exclude: ['isDeleted', 'default', 'userId'],
-      },
-      include: [{
-        model: db.MembershipItem,
-        as: 'items',
-        attributes: {
-          exclude: ['membershipId'],
-        },
-      }],
-    }, {
-      model: db.DentistInfoPhotos,
-      as: 'officeImages',
-      attributes: ['url']
-    }],
-    order: [
-      [
-        { model: db.Membership, as: 'membership' },
-        { model: db.MembershipItem, as: 'items' },
-        'id', 'asc'
-      ],
-      [
-        { model: db.Membership, as: 'childMembership' },
-        { model: db.MembershipItem, as: 'items' },
-        'id', 'asc'
-      ]
-    ]
-  };
+        model: db.PriceCodes,
+        as: 'priceCode'
+      }]
+    })
+  ))
+  .then((items) => {
+    // Inject the price codes
+    dentistInfo.priceCodes = items.map((i) => {
+      const temp = i.priceCode.toJSON();
+      temp.price = i.get('price');
+      return i.priceCode;
+    });
 
-  if (req.params.dentistInfoId) {
-    query.where.id = req.params.dentistInfoId;
-  }
+    // Unwrap the services
+    dentistInfo.services = dentistInfo.services.map(item => item.service);
 
-  // if not admin limit query to related data userId
-  if (req.user.get('type') !== 'admin') {
-    query.where.userId = req.user.get('id');
-  }
+    return db.Subscription.count({
+      where: {
+        dentistId: userId,
+        status: SUBSCRIPTION_STATES_LOOKUP.active,
+      }
+    });
+  })
+  .then((activeMemberCount) => {
+    // Inject active member counts
+    dentistInfo.activeMemberCount = activeMemberCount;
 
-  // console.log(query);
-  return db.DentistInfo.find(query).then((dentistInfo) => {
-    if (!dentistInfo) {
-      return next(new NotFoundError());
+    if (req.user.get('type') === 'dentist') {
+      res.json({
+        data: dentistInfo
+      });
+    } else {
+      const data = req.user.toJSON();
+      data.dentistInfo = dentistInfo;
+      res.json({ data });
     }
-
-    req.locals.dentistInfo = dentistInfo;
-
-    return next();
-  }).catch((error) => {
-    next(error);
-  });
+  })
+  .catch(err => next(new BadRequestError(err)));
 }
 
-
+/**
+ * Updates the dentist info record
+ *
+ * @param {Object} req - the express request
+ * @param {Object} res - the express response
+ * @param {Function} next - the next middleware function
+ */
 function updateDentistInfo(req, res, next) {
   const userId = req.params.userId;
 
@@ -130,6 +101,10 @@ function updateDentistInfo(req, res, next) {
 
   const query = {
     where: {},
+    include: [{
+      model: db.DentistInfoPhotos,
+      as: 'officeImages'
+    }]
   };
 
   if (req.params.dentistInfoId) {
@@ -141,134 +116,198 @@ function updateDentistInfo(req, res, next) {
     query.where.userId = req.user.get('id');
   }
 
-  // Update dentinst info
-  return db.DentistInfo
-    .find(query)
-    .then((info) => {
-      const queries = [];
+  return Promise.resolve()
+  .then(() => db.DentistInfo.find(query))
+  .then((dentistInfo) => {
+    if (dentistInfo == null) {
+      return next(new BadRequestError('No dentist info object was found'));
+    }
 
-      // update info it self
-      queries.push(info.update({
-        officeName: req.body.officeName,
-        url: req.body.url,
-        email: req.body.email,
-        phone: req.body.phone,
-        message: req.body.message,
-        address: req.body.address,
-        city: req.body.city,
-        state: req.body.state,
-        zipCode: req.body.zipCode,
-      }));
+    const queries = [];
+    const user = req.body.user;
+    const officeInfo = req.body.officeInfo;
+    const officeImages = req.body.officeImages;
+    const pricing = req.body.pricing;
+    const membership = req.body.membership;
+    const childMembership = req.body.childMembership;
+    const workingHours = req.body.workingHours;
+    const services = req.body.services;
 
-      // update membership items
-      req.body.membership.items.forEach(item => {
-        queries.push(db.MembershipItem.update({
-          price: item.price,
-        }, {
-          where: {
-            membershipId: info.get('membershipId'),
-            pricingCode: item.pricingCode,
-          },
-        }));
+    if (user) {
+      queries.push(
+        req.user.update({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          avatar: user.avatar,
+          zipCode: user.zipCode,
+          specialtyId: user.specialtyId
+        })
+      );
+    }
+
+    // update info itself.
+    if (officeInfo) {
+      queries.push(
+        dentistInfo.update({
+          officeName: officeInfo.officeName,
+          url: officeInfo.url,
+          phone: officeInfo.phone,
+          message: officeInfo.message,
+          address: officeInfo.address,
+          city: officeInfo.city,
+          state: officeInfo.state,
+          zipCode: officeInfo.zipCode,
+          logo: officeInfo.logo,
+          acceptsChildren: officeInfo.acceptsChildren,
+          childStartingAge: officeInfo.childStartingAge,
+          marketplaceOptIn: officeInfo.marketplaceOptIn
+        })
+      );
+    }
+
+    if (pricing) {
+      // update pricing codes.
+      pricing.codes.forEach((item) => {
+        queries.push(
+          db.MembershipItem.upsert({
+            pricingCodeId: item.code,
+            price: item.amount,
+            dentistInfoId: dentistInfo.get('id'),
+          })
+        );
       });
+    }
 
-      updateTotalMembership(req.body.membership);
-
-      // update membership
-      queries.push(db.Membership.update({
-        recommendedFee: req.body.membership.recommendedFee,
-        activationCode: req.body.membership.activationCode,
-        discount: req.body.membership.discount,
-        price: req.body.membership.price,
-        withDiscount: req.body.membership.withDiscount,
-        monthly: req.body.membership.monthly,
-      }, { where: { id: info.get('membershipId') } }));
-
-
-      // update child membership items
-      req.body.childMembership.items.forEach(item => {
-        queries.push(db.MembershipItem.update({
-          price: item.price,
+    if (membership) {
+      // Update membership plans on Stripe + DB
+      queries.push(
+        db.Membership.update({
+          price: membership.price,
+          discount: membership.discount,
         }, {
-          where: {
-            membershipId: info.get('childMembershipId'),
-            pricingCode: item.pricingCode,
-          },
-        }));
-      });
+          where: { id: dentistInfo.get('membershipId') },
+          individualHooks: true,
+        })
+      );
+    }
 
-      updateTotalMembership(req.body.childMembership);
+    if (childMembership) {
+      // update child membership.
+      queries.push(
+        db.Membership.update({
+          price: childMembership.price,
+          discount: childMembership.discount,
+        }, {
+          where: { id: dentistInfo.get('childMembershipId') },
+          individualHooks: true,
+        })
+      );
+    }
 
-      // update membership
-      queries.push(db.Membership.update({
-        recommendedFee: req.body.childMembership.recommendedFee,
-        activationCode: req.body.childMembership.activationCode,
-        discount: req.body.childMembership.discount,
-        price: req.body.childMembership.price,
-        withDiscount: req.body.childMembership.withDiscount,
-        monthly: req.body.childMembership.monthly,
-      }, { where: { id: info.get('childMembershipId') } }));
 
-
+    if (workingHours) {
       // update working hours
-      req.body.workingHours.forEach(workingHour => {
-        queries.push(db.WorkingHours.update({
-          isOpen: workingHour.isOpen,
-          startAt: workingHour.startAt,
-          endAt: workingHour.endAt,
-        }, {
-          where: {
-            dentistInfoId: info.get('id'),
-            day: workingHour.day,
-          },
-        }));
+      workingHours.forEach((workingHour) => {
+        queries.push(
+          db.WorkingHours.update({
+            isOpen: workingHour.isOpen,
+            startAt: workingHour.startAt,
+            endAt: workingHour.endAt,
+          }, {
+            where: {
+              dentistInfoId: dentistInfo.get('id'),
+              day: workingHour.day,
+            }
+          })
+        );
       });
+    }
 
-      // update services
-      for (let service in req.body.services) {  // eslint-disable-line
+    if (services) {
+      // update services.
+      for (let service in services) {  // eslint-disable-line
         const id = parseInt(service.replace(/[^0-9.]/g, ''), 10);
-        const shouldAdd = req.body.services[service];
+        const shouldAdd = services[service];
 
         if (shouldAdd) {
-          queries.push(info.addService(id));
+          queries.push(dentistInfo.addService(id));
         } else {
-          queries.push(info.removeService(id));
+          queries.push(dentistInfo.removeService(id));
         }
       }
+    }
 
-      return Promise.all(queries);
-    }).then(() => {
-      next();
-    }).catch(next);
-}
+    if (officeImages) {
+      // update office images.
+      officeImages.forEach((imageUrl) => {
+        queries.push(
+          db.DentistInfoPhotos.upsert({
+            url: imageUrl,
+            dentistInfoId: dentistInfo.get('id')
+          })
+        );
+      });
+    }
 
-
-function getDentistInfo(req, res) {
-  const json = req.locals.dentistInfo.toJSON();
-
-  if (json.services) {
-    json.services.forEach(item => {
-      delete item.dentistInfoService;
-    });
-  }
-
-  res.json({
-    data: _.omit(json, ['membershipId']),
+    return Promise.all(queries).then(() => res.json({}));
+  })
+  .catch((err) => {
+    return next(new BadRequestError(err));
   });
 }
 
+/**
+ * Delete a dentist image.
+ */
+function deleteDentistInfoPhoto (req, res, next) {
+  return db.DentistInfo.find({ id: req.params.dentistInfoId })
+    .then((dentistInfo) => {
+      if (!dentistInfo) {
+        return false;
+      }
+
+      return dentistInfo.get('userId') === req.user.get('id');
+    })
+    .then((isDentistOwner) => {
+      if (!isDentistOwner) {
+        return Promise.reject(new ForbiddenError('Not the dentist owner'));
+      }
+
+      return db.DentistInfoPhotos.destroy({
+        where: {
+          id: req.params.dentistInfoPhotoId,
+          dentistInfoId: req.params.dentistInfoId,
+        }
+      }).then((result) => res.json({ result }));
+    })
+    .catch(next);
+}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// ENDPOINTS
+
+const router = new Router({ mergeParams: true });
 
 router
   .route('/')
   .get(
-    passport.authenticate('jwt', { session: false }),
-    getDentistInfoFromParams,
-    getDentistInfo)
-  .post(
-    passport.authenticate('jwt', { session: false }),
-    updateDentistInfo,
-    getDentistInfoFromParams,
+    userRequired,
+    injectDentistInfo(),
     getDentistInfo);
 
+router
+  .route('/:dentistInfoId/photos/:dentistInfoPhotoId')
+  .delete(
+    userRequired,
+    deleteDentistInfoPhoto);
+
+router
+  .route('/:dentistInfoId?')
+  .post(
+    userRequired,
+    updateDentistInfo,
+    injectDentistInfo(),
+    getDentistInfo);
 
 export default router;
