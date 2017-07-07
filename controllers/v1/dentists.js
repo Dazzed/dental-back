@@ -30,7 +30,6 @@ import {
 } from '../../config/constants';
 
 import {
-  REVIEW,
   UPDATE_DENTIST,
   INVITE_PATIENT,
   CONTACT_SUPPORT,
@@ -61,95 +60,6 @@ function getDateTimeInPST() {
   const date = now.format('M/D/YY');
 
   return `${time} on ${date}`;
-}
-
-/**
- * Adds a review
- *
- * @param {Object} req - express request
- * @param {Object} res - express response
- * @param {Function} next - next middleware function
- */
-function addReview(req, res) {
-  db.Review.create({
-    title: req.body.title || '',
-    message: req.body.message,
-    rating: req.body.rating,
-    isAnonymous: req.body.isAnonymous,
-    clientId: req.user.get('id'),
-    dentistId: req.params.userId,
-  });
-
-  // get the dentist user from the database.
-  db.User.findById(req.params.userId).then((dentist) => {
-    if (dentist) {
-      // send new review email notification to dentist.
-      mailer.sendEmail(res.mailer, {
-        template: 'dentists/new_review',
-        subject: EMAIL_SUBJECTS.dentist.new_review,
-        user: dentist
-      }, {
-        emailBody: dentistMessages.new_review.body
-      });
-
-      // create a new notification for the dentist about new review.
-      dentist.createNotification({
-        title: dentistMessages.new_review.title,
-        body: dentistMessages.new_review.body
-      });
-    }
-  });
-
-  res.json({});
-}
-
-/**
- * Updates a review
- *
- * @param {Object} req - express request
- * @param {Object} res - express response
- * @param {Function} next - the express next request handler
- */
-function updateReview(req, res, next) {
-  db.Review.find({
-    where: {
-      id: req.params.reviewId,
-      clientId: req.user.get('id')
-    }
-  })
-  .then((review) => {
-    if (!review) res.json(new NotFoundError());
-
-    else {
-      review.update({
-        title: req.body.title || '',
-        message: req.body.message,
-        rating: req.body.rating,
-        isAnonymous: req.body.isAnonymous
-      });
-
-      return res.json({});
-    }
-  })
-  .catch(errs => next(new BadRequestError(errs)));
-}
-
-/**
- * Deletes a dentist office review
- *
- * @param {Object} req - express request
- * @param {Object} res - express response
- * @param {Function} next - next middleware function
- */
-function deleteReview(req, res) {
-  db.Review.destroy({
-    where: {
-      id: req.params.reviewId,
-      clientId: req.user.get('id')
-    }
-  });
-
-  res.json({});
 }
 
 /**
@@ -342,23 +252,6 @@ function updateDentist(req, res, next) {
 // ROUTES
 
 const router = new Router({ mergeParams: true });
-
-router
-  .route('/review')
-  .post(
-    userRequired,
-    validateBody(REVIEW),
-    addReview);
-
-router
-  .route('/review/:reviewId')
-  .put(
-    userRequired,
-    validateBody(REVIEW),
-    updateReview)
-  .delete(
-    userRequired,
-    deleteReview);
 
 router
   .route('/patients/:patientId/update-card')
