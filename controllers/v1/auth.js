@@ -163,7 +163,8 @@ function normalUserSignup(req, res, next) {
   })
   .then((user) => {
     userObj = user;
-    return stripe.createCustomer(user.email);
+    const { stripeToken } = data;
+    return stripe.createCustomer(user.email, stripeToken);
   })
   .then((customer) => {
     customerId = customer.id;

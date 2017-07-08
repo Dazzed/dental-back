@@ -75,12 +75,22 @@ export default {
    * @param {string} email - the user's email address
    * @returns {Promise<Customer>}
    */
-  createCustomer(email) {
-    return new Promise((resolve, reject) => {
-      stripe.customers.create({
+  createCustomer(email, stripeToken) {
+    let create_obj = {};
+    if (stripeToken) {
+      create_obj = {
         email,
         description: `Primary Account Holder: ${email}`,
-      }, (err, customer) => {
+        source: stripeToken
+      }  
+    } else {
+      create_obj = {
+        email,
+        description: `Primary Account Holder: ${email}`,
+      };
+    }
+    return new Promise((resolve, reject) => {
+      stripe.customers.create(create_obj, (err, customer) => {
         if (err) reject(verboseError(err));
         resolve(customer);
       });
@@ -432,5 +442,16 @@ export default {
       );
     });
   },
+
+  createSubscriptionWithItems(subscriptionObject) {
+    return new Promise((resolve, reject) => {
+      stripe.subscriptions.create(subscriptionObject, (err, subscription) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(subscription);
+      });
+    });
+  }
 
 };
