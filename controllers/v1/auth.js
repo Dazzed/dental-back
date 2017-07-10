@@ -176,7 +176,7 @@ function normalUserSignup(req, res, next) {
         db.Subscription.create({
           clientId: userObj.id,
           membershipId: req.body.membershipId || null,
-          dentistId: req.body.officeId || null,
+          dentistId: req.body.dentistId || null,
           paymentProfile: {
             stripeCustomerId: customer.id,
             primaryAccountHolder: userObj.id,
@@ -208,7 +208,7 @@ function normalUserSignup(req, res, next) {
           req.body.members.forEach((member) => {
             membersCreationQueries.push(db.User.addMember(
               _.assign({
-                officeId: req.body.officeId
+                dentistId: req.body.dentistId
               }, member),
               userObj,
               t

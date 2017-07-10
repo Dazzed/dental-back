@@ -601,7 +601,7 @@ export const model = {
     data.type = 'client';
     return db.User.create(data, { transaction })
     .then((member) => {
-      return member.createSubscription(data.membershipId, data.officeId, transaction)
+      return member.createSubscription(data.membershipId, data.dentistId, transaction)
       .then((subscription) => {
         let json = member.toJSON();
         json.subscription = subscription.toJSON();
