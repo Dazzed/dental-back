@@ -208,7 +208,7 @@ function normalUserSignup(req, res, next) {
           req.body.members.forEach((member) => {
             membersCreationQueries.push(db.User.addMember(
               _.assign({
-                officeId: req.body.officeId
+                dentistId: req.body.dentistId
               }, member),
               userObj,
               t
