@@ -33,6 +33,9 @@ import {
   UnauthorizedError
 } from '../errors';
 
+import {
+  subscribeUserAndMembers
+} from '../../utils/subscribe';
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
 
@@ -304,6 +307,14 @@ function addPaymentSource(req, res, next) {
   }).catch(err => next(new BadRequestError(err)));
 }
 
+function addPaymentSourceAndSubscribe(req, res) {
+  subscribeUserAndMembers(req).then(data => {
+    res.status(200).send({});  
+  }, err => {
+    res.status(500).send(err);
+  });
+}
+
 /**
  * Sets the user's default payment option
  *
@@ -377,4 +388,7 @@ router
   .route('/payment/sources/:token/default')
   .put(validateParams(STRIPE_TOKEN), validatePaymentManager(), setDefaultPaymentSource);
 
+router
+  .route('/payment/subscribe')
+  .post(validatePaymentManager(), addPaymentSourceAndSubscribe);
 export default router;
