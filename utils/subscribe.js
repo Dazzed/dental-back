@@ -77,21 +77,28 @@ export function subscribeUserAndMembers(req) {
 
   function createStripeSubscription(dentistPlans, usersSubscription, callback) {
     // Lets construct stripe subscription object with subscription items here...
-
     const items = [];
-    usersSubscription.forEach((usersub) => {
-      const plan = dentistPlans.find(dentistPlan => dentistPlan.id === usersub.membershipId);
-      const index = items.findIndex(item => item.plan === plan.stripePlanId);
+    dentistPlans.forEach((dentistPlan) => {
+      const index = items.findIndex(item => item.plan === dentistPlan.stripePlanId);
       if (index === -1) {
-        items.push({
-          plan: plan.stripePlanId,
-          quantity: 1,
-          type: plan.type
-        });
+        if (usersSubscription.some(userSub => userSub.membershipId === dentistPlan.id)) {
+          items.push({
+            plan: dentistPlan.stripePlanId,
+            quantity: 1,
+            type: dentistPlan.type,
+          });
+        } else {
+          items.push({
+            plan: dentistPlan.stripePlanId,
+            quantity: 0,
+            type: dentistPlan.type,
+          });
+        }
       } else {
         items[index].quantity += 1;
       }
     });
+
 
     const monthlyItems = items
       .filter(item => item.type === 'month')
@@ -105,6 +112,8 @@ export function subscribeUserAndMembers(req) {
         return { plan: item.plan, quantity: item.quantity };
       });
 
+      
+
     const monthlySubscriptionObject = {
       customer: stripeCustomerId,
       items: monthlyItems
@@ -116,10 +125,8 @@ export function subscribeUserAndMembers(req) {
     };
 
     var promises = [];
-    if (monthlySubscriptionObject.items.length > 0)
-      promises.push(stripe.createSubscriptionWithItems(monthlySubscriptionObject));
-    if (annualSubscriptionObject.items.length > 0)
-      promises.push(stripe.createSubscriptionWithItems(annualSubscriptionObject));
+    promises.push(stripe.createSubscriptionWithItems(monthlySubscriptionObject));
+    promises.push(stripe.createSubscriptionWithItems(annualSubscriptionObject));
 
     Promise.all(promises).then(data => {
       callback(null, data, usersSubscription, dentistPlans);
