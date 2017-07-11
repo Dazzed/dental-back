@@ -24,22 +24,16 @@ import {
  * @param {object} res - the express response
  * @param {Function} next - the express next request handler
  */
-function getMembers(req, res, next) {
+async function getMembers(req, res, next) {
   if (req.params.dentistId === 'me') {
     req.params.dentistId = req.user.get('id');
   }
 
-  db.User.find({
+  const user = await db.User.find({
     where: { id: req.params.dentistId },
-  })
-  .then((user) => {
-    user.getClients()
-    .then((members) => {
-      res.json({ data: members });
-    })
-    .catch((err) => { throw new Error(err); });
-  })
-  .catch(err => next(new BadRequestError(err)));
+  });
+  const members = await user.getClients();
+  res.json({ data: members });
 }
 
 function getPendingAmounts(req, res, next) {
