@@ -595,13 +595,43 @@ export const model = {
    * @param {object} user - the parent user
    * @returns {Promise<Member>}
    */
-  addMember(data, user, transaction) {
+  addMember(data, user, transaction = null) {
     data.addedBy = user.get('id');
     data.email = _.replace(user.get('email'), '@', `${uuid()}@`);
     data.type = 'client';
     return db.User.create(data, { transaction })
     .then((member) => {
       return member.createSubscription(data.membershipId, data.dentistId, transaction)
+      .then((subscription) => {
+        let json = member.toJSON();
+        if (subscription) {
+          json.subscription = subscription.toJSON();
+        }
+
+        return json;
+      });
+    });
+  },
+
+  /**
+   * Creates an associated member record 
+   * Call this when we need to add a new member to an existing subscription of a primary account holder.
+   *
+   * @param {object} newMember - the information of the new member
+   * * @param {object} dentist - the dentist
+   * @param {object} primaryMember - the parent user
+   * @returns {Promise<Member>}
+   */
+  addAdditionalMember(newMember, dentist, primaryMember) {
+    newMember = {
+      ...newMember,
+      addedBy: primaryMember.client.id,
+      email: _.replace(primaryMember.client.email, '@', `${uuid()}@`),
+      type: 'client',
+    };
+    return db.User.create(newMember)
+    .then((member) => {
+      return member.createSubscription(newMember.membershipId, dentist.id, null)
       .then((subscription) => {
         let json = member.toJSON();
         if (subscription) {

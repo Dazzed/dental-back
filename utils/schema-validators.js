@@ -215,6 +215,27 @@ export const COMPLETE_NORMAL_USER_REGISTRATION = {
   },
 };
 
+export const ADD_MEMBER = {
+  'member.firstName': {
+    notEmpty: true,
+  },
+  'member.lastName': {
+    notEmpty: true,
+  },
+  'member.birthDate': {
+    notEmpty: true,
+    isDate: true,
+  },
+  'member.sex': {
+    notEmpty: true
+  },
+  'member.familyRelationship': {
+    notEmpty: true,
+    isIn: {
+      options: [Object.keys(MEMBER_RELATIONSHIP_TYPES)],
+    },
+  },
+};
 
 export const MEMBER = {
   firstName: {
