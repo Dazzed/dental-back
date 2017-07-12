@@ -154,3 +154,82 @@ export function subscribeUserAndMembers(req) {
     ]).then(() => resolve(), err => reject(err));
   });
 }
+
+export function subscribeNewMember(primaryAccountHolderId, newMember, subscriptionObject) {
+
+  function getPaymentProfile(callback) {
+    db.PaymentProfile.find({
+      where: {
+        primaryAccountHolder: primaryAccountHolderId
+      }
+    }).then((profile) => {
+      if (!profile) {
+        return callback(`No payment Profile found with id ${primaryAccountHolderId}`);
+      }
+      return callback(null, profile);
+    }, (err) => {
+      return callback(err);
+    });
+  }
+
+  function getMembershipDetail(paymentProfile, callback) {
+    db.Membership.find({
+      where: {
+        id: newMember.membershipId
+      }
+    }).then((membership) => {
+      return callback(null, paymentProfile, membership);
+    }, err => {
+      return callback(err);
+    })
+  }
+
+  function getPrimaryUserSubscriptions(paymentProfile, membership, callback) {
+    stripe.getCustomer(paymentProfile.stripeCustomerId).then(customer => {
+      return callback(null, customer, membership);
+    }, err => {
+      return callback(err);
+    });
+  }
+
+  function extractMatchingMembershipPlan(stripeCustomerObject, membership, callback) {
+    const targetSubscription = stripeCustomerObject.subscriptions.data.find(({ items }) => {
+      return items.data.find(({ plan }) => plan.id == membership.stripePlanId);
+    });
+    const stripeSubscriptionId = targetSubscription.id;
+    const targetSubscriptionItem = targetSubscription.items.data.find(sub => sub.plan.id == membership.stripePlanId);
+    callback(null, stripeSubscriptionId, targetSubscriptionItem.id, (targetSubscriptionItem.quantity + 1))
+  }
+
+  function UpdateStripeSubscriptionItem(stripeSubscriptionId, subscriptionItemId, quantity, callback) {
+    stripe.updateSubscriptionItem(subscriptionItemId, {
+      quantity
+    }).then(item => {
+      callback(null, stripeSubscriptionId);
+    });
+  }
+
+  function updateLocalSubscription(stripeSubscriptionId, callback) {
+    db.Subscription.update({
+      status: 'active',
+      stripeSubscriptionId
+    },{
+      where: {
+        id: subscriptionObject.id
+      }
+    }).then(subscription => {
+      callback(null, true);
+    }, err => callback(err));
+  }
+
+  return new Promise((resolve, reject) => {
+    waterfaller([
+      getPaymentProfile,
+      getMembershipDetail,
+      getPrimaryUserSubscriptions,
+      extractMatchingMembershipPlan,
+      UpdateStripeSubscriptionItem,
+      updateLocalSubscription
+    ]).then(data => resolve(data), err => reject(err));
+  });
+}

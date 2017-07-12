@@ -452,6 +452,17 @@ export default {
         return resolve(subscription);
       });
     });
+  },
+
+  updateSubscriptionItem(subscriptionItemId, object) {
+    return new Promise((resolve, reject) => {
+      stripe.subscriptionItems.update(subscriptionItemId, object, (err, item) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(item);
+      });
+    });
   }
 
 };

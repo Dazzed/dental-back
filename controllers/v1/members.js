@@ -12,6 +12,7 @@ import { checkUserDentistPermission } from '../../utils/permissions';
 
 import {
   MEMBER,
+  ADD_MEMBER,
 } from '../../utils/schema-validators';
 
 import {
@@ -24,6 +25,9 @@ import {
   validateBody,
 } from '../middlewares';
 
+import {
+  subscribeNewMember,
+} from '../../utils/subscribe';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -57,16 +61,27 @@ function getMembers(req, res, next) {
  * @param {Function} next - the express next request handler
  */
 function addMember(req, res, next) {
+  const {
+    member,
+    parentMember
+  } = req.body;
   Promise.resolve()
   .then(() => {
-    const data = _.pick(req.body, ['firstName', 'lastName',
-      'birthDate', 'familyRelationship', 'sex', 'membershipType']);
-
-    return db.User.addMember(data, req.user);
+    return db.User.addAdditionalMember(member, req.user, parentMember);
   })
   .then((response) => {
-    res.status(HTTPStatus.CREATED);
-    res.json({ data: response });
+    subscribeNewMember(parentMember.client.id, member, response.subscription).then((stripeResponse) => {
+      res.status(HTTPStatus.CREATED);
+      res.json({ data: response }); 
+    }, (errors) => {
+      console.log("GOT ERRORS")
+      console.log(errors);
+      if (isPlainObject(errors)) {
+        next(new BadRequestError(errors));
+      }
+
+      next(errors);
+    });
   })
   .catch((errors) => {
     if (isPlainObject(errors)) {
@@ -178,7 +193,7 @@ router
     getMembers)
   .post(
     userRequired,
-    validateBody(MEMBER),
+    validateBody(ADD_MEMBER),
     checkUserDentistPermission,
     addMember);
 
