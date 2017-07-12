@@ -56,11 +56,11 @@ export function dentistRequired(req, res, next) {
 export function injectDentist(paramName = 'dentistId', localVarName = 'dentist') {
   return (req, res, next) => {
     fetchDentist(req.params[paramName])
-    .then((dentist) => {
-      req.locals[localVarName] = dentist;
-      next();
-    })
-    .catch(err => next(new BadRequestError(err)));
+      .then((dentist) => {
+        req.locals[localVarName] = dentist;
+        next();
+      })
+      .catch(err => next(new BadRequestError(err)));
   };
 }
 
@@ -195,15 +195,15 @@ export function injectSimpleUser(paramName = 'userId', localVarName = 'membershi
     if (id === 'me') id = req.user.get('id');
 
     Promise.resolve()
-    .then(() => db.User.find({ where: { id } }))
-    .then((user) => {
-      if (!user || req.params[paramName] !== 'me') next(new BadRequestError());
-      req.locals[localVarName] = user;
-      next();
-    }).catch((err) => {
-      console.log(err);
-      next(new BadRequestError());
-    });
+      .then(() => db.User.find({ where: { id } }))
+      .then((user) => {
+        if (!user || req.params[paramName] !== 'me') next(new BadRequestError());
+        req.locals[localVarName] = user;
+        next();
+      }).catch((err) => {
+        console.log(err);
+        next(new BadRequestError());
+      });
   };
 }
 
@@ -260,18 +260,18 @@ export function injectMembership(membershipParamName = 'membershipId', localVarN
     db.Membership.find({
       id: req.params[membershipParamName],
     })
-    .then((mem) => {
-      if (!mem) throw new Error('Membership does not exist!');
-      membership = mem.toJSON();
-      return mem.getPlanCosts();
-    })
-    .then((planCosts) => {
-      membership = Object.assign({}, membership, planCosts);
-      membership = _(membership).omit(['stripePlanId', 'userId', 'price']);
-      req.locals[localVarName] = membership;
-      next();
-    })
-    .catch(err => next(err));
+      .then((mem) => {
+        if (!mem) throw new Error('Membership does not exist!');
+        membership = mem.toJSON();
+        return mem.getPlanCosts();
+      })
+      .then((planCosts) => {
+        membership = Object.assign({}, membership, planCosts);
+        membership = _(membership).omit(['stripePlanId', 'userId', 'price']);
+        req.locals[localVarName] = membership;
+        next();
+      })
+      .catch(err => next(err));
   };
 }
 
@@ -291,18 +291,18 @@ export function injectDentistMembership(membershipParamName = 'membershipId', de
       id: req.params[membershipParamName],
       userId: req.params[dentistParamName],
     })
-    .then((mem) => {
-      if (!mem) throw new Error('Membership does not exist!');
-      membership = mem.toJSON();
-      return mem.getPlanCosts();
-    })
-    .then((planCosts) => {
-      membership = Object.assign({}, membership, planCosts);
-      membership = _(membership).omit(['stripePlanId', 'userId', 'price']);
-      req.locals[localVarName] = membership;
-      next();
-    })
-    .catch(err => next(err));
+      .then((mem) => {
+        if (!mem) throw new Error('Membership does not exist!');
+        membership = mem.toJSON();
+        return mem.getPlanCosts();
+      })
+      .then((planCosts) => {
+        membership = Object.assign({}, membership, planCosts);
+        membership = _(membership).omit(['stripePlanId', 'userId', 'price']);
+        req.locals[localVarName] = membership;
+        next();
+      })
+      .catch(err => next(err));
   };
 }
 
@@ -353,12 +353,12 @@ export function injectSubscribedPatient(patientParamName = 'patientId', localVar
         }
       }]
     })
-    .then((subscription) => {
-      if (!subscription || !subscription.get('client')) next(new NotFoundError());
-      req.locals[localVarName] = subscription.get('client');
-      next();
-    })
-    .catch(err => next(new BadRequestError(err)));
+      .then((subscription) => {
+        if (!subscription || !subscription.get('client')) next(new NotFoundError());
+        req.locals[localVarName] = subscription.get('client');
+        next();
+      })
+      .catch(err => next(new BadRequestError(err)));
   };
 }
 
@@ -373,19 +373,19 @@ export function verifyPasswordLocal(paramName = 'oldPassword') {
     db.User.find({
       where: { id: req.locals.user.get('id') }
     })
-    .then((_user) => {
-      const password = req.body[paramName];
+      .then((_user) => {
+        const password = req.body[paramName];
 
-      _user.authenticate(password, (err, user) => {
-        if (err) return next(err);
+        _user.authenticate(password, (err, user) => {
+          if (err) return next(err);
 
-        if (!user) {
-          return next(new UnauthorizedError('Incorrect password.'));
-        }
-        req.locals.passwordVerified = true;
-        return next();
+          if (!user) {
+            return next(new UnauthorizedError('Incorrect password.'));
+          }
+          req.locals.passwordVerified = true;
+          return next();
+        });
       });
-    });
   };
 }
 
@@ -422,9 +422,9 @@ export function validateBody(schemaObject = {}, bodyPrepCb = body => body) {
     req.body = temp;
 
     req.asyncValidationErrors(true)
-    .then(next, (err) => {
-      next(new BadRequestError(err));
-    });
+      .then(next, (err) => {
+        next(new BadRequestError(err));
+      });
   };
 }
 
@@ -443,9 +443,9 @@ export function validateParams(schemaObject = {}, paramsPrepCb = params => param
     req.body = temp;
 
     req.asyncValidationErrors(true)
-    .then(next, (err) => {
-      next(new BadRequestError(err));
-    });
+      .then(next, (err) => {
+        next(new BadRequestError(err));
+      });
   };
 }
 
@@ -466,28 +466,28 @@ export function validatePaymentManager(userParamName = 'userId', localUserVarNam
     let isDentist = false;
 
     db.User.find({ where: { id: requestedUserId } })
-    .then((user) => {
-      if (!user) throw new Error('Requested user does not exist');
-      req.locals[localUserVarName] = user;
-      return db.Subscription.find({ where: { clientId: requestedUserId } });
-    })
-    .then((sub) => {
-      // Validate the user has an active subscription
-      // or current session user is the dentist owner
-      if (!sub) throw new Error('User has no valid subscription');
-      if (sessionUserId === sub.dentistId) isDentist = true;
-      req.locals[localSubVarName] = sub;
-      // Get the users payment profile next
-      return db.PaymentProfile.find({ where: { id: sub.paymentProfileId } });
-    })
-    .then((profile) => {
-      // Validate the access (only primary account holder and user's dentist is allowed)
-      if ((sessionUserId !== profile.primaryAccountHolder) && !isDentist) {
-        throw new Error('User does not have access to this user account');
-      }
-      req.locals[localPayVarName] = profile;
-      next();
-    })
-    .catch(err => next(new BadRequestError(err)));
+      .then((user) => {
+        if (!user) throw new Error('Requested user does not exist');
+        req.locals[localUserVarName] = user;
+        return db.Subscription.find({ where: { clientId: requestedUserId } });
+      })
+      .then((sub) => {
+        // Validate the user has an active subscription
+        // or current session user is the dentist owner
+        if (!sub) throw new Error('User has no valid subscription');
+        if (sessionUserId === sub.dentistId) isDentist = true;
+        req.locals[localSubVarName] = sub;
+        // Get the users payment profile next
+        return db.PaymentProfile.find({ where: { id: sub.paymentProfileId } });
+      })
+      .then((profile) => {
+        // Validate the access (only primary account holder and user's dentist is allowed)
+        if ((sessionUserId !== profile.primaryAccountHolder) && !isDentist) {
+          throw new Error('User does not have access to this user account');
+        }
+        req.locals[localPayVarName] = profile;
+        next();
+      })
+      .catch(err => next(new BadRequestError(err)));
   };
 }
