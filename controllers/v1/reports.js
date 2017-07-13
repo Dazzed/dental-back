@@ -330,7 +330,7 @@ function getMasterReport(req, res, next) {
 
 const router = new Router({ mergeParams: true });
 
-router.route('/dentist/:officeId/list')
+router.route('/dentists/:officeId/list')
   .get(
     userRequired,
     dentistRequired,

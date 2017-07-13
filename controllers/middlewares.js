@@ -174,7 +174,11 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
  */
 export function injectDentistOffice(paramName = 'dentistId', localVarName = 'dentist') {
   return (req, res, next) => {
-    UserInstance.getFullDentist(req.params[paramName]).then((dentist) => {
+    let paramVal = req.params[paramName];
+    if (req.params[paramName] === 'me') {
+      paramVal = req.user.get('id');
+    }
+    UserInstance.getFullDentist(paramVal).then((dentist) => {
       req.locals[localVarName] = dentist;
       next();
     }).catch(err => new BadRequestError(err));
