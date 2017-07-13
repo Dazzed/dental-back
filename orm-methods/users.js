@@ -349,6 +349,10 @@ export const instance = {
             },
           },
           {
+            model: db.Phone,
+            as: 'phoneNumbers',
+          },
+          {
             model: db.DentistInfo,
             as: 'dentistInfo',
             attributes: {
@@ -614,7 +618,7 @@ export const model = {
   },
 
   /**
-   * Creates an associated member record 
+   * Creates an associated member record
    * Call this when we need to add a new member to an existing subscription of a primary account holder.
    *
    * @param {object} newMember - the information of the new member
