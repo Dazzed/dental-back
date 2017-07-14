@@ -85,7 +85,7 @@ function getDentistInfo(req, res, next) {
  * @param {Function} next - the next middleware function
  */
 function updateDentistInfo(req, res, next) {
-  const userId = req.params.userId;
+  const userId = req.params.dentistInfoId;
 
   /*
    * If user is not admin and try to requests paths not related
@@ -108,7 +108,7 @@ function updateDentistInfo(req, res, next) {
   };
 
   if (req.params.dentistInfoId) {
-    query.where.id = req.params.dentistInfoId;
+    query.where.userId = req.params.dentistInfoId;
   }
 
   // if not admin limit query to related data userId
@@ -141,7 +141,7 @@ function updateDentistInfo(req, res, next) {
           phone: user.phone,
           avatar: user.avatar,
           zipCode: user.zipCode,
-          specialtyId: user.specialtyId
+          dentistSpecialtyId: user.dentistSpecialtyId
         })
       );
     }
@@ -166,45 +166,58 @@ function updateDentistInfo(req, res, next) {
       );
     }
 
-    if (pricing) {
+    if (pricing.codes) {
       // update pricing codes.
       pricing.codes.forEach((item) => {
         queries.push(
-          db.MembershipItem.upsert({
-            pricingCodeId: item.code,
-            price: item.amount,
-            dentistInfoId: dentistInfo.get('id'),
-          })
-        );
+          db.MembershipItem.update({
+            price: item.price,
+          }, {
+            where: {
+              id: item.id,
+            }
+          }))
       });
     }
 
-    if (membership) {
-      // Update membership plans on Stripe + DB
+    // TODO(sameep): Fix dentist edit form for memberships.
+    // if (membership) {
+    //   // Update membership plans on Stripe + DB
+    //   queries.push(
+    //     db.Membership.update({
+    //       price: membership.price,
+    //       discount: membership.discount,
+    //     }, {
+    //       where: { id: dentistInfo.get('membershipId') },
+    //       individualHooks: true,
+    //     })
+    //   );
+    // }
+    //
+    // if (childMembership) {
+    //   // update child membership.
+    //   queries.push(
+    //     db.Membership.update({
+    //       price: childMembership.price,
+    //       discount: childMembership.discount,
+    //     }, {
+    //       where: { id: dentistInfo.get('childMembershipId') },
+    //       individualHooks: true,
+    //     })
+    //   );
+    // }
+
+    if (user.phone) {
       queries.push(
-        db.Membership.update({
-          price: membership.price,
-          discount: membership.discount,
+        db.Phone.update({
+          number: user.phone,
         }, {
-          where: { id: dentistInfo.get('membershipId') },
-          individualHooks: true,
+          where: {
+            userId: dentistInfo.get('userId'),
+          }
         })
       );
     }
-
-    if (childMembership) {
-      // update child membership.
-      queries.push(
-        db.Membership.update({
-          price: childMembership.price,
-          discount: childMembership.discount,
-        }, {
-          where: { id: dentistInfo.get('childMembershipId') },
-          individualHooks: true,
-        })
-      );
-    }
-
 
     if (workingHours) {
       // update working hours
@@ -238,9 +251,9 @@ function updateDentistInfo(req, res, next) {
       }
     }
 
-    if (officeImages) {
+    if (officeInfo.officeImages) {
       // update office images.
-      officeImages.forEach((imageUrl) => {
+      officeInfo.officeImages.forEach((imageUrl) => {
         queries.push(
           db.DentistInfoPhotos.upsert({
             url: imageUrl,
@@ -303,11 +316,9 @@ router
     deleteDentistInfoPhoto);
 
 router
-  .route('/:dentistInfoId?')
+  .route('/:dentistInfoId')
   .post(
     userRequired,
-    updateDentistInfo,
-    injectDentistInfo(),
-    getDentistInfo);
+    updateDentistInfo);
 
 export default router;

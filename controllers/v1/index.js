@@ -51,6 +51,7 @@ router.use('/users/:userId/notifications', notifications);
 // FIXME: Need to break apart the `/dentists` routes a bit
 // more so as to not interfere with other dentist endpoints
 router.use('/dentists', dentists);
+router.use('/dentists/edit', dentistInfo);
 router.use('/dentists/:dentistId/members', userRequired, dentistRequired, dentistMembers);
 router.use('/dentists/:dentistId/memberships', userRequired, dentistRequired, dentistMemberships);
 router.use('/dentists/:dentistId/reviews', reviews);
