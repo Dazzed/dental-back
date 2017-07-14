@@ -108,7 +108,7 @@ function updateDentistInfo(req, res, next) {
   };
 
   if (req.params.dentistInfoId) {
-    query.where.id = req.params.dentistInfoId;
+    query.where.userId = req.params.dentistInfoId;
   }
 
   // if not admin limit query to related data userId
@@ -213,7 +213,7 @@ function updateDentistInfo(req, res, next) {
           number: user.phone,
         }, {
           where: {
-            userId: dentistInfo.get('id'),
+            userId: dentistInfo.get('userId'),
           }
         })
       );
@@ -251,9 +251,9 @@ function updateDentistInfo(req, res, next) {
       }
     }
 
-    if (officeImages) {
+    if (officeInfo.officeImages) {
       // update office images.
-      officeImages.forEach((imageUrl) => {
+      officeInfo.officeImages.forEach((imageUrl) => {
         queries.push(
           db.DentistInfoPhotos.upsert({
             url: imageUrl,
