@@ -426,6 +426,24 @@ export default {
   },
 
   /**
+   * Gets details for stripe Invoice record
+   *
+   * @param {string} invoiceId - the stripe subscription id
+   * @returns {Promise<Invoice>}
+   */
+  getInvoice(invoiceId) {
+    return new Promise((resolve, reject) => {
+      stripe.invoices.retrieve(
+        invoiceId,
+        (err, invoice) => {
+          if (err) reject(verboseError(err));
+          resolve(invoice);
+        }
+      );
+    });
+  },
+
+  /**
    * The id of the subscription record to remove
    *
    * @param {string} subscriptionId - the stripe subscription id
