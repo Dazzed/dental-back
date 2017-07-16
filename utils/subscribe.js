@@ -8,11 +8,16 @@ function waterfaller(functions) {
   return new Promise((resolve, reject) => {
     async.waterfall(
       functions,
-      (err) => {
-        if (err) {
+      (err, data) => {
+        if (err && err !== 'ok') {
+          console.log("ERROR in waterfaller");
+          console.log(err);
           return reject(err);
+        } else if (err === 'ok') {
+          return resolve({ shouldContinue: true, data });
+        } else {
+          return resolve({ shouldContinue: false, data });
         }
-        return resolve();
       }
     );
   });
@@ -68,7 +73,8 @@ export function subscribeUserAndMembers(req) {
   function getDentistMembershipPlans(usersSubscription, callback) {
     db.Membership.findAll({
       where: {
-        userId: dentistId
+        userId: dentistId,
+        active: true
       }
     }).then((plans) => {
       callback(null, plans, usersSubscription);
@@ -112,7 +118,7 @@ export function subscribeUserAndMembers(req) {
         return { plan: item.plan, quantity: item.quantity };
       });
 
-      
+
 
     const monthlySubscriptionObject = {
       customer: stripeCustomerId,
@@ -156,7 +162,7 @@ export function subscribeUserAndMembers(req) {
 }
 
 export function subscribeNewMember(primaryAccountHolderId, newMember, subscriptionObject) {
-
+  
   function getPaymentProfile(callback) {
     db.PaymentProfile.find({
       where: {
@@ -178,6 +184,9 @@ export function subscribeNewMember(primaryAccountHolderId, newMember, subscripti
         id: newMember.membershipId
       }
     }).then((membership) => {
+      if (membership.type === 'year') {
+        return callback('ok', { membership, paymentProfile, subscriptionObject });
+      }
       return callback(null, paymentProfile, membership);
     }, err => {
       return callback(err);
@@ -213,16 +222,19 @@ export function subscribeNewMember(primaryAccountHolderId, newMember, subscripti
     db.Subscription.update({
       status: 'active',
       stripeSubscriptionId
-    },{
-      where: {
-        id: subscriptionObject.id
-      }
-    }).then(subscription => {
-      callback(null, true);
-    }, err => callback(err));
+    }, {
+        where: {
+          id: subscriptionObject.id
+        }
+      }).then(subscription => {
+        callback(null, true);
+      }, err => callback(err));
   }
 
   return new Promise((resolve, reject) => {
+    // Waterfaller final callback has shouldContinue Bool flag to indicate if we have to create a new annual subscription for the
+    // new user. It is true when the new added member opts for annual subscription. So that we create a new subscription under
+    // the primary account holder.
     waterfaller([
       getPaymentProfile,
       getMembershipDetail,
@@ -230,6 +242,43 @@ export function subscribeNewMember(primaryAccountHolderId, newMember, subscripti
       extractMatchingMembershipPlan,
       UpdateStripeSubscriptionItem,
       updateLocalSubscription
-    ]).then(data => resolve(data), err => reject(err));
+    ]).then(({shouldContinue, data}) => {
+      if (shouldContinue) {
+        createNewAnnualSubscription(data).then(res => {
+          return resolve(res);
+        }, err => reject(err));
+      } else {
+        return resolve(data);
+      }
+    }, err => reject(err));
+  });
+}
+
+/*
+  function createNewAnnualSubscription
+  Desc:
+   This function is executed if the newly added member has opted for annual subscription.
+   It is called after the getMembershipDetail breaks and hits the waterfall callback.
+  arguments:
+    membership: The membership object the user has opted to subscribe. (Expecting only annual membership here)
+    paymentProfile: Paymentprofile object of the Primary Account holder.
+*/
+function createNewAnnualSubscription({ membership, paymentProfile, subscriptionObject }) {
+  return new Promise((resolve, reject) => {
+    // Create Stripe subscription.
+    stripe.createSubscription(membership.stripePlanId, paymentProfile.stripeCustomerId)
+      .then(subscription => {
+        // Update the local subscription record to 'active'.
+        db.Subscription.update({
+          status: 'active',
+          stripeSubscriptionId: subscription.id
+        }, {
+          where: {
+            id: subscriptionObject.id
+          }
+        }).then(subscription => {
+          return resolve(subscription);
+        }, err => reject(err));
+      }, err => reject(err));
   });
 }
