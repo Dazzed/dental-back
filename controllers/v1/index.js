@@ -86,4 +86,8 @@ router.use('/admin/dentists/offices', offices);
 router.use('/webhooks', webhooks);
 router.use('/reports', reports);
 
+
+// fees waiving endpoints
+router.use('/dentists/:dentistId/patients', userRequired, dentistRequired, patients);
+
 export default router;

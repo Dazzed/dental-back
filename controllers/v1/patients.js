@@ -24,7 +24,7 @@ function toggleCancellationFeeWaiver(req, res, next) {
   .then((userObj) => {
     user = userObj;
     user.cancellationFeeWaiver = !user.cancellationFeeWaiver;
-    user.save();
+    return user.save();
   })
   .then(() => user.getFullClient())
   .then(data => res.json({ data }))
@@ -47,7 +47,7 @@ function toggleReEnrollmentFeeWaiver(req, res, next) {
   .then((userObj) => {
     user = userObj;
     user.reEnrollmentFeeWaiver = !user.reEnrollmentFeeWaiver;
-    user.save();
+    return user.save();
   })
   .then(() => user.getFullClient())
   .then(data => res.json({ data }))
