@@ -84,7 +84,7 @@ function getDentistInfo(req, res, next) {
  * @param {Object} res - the express response
  * @param {Function} next - the next middleware function
  */
-function updateDentistInfo(req, res, next) {
+async function updateDentistInfo(req, res, next) {
   const userId = req.params.dentistInfoId;
 
   /*
@@ -104,6 +104,10 @@ function updateDentistInfo(req, res, next) {
     include: [{
       model: db.DentistInfoPhotos,
       as: 'officeImages'
+    },
+    {
+      model: db.DentistInfoService,
+      as: 'services'
     }]
   };
 
@@ -116,12 +120,10 @@ function updateDentistInfo(req, res, next) {
     query.where.userId = req.user.get('id');
   }
 
-  return Promise.resolve()
-  .then(() => db.DentistInfo.find(query))
-  .then((dentistInfo) => {
-    if (dentistInfo == null) {
-      return next(new BadRequestError('No dentist info object was found'));
-    }
+  const dentistInfo = await db.DentistInfo.find(query);
+  if (dentistInfo == null) {
+    return next(new BadRequestError('No dentist info object was found'));
+  }
 
     const queries = [];
     const user = req.body.user;
@@ -237,16 +239,31 @@ function updateDentistInfo(req, res, next) {
       });
     }
 
-    if (services) {
-      // update services.
-      for (let service in services) {  // eslint-disable-line
-        const id = parseInt(service.replace(/[^0-9.]/g, ''), 10);
-        const shouldAdd = services[service];
+    if (officeInfo.services) {
+      const previousServices = dentistInfo.get('services');
+      // Go through the services to add.
+      for (const service of officeInfo.services) {
+        const serviceAlreadyExists =
+            previousServices.find(s => s.dataValues.serviceId === service.id);
+        if (!serviceAlreadyExists) {
+          queries.push(db.DentistInfoService.upsert({
+            serviceId: service.id,
+            dentistInfoId: dentistInfo.get('id')
+          }));
+        }
+      }
 
-        if (shouldAdd) {
-          queries.push(dentistInfo.addService(id));
-        } else {
-          queries.push(dentistInfo.removeService(id));
+      // Go through the services to destroy.
+      for (const service of previousServices) {
+        const serviceShouldExist =
+            officeInfo.services.find(s => s.id === service.dataValues.serviceId);
+        if (!serviceShouldExist) {
+          queries.push(db.DentistInfoService.destroy({
+            where: {
+              serviceId: service.dataValues.serviceId,
+              dentistInfoId: dentistInfo.get('id'),
+            }
+          }));
         }
       }
     }
@@ -262,12 +279,7 @@ function updateDentistInfo(req, res, next) {
         );
       });
     }
-
-    return Promise.all(queries).then(() => res.json({}));
-  })
-  .catch((err) => {
-    return next(new BadRequestError(err));
-  });
+  res.json({});
 }
 
 /**
