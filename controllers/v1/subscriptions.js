@@ -355,6 +355,7 @@ function cancelSubscription(req, res, next) {
   let query = {};
   let user = {};
   let subscription = {};
+  let membership = {};
 
   // Limit the query to allow fetching only related members
   // of the primary user when providing a user id
@@ -390,9 +391,10 @@ function cancelSubscription(req, res, next) {
     if (!sub) throw new Error('User has no related subscription!'); // this should not happen (unless a dentist)
     // 4. Check if a cancellation fee should be applied and/or waived
     if ((req.user.cancellationFee === true) &&
-        (req.user.cancellationFeeWaiver === false) &&
+        (req.user.cancellationFeeWaiver === true) &&
         // Check if the user cancelled after the free cancellation period (i.e. 3 months from sign up)
-        (Moment(sub.since).add(EARLY_CANCELLATION_TERM, 'month').isAfter(Moment()))) {
+        (Moment().isAfter(Moment(user.createdAt).add(EARLY_CANCELLATION_TERM, 'month')))
+       ) {
       // 5. Get Payment Profile
       return db.PaymentProfile.find({
         $or: [{
@@ -412,7 +414,20 @@ function cancelSubscription(req, res, next) {
     return Promise.resolve();
   })
   // 5. Cancel the user's subscription
-  .then(() => stripe.cancelSubscription(subscription.stripeSubscriptionId))
+  .then(() => {
+    return db.Membership.findOne({ where: { id: subscription.membershipId } });
+    // return stripe.cancelSubscription(subscription.stripeSubscriptionId);
+  })
+  .then((mem) => {
+    membership = mem;
+    return stripe.getSubscription(subscription.stripeSubscriptionId);
+  })
+  .then((stripeSubscription) => {
+    const subscriptionItem = stripeSubscription.find(s => s.plan.id == membership.stripePlanId);
+    return stripe.updateSubscriptionItem(subscriptionItem.id, {
+      quantity: subscriptionItem.quantity - 1
+    });
+  })
   .then(() => {
     // Turn on Re-Enrollment flag because user should be charged if signing up again
     user.reEnrollmentFee = true;
@@ -421,8 +436,8 @@ function cancelSubscription(req, res, next) {
   .then(() => {
     // 6. Upon success, update the subscription record
     subscription.status = 'canceled';
-    subscription.stripeSubscriptionId = null;
-    subscription.membershipId = null;
+    // subscription.stripeSubscriptionId = null;
+    // subscription.membershipId = null;
     return subscription.save();
   })
   .then(() => res.json({}))
