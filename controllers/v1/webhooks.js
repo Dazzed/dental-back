@@ -139,9 +139,9 @@ function stripe_webhook(request, response) {
         const isAnnualPlan = invoice.lines.data.some(line => line.plan.interval === 'year');
         const stripeSubscriptionId = invoice.subscription;
         const attempt_count = invoice.attempt_count;
-        if (isAnnualPlan) {
-          return callback('ok', isAnnualPlan, { stripeSubscriptionId });
-        }
+        // if (isAnnualPlan) {
+        //   return callback('ok', isAnnualPlan, { stripeSubscriptionId });
+        // }
         return callback(null, attempt_count, stripeSubscriptionId);
       }, err => {
         return callback(err);
@@ -190,10 +190,9 @@ function stripe_webhook(request, response) {
 
     async.waterfall(
       [
-        isMonthlyIntervalPlan,
-        checkAttemptCount,
-        sendMailToCustomer,
-        performSubscriptionStatusActions
+        pluckIntervaltype,
+        performLocalActions,
+        sendMailToCustomer
       ]
       , (err, isAnnualPlan, data) => {
         if (err == 'ok') {
