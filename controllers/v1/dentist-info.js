@@ -270,13 +270,18 @@ async function updateDentistInfo(req, res, next) {
 
     if (officeInfo.officeImages) {
       // update office images.
+      const previousImages = dentistInfo.get('officeImages');
       officeInfo.officeImages.forEach((imageUrl) => {
-        queries.push(
-          db.DentistInfoPhotos.upsert({
-            url: imageUrl,
-            dentistInfoId: dentistInfo.get('id')
-          })
-        );
+        const imageAlreadyExists =
+            previousImages.find(s => s.dataValues.url === imageUrl);
+        if (!imageAlreadyExists) {
+          queries.push(
+            db.DentistInfoPhotos.upsert({
+              url: imageUrl,
+              dentistInfoId: dentistInfo.get('id')
+            })
+          );
+        }
       });
     }
   res.json({});
