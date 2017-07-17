@@ -5,7 +5,7 @@
 
 import { Router } from 'express';
 import _ from 'lodash';
-
+import async from 'async';
 import db from '../../models';
 
 import { userRequired, injectDentistInfo } from '../middlewares';
@@ -124,13 +124,13 @@ async function updateDentistInfo(req, res, next) {
   if (dentistInfo == null) {
     return next(new BadRequestError('No dentist info object was found'));
   }
-
+    console.log("THE BODY",req.body)
     const queries = [];
     const user = req.body.user;
     const officeInfo = req.body.officeInfo;
     const officeImages = req.body.officeImages;
     const pricing = req.body.pricing;
-    const membership = req.body.membership;
+    const membership = req.body.officeInfo.memberships;
     const childMembership = req.body.childMembership;
     const workingHours = req.body.workingHours;
     const services = req.body.services;
@@ -183,31 +183,27 @@ async function updateDentistInfo(req, res, next) {
     }
 
     // TODO(sameep): Fix dentist edit form for memberships.
-    // if (membership) {
-    //   // Update membership plans on Stripe + DB
-    //   queries.push(
-    //     db.Membership.update({
-    //       price: membership.price,
-    //       discount: membership.discount,
-    //     }, {
-    //       where: { id: dentistInfo.get('membershipId') },
-    //       individualHooks: true,
-    //     })
-    //   );
-    // }
-    //
-    // if (childMembership) {
-    //   // update child membership.
-    //   queries.push(
-    //     db.Membership.update({
-    //       price: childMembership.price,
-    //       discount: childMembership.discount,
-    //     }, {
-    //       where: { id: dentistInfo.get('childMembershipId') },
-    //       individualHooks: true,
-    //     })
-    //   );
-    // }
+    if (membership.length > 0) {
+      membership.forEach(m => {
+        queries.push(
+          db.Membership.update({
+            active: false
+          },
+          {
+            where: {
+              id: m.id
+            }
+          })
+        );
+        queries.push(
+          db.Membership.create({
+            ..._.omit(m, ['id']),
+            dentistInfoId: user.dentistInfo.id,
+            userId: user.id
+          })
+        );
+      });
+    }
 
     if (user.phone) {
       queries.push(
@@ -279,6 +275,12 @@ async function updateDentistInfo(req, res, next) {
         );
       });
     }
+  Promise.all(queries).then(data => {
+    return;
+  },err => {
+    console.log("Error in dentist update");
+    console.log(err);
+  });
   res.json({});
 }
 

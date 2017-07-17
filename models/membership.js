@@ -48,10 +48,14 @@ export default function (sequelize, DataTypes) {
       defaultValue: SUBSCRIPTION_AGE_GROUPS[0],
       allowNull: false,
     },
+    active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    }
   }, {
     tableName: 'memberships',
 
-    timestamps: false,
+    timestamps: true,
 
     instanceMethods: instance,
 
@@ -87,19 +91,19 @@ export default function (sequelize, DataTypes) {
         })
       ),
       // Only called on .save() or with { individualHooks: true }
-      beforeUpdate: membership => (
-        new Promise((resolve) => {
-          stripe.updateMembershipPlanPrice(
-            membership.id,
-            membership.stripePlanId,
-            membership.name,
-            membership.price,
-            membership.type,
-          ).then(() => {
-            resolve();
-          }).catch(() => { throw new Error('Failed to update membership plan'); });
-        })
-      ),
+      // beforeUpdate: membership => (
+      //   new Promise((resolve) => {
+      //     stripe.updateMembershipPlanPrice(
+      //       membership.id,
+      //       membership.stripePlanId,
+      //       membership.name,
+      //       membership.price,
+      //       membership.type,
+      //     ).then(() => {
+      //       resolve();
+      //     }).catch(() => { throw new Error('Failed to update membership plan'); });
+      //   })
+      // ),
       // Only called on .save() or with { individualHooks: true }
       beforeDestroy: membership => (
         new Promise((resolve) => {
