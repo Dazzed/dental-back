@@ -393,7 +393,7 @@ function cancelSubscription(req, res, next) {
     if ((req.user.cancellationFee === true) &&
         (req.user.cancellationFeeWaiver === true) &&
         // Check if the user cancelled after the free cancellation period (i.e. 3 months from sign up)
-        (Moment().isAfter(Moment(user.createdAt).add(EARLY_CANCELLATION_TERM, 'month')))
+        (Moment().isAfter(Moment(subscription.createdAt).add(EARLY_CANCELLATION_TERM, 'month')))
        ) {
       // 5. Get Payment Profile
       return db.PaymentProfile.findOne({

@@ -21,6 +21,11 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: sequelize.fn('NOW'),
+    }
   }, {
     tableName: 'subscriptions',
 
