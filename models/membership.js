@@ -48,6 +48,11 @@ export default function (sequelize, DataTypes) {
       defaultValue: SUBSCRIPTION_AGE_GROUPS[0],
       allowNull: false,
     },
+    active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    }
   }, {
     tableName: 'memberships',
 

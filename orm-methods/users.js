@@ -120,14 +120,15 @@ export const instance = {
         .then((plans) => {
           subs = subs.map(s => s.toJSON());
           subs.forEach((s, i) => (subs[i].membership = plans[i]));
-          // Let's construct the status property for the primary patient's subordinate members.
+          // Let's construct the status and membership property for the primary patient's subordinate members.
           subs = subs.map(sub => {
             if (sub.client.members.length > 0) {
               sub.client.members = sub.client.members.map(member => {
-                let { status } = subs.find(s => s.client.id === member.id);
+                let { status, membership } = subs.find(s => s.client.id === member.id);
                 return {
                   ...member,
-                  status
+                  status,
+                  membership
                 };
               });
             }

@@ -31,6 +31,7 @@ export const instance = {
           type,
           monthlyPrice,
           annualPrice,
+          dentistId: this.get('userId')
         });
       })
       .catch(reject);

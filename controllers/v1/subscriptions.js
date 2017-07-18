@@ -352,22 +352,23 @@ function getSubscription(req, res, next) {
 function cancelSubscription(req, res, next) {
   const userId = req.params.userId || req.user.get('id');
   const currentUserId = req.user.get('id');
-  let query = {};
+  // let query = {};
   let user = {};
   let subscription = {};
+  let membership = {};
 
   // Limit the query to allow fetching only related members
   // of the primary user when providing a user id
-  if (req.params.userId && req.user.get('type') !== 'dentist') {
-    // allow dentists to be excused
-    query = {
-      addedBy: currentUserId,
-    };
-  }
+  // if (req.params.userId && req.user.get('type') !== 'dentist') {
+  //   // allow dentists to be excused
+  //   query = {
+  //     addedBy: currentUserId,
+  //   };
+  // }
 
   // 1. Get the user requested
   db.User.find({
-    where: Object.assign({}, { id: userId }, query),
+    where: { id: userId },
   })
   .then((userObj) => {
     // 2. Get the user's subscription
@@ -390,16 +391,15 @@ function cancelSubscription(req, res, next) {
     if (!sub) throw new Error('User has no related subscription!'); // this should not happen (unless a dentist)
     // 4. Check if a cancellation fee should be applied and/or waived
     if ((req.user.cancellationFee === true) &&
-        (req.user.cancellationFeeWaiver === false) &&
+        (req.user.cancellationFeeWaiver === true) &&
         // Check if the user cancelled after the free cancellation period (i.e. 3 months from sign up)
-        (Moment(sub.since).add(EARLY_CANCELLATION_TERM, 'month').isAfter(Moment()))) {
+        (Moment().isAfter(Moment(user.createdAt).add(EARLY_CANCELLATION_TERM, 'month')))
+       ) {
       // 5. Get Payment Profile
-      return db.PaymentProfile.find({
-        $or: [{
-          primaryAccountHolder: currentUserId,
-        }, {
+      return db.PaymentProfile.findOne({
+        where: {
           primaryAccountHolder: user.addedBy,
-        }],
+        }
       });
     }
     return Promise.resolve(null);
@@ -407,12 +407,26 @@ function cancelSubscription(req, res, next) {
   .then((payProfile) => {
     if (payProfile !== null) {
       // Charge the user for cancelling
-      return stripe.issueCharge(EARLY_CANCELLATION_PENALTY, payProfile.stripeCustomerId, 'Early Cancellation Penalty Charge');
+      // return stripe.issueCharge(EARLY_CANCELLATION_PENALTY, payProfile.stripeCustomerId, 'Early Cancellation Penalty Charge');
     }
     return Promise.resolve();
   })
   // 5. Cancel the user's subscription
-  .then(() => stripe.cancelSubscription(subscription.stripeSubscriptionId))
+  .then(() => {
+    return db.Membership.findOne({ where: { id: subscription.membershipId } });
+    // return stripe.cancelSubscription(subscription.stripeSubscriptionId);
+  })
+  .then((mem) => {
+    membership = mem;
+    return stripe.getSubscription(subscription.stripeSubscriptionId);
+  })
+  .then((stripeSubscription) => {
+    console.log(stripeSubscription);
+    const subscriptionItem = stripeSubscription.items.data.find(s => s.plan.id == membership.stripePlanId);
+    return stripe.updateSubscriptionItem(subscriptionItem.id, {
+      quantity: subscriptionItem.quantity - 1
+    });
+  })
   .then(() => {
     // Turn on Re-Enrollment flag because user should be charged if signing up again
     user.reEnrollmentFee = true;
@@ -421,8 +435,8 @@ function cancelSubscription(req, res, next) {
   .then(() => {
     // 6. Upon success, update the subscription record
     subscription.status = 'canceled';
-    subscription.stripeSubscriptionId = null;
-    subscription.membershipId = null;
+    // subscription.stripeSubscriptionId = null;
+    // subscription.membershipId = null;
     return subscription.save();
   })
   .then(() => res.json({}))

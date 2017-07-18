@@ -481,6 +481,22 @@ export default {
         return resolve(item);
       });
     });
+  },
+
+  createInvoiceItem(customerId, amount, invoiceId) {
+    return new Promise((resolve, reject) => {
+      stripe.invoiceItems.create({
+        customer: customerId,
+        amount,
+        currency: 'usd',
+        invoice: invoiceId
+      }, (err, invoiceItem) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(invoiceItem);
+      });
+    });
   }
 
 };
