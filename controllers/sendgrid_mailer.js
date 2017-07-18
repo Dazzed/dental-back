@@ -54,3 +54,16 @@ export function membershipPriceChangeNotification(user, plan_name, price) {
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
 }
+
+export function subscriptionChargeFailedNotification(user, attempt_count) {
+  var templateString = fs.readFileSync('./views/notifications/subscription_charge_failed.ejs', 'utf-8');
+  var template = ejs.compile(templateString);
+
+  let to_email = new sendgrid.Email(user.email);
+  let subject = EMAIL_SUBJECTS.client.subscriptionChargeFailed;
+  let content = new sendgrid.Content(
+    'text/html', template({ user})
+  );
+  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  sendMail(mail);
+}
