@@ -268,21 +268,16 @@ export default function (sequelize, DataTypes) {
     }, model),
 
     hooks: {
-      beforeUpdate: (user) => {
-        // Update email in associated Stripe records
-        user.getPaymentProfile()
-        .then((profile) => {
+      beforeUpdate: async (user) => {
+        if (user.type === 'client') {
+          // Update email in associated Stripe records
+          const profile = await user.getPaymentProfile();
           if (profile.primaryAccountHolder) {
             return stripe.updateCustomer(profile.stripeCustomerId, {
               email: user.get('email'),
             });
           }
-
-          return Promise.resolve({});
-        })
-        .catch(() => {
-          throw new Error('Failed to update user record on Stripe');
-        });
+        }
       },
     },
   });
