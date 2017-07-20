@@ -22,120 +22,154 @@ function waterfaller(functions) {
   });
 }
 
-export function reenrollMember(userId, dentistId, membershipId) {
+export function reenrollMember(userId, currentUserId, membershipId) {
 
-  function doesMemberExist(callback) {
-    db.User.find({
-      where: {
-        id: userId,
-      },
-    })
-      .then((member) => {
-        if (!member) return callback(new Error('Member does not exist'));
-        return callback(null, member);
-      });
-  }
-
-  function getDentistMembershipPlans(member, callback) {
-    db.Membership.findAll({
-      where: {
-        userId: dentistId,
-      }
-    }).then((plans) => {
-      callback(null, member, plans);
-    }, err => callback(err));
-  }
-
-  function isSubscriptionActive(member, membershipPlans, callback) {
-    db.Subscription.find({
-      where: {
-        clientId: userId,
-        dentistId
-      },
-    })
-      .then((sub) => {
-        // 1. Get current subscription && validate subscription DNE
-        if (!sub) {
-          return callback(new Error('User somehow does not have an existing subscription record'));
-        }
-        // if status is canceled
-        if (sub.stripeSubscriptionId == null && sub.status == 'canceled') {
-          return callback(null, sub, false, membershipPlans, member);
-        } else {
-          return callback(null, sub, true, membershipPlans, member);
-        }
-      });
-  }
-
-  function getPaymentProfile(subscription, isSubActive, membershipPlans, member, callback) {
-    db.PaymentProfile.find({
-      where: {
-        primaryAccountHolder: isParent ? member.id : member.addedBy
-      }
-    }).then((profile) => {
-      if (!profile) {
-        return callback('No payment Profile found for customer');
-      }
-      return callback(null, subscription, isSubActive, membershipPlans, member, profile);
-    }, (err) => {
-      return callback(err);
-    });
-  }
-
-  function getMembershipDetail(subscription, isSubActive, membershipPlans, member, paymentProfile, callback) {
-    db.Membership.find({
+  function getMembershipPlan(callback) {
+    db.Membership.findOne({
       where: {
         id: membershipId
       }
-    }).then((membership) => {
-      return callback(null, subscription, isSubActive, membershipPlans, member, paymentProfile, membership);
-    }, err => {
-      return callback(err);
-    })
+    }).then(plan => callback(null, plan), err => callback(err));
   }
 
-  function performSubscriptionOperation(subscription, isSubActive, membershipPlans, member, paymentProfile, membership, callback) {
-    let promises = [];
-    if (isSubActive) {
-      if (membership.type !== 'year') {
-        // Increment quantity in subscription item
-        stripe.getCustomer(paymentProfile.stripeCustomerId).then((stripeCustomerObject) => {
-          const targetSubscription = stripeCustomerObject.subscriptions.data.find(({ items }) => {
-            return items.data.find(({ plan }) => plan.id == membership.stripePlanId);
-          });
-          const stripeSubscriptionId = targetSubscription.id;
-          const targetSubscriptionItem = targetSubscription.items.data.find(sub => sub.plan.id == membership.stripePlanId);
-          stripe.updateSubscriptionItem(subscriptionItemId, {
-            quantity: targetSubscriptionItem.quantity + 1
-          }).then(item => {
-            // Callback here
-          });
-        }, err => {
-          return callback(err);
-        });
-      } else {
-        createNewAnnualSubscriptionLocal({ membership, paymentProfile }).then(res => {
-          // callback here
-        }, err => reject(err));
+  function findStripeCustomerId(membershipPlan, callback) {
+    // first lets check if the user is a primary account holder
+    db.User.findOne({
+      where: {
+        id: userId
       }
-    } else {
-      if (membership.type !== 'year') {
-        // 1.     
+    }).then(user => {
+      // condition for primary account holder
+      let primaryAccountHolder;
+      if (!user.addedBy || user.addedBy == currentUserId) {
+        primaryAccountHolder = userId;
       } else {
+        primaryAccountHolder = user.addedBy;
+      }
+      db.PaymentProfile.findOne({
+        where: {
+          primaryAccountHolder
+        }
+      }).then(paymentProfile => {
+        callback(null, membershipPlan, paymentProfile);
+      }, err => callback(err));
+    }, err => callback(err));
+  }
 
+  function getUserSubscription(membershipPlan, paymentProfile, callback) {
+    db.Subscription.findOne({
+      where: {
+        clientId: userId,
+        dentistId: membershipPlan.userId,
+        paymentProfileId: paymentProfile.id
       }
+    }).then(userSubscription => {
+      const {
+        stripeSubscriptionId,
+        stripeSubscriptionItemId,
+        status
+      } = userSubscription;
+
+      // throw an error if the subscription is active
+      if (stripeSubscriptionId || stripeSubscriptionItemId || status === 'active') {
+        return callback("User already has an active subscription");
+      }
+      callback(null, membershipPlan, paymentProfile, userSubscription);
+    }, err => callback(err));
+  }
+
+  function queryStripeSubscriptions(membershipPlan, paymentProfile, userSubscription, callback) {
+    stripe.getCustomer(paymentProfile.stripeCustomerId)
+      .then(stripeCustomerInfo => {
+        return callback(null, stripeCustomerInfo, membershipPlan, paymentProfile, userSubscription);
+      }, err => callback(err));
+  }
+
+  function getDentistMembershipPlans(stripeCustomerInfo, membershipPlan, paymentProfile, userSubscription, callback) {
+    db.Membership.findAll({
+      where: {
+        userId: membershipPlan.userId,
+        active: true
+      }
+    }).then((dentistMembershipPlans) => {
+      callback(null, dentistMembershipPlans, stripeCustomerInfo, membershipPlan, paymentProfile, userSubscription);
+    }, err => callback(err));
+  }
+
+  function reenrollOperation(dentistMembershipPlans, stripeCustomerInfo, membershipPlan, paymentProfile, userSubscription, callback) {
+    // 1. Iterate over the stripeCustomerInfo
+    // 2. Check for subscription items with matching plan.
+    // 3. If plan is present in items, then simply Increment the quantity.
+    // 4. If not present,
+    //   4.1) Create a new subscription with n subscription Items.
+    //   4.2) Set quantity as 1 to the matching subscription Item.
+    //   
+    let matchingSubscriptionItem = null;
+    let matchingSubscription = null;
+    
+    stripeCustomerInfo.subscriptions.data.forEach(subscription => {
+      subscription.items.data.forEach(subscriptionItem => {
+        if (subscriptionItem.plan.id === membershipPlan.stripePlanId) {
+          matchingSubscriptionItem = subscriptionItem;
+          matchingSubscription = subscription;
+        }
+      });
+    });
+
+
+    if (matchingSubscriptionItem) {
+      // 3
+      const quantity = matchingSubscriptionItem.quantity + 1;
+      stripe.updateSubscriptionItem(matchingSubscriptionItem.id, { quantity })
+        .then(item => {
+          userSubscription.stripeSubscriptionId = matchingSubscription.id;
+          userSubscription.stripeSubscriptionItemId = matchingSubscriptionItem.id;
+          userSubscription.status = 'active';
+          userSubscription.save().then(data => {
+            callback(null, true);
+          }, err => callback(err));
+        })
+    } else {
+      // 4
+      // 4.1) and 4.2)
+      let items = [];
+      dentistMembershipPlans.forEach(plan => {
+        if (plan.type == membershipPlan.type) {
+          if (plan.stripePlanId == membershipPlan.stripePlanId) {
+            items.push({
+              plan: membershipPlan.stripePlanId,
+              quantity: 1
+            });
+          } else {
+            items.push({
+              plan: plan.stripePlanId,
+              quantity: 0
+            });
+          }
+        }
+      });
+
+      stripe.createSubscriptionWithItems({
+        customer: paymentProfile.stripeCustomerId,
+        items
+      }).then(sub => {
+        userSubscription.stripeSubscriptionId = sub.id;
+        userSubscription.status = 'active';
+        userSubscription.stripeSubscriptionItemId = sub.items.data.find(item => item.plan.id === membershipPlan.stripePlanId).id;
+        userSubscription.save().then(data => {
+          callback(null, true);
+        }, err => callback(err));
+      });
     }
   }
   return new Promise((resolve, reject) => {
-    waterfaller(
-      [
-        doesMemberExist,
-        getDentistMembershipPlans,
-        isSubscriptionActive,
-        getPaymentProfile,
-        getMembershipDetail,
-        performSubscriptionOperation
-      ]
-    ).then(data => resolve(data), err => reject(err));
+    waterfaller([
+      getMembershipPlan,
+      findStripeCustomerId,
+      getUserSubscription,
+      queryStripeSubscriptions,
+      getDentistMembershipPlans,
+      reenrollOperation
+    ]).then(data => resolve(data), err => reject(err));
   });
 }

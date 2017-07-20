@@ -31,7 +31,14 @@ function disambiguateSubscriptionId(subscriptionData, usersSubscription, dentist
       return item.plan.id === membership.stripePlanId;
     })
   });
-  return subscription.id;
+
+  let subscriptionItem = subscription.items.data.find(item => {
+    return item.plan.id === membership.stripePlanId;
+  });
+  return {
+    stripeSubscriptionId: subscription.id,
+    stripeSubscriptionItemId: subscriptionItem.id
+  };
 }
 
 // A function that collects the user and his related members information and creates a stripe subscription.
@@ -64,7 +71,7 @@ export function subscribeUserAndMembers(req) {
         clientId: {
           $in: allUsers
         },
-        status: 'active',
+        status: 'inactive',
       }
     }).then((usersSubscription) => {
       callback(null, usersSubscription);
@@ -85,13 +92,21 @@ export function subscribeUserAndMembers(req) {
   function createStripeSubscription(dentistPlans, usersSubscription, callback) {
     // Lets construct stripe subscription object with subscription items here...
     const items = [];
+
     dentistPlans.forEach((dentistPlan) => {
       const index = items.findIndex(item => item.plan === dentistPlan.stripePlanId);
       if (index === -1) {
-        if (usersSubscription.some(userSub => userSub.membershipId === dentistPlan.id)) {
+        let planCount = usersSubscription.reduce((acc, sub) => {
+          if (sub.membershipId === dentistPlan.id) {
+            return acc + 1;
+          } else {
+            return acc;
+          }
+        }, 0);
+        if (planCount) {
           items.push({
             plan: dentistPlan.stripePlanId,
-            quantity: 1,
+            quantity: planCount,
             type: dentistPlan.type,
           });
         } else {
@@ -134,7 +149,6 @@ export function subscribeUserAndMembers(req) {
     var promises = [];
     promises.push(stripe.createSubscriptionWithItems(monthlySubscriptionObject));
     promises.push(stripe.createSubscriptionWithItems(annualSubscriptionObject));
-
     Promise.all(promises).then(data => {
       callback(null, data, usersSubscription, dentistPlans);
     }, err => callback(err));
@@ -143,7 +157,9 @@ export function subscribeUserAndMembers(req) {
   function markSubscriptionsActive(subscriptionData, usersSubscription, dentistPlans, callback) {
     async.each(usersSubscription, (sub, eachCallback) => {
       sub.status = 'active';
-      sub.stripeSubscriptionId = disambiguateSubscriptionId(subscriptionData, usersSubscription, dentistPlans, sub);
+      let disambiguateSubscription = disambiguateSubscriptionId(subscriptionData, usersSubscription, dentistPlans, sub);
+      sub.stripeSubscriptionId = disambiguateSubscription.stripeSubscriptionId;
+      sub.stripeSubscriptionItemId = disambiguateSubscription.stripeSubscriptionItemId;
       sub.save();
       eachCallback();
     }, (err, data) => {
@@ -215,14 +231,15 @@ export function subscribeNewMember(primaryAccountHolderId, newMember, subscripti
     stripe.updateSubscriptionItem(subscriptionItemId, {
       quantity
     }).then(item => {
-      callback(null, stripeSubscriptionId);
+      callback(null, stripeSubscriptionId, subscriptionItemId);
     });
   }
 
-  function updateLocalSubscription(stripeSubscriptionId, callback) {
+  function updateLocalSubscription(stripeSubscriptionId, stripesubscriptionItemId, callback) {
     db.Subscription.update({
       status: 'active',
-      stripeSubscriptionId
+      stripeSubscriptionId,
+      stripesubscriptionItemId
     }, {
         where: {
           id: subscriptionObject.id
@@ -269,10 +286,12 @@ function createNewAnnualSubscription({ membership, paymentProfile, subscriptionO
     // Create Stripe subscription.
     stripe.createSubscription(membership.stripePlanId, paymentProfile.stripeCustomerId)
       .then(subscription => {
+        const stripeSubscriptionItemId = subscription.items.data.find(s => s.plan.id === membership.stripePlanId).id;
         // Update the local subscription record to 'active'.
         db.Subscription.update({
           status: 'active',
-          stripeSubscriptionId: subscription.id
+          stripeSubscriptionId: subscription.id,
+          stripeSubscriptionItemId
         }, {
           where: {
             id: subscriptionObject.id

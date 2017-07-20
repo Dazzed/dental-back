@@ -152,12 +152,13 @@ function reEnroll(req, res, next) {
   let membership = {};
   let payProfile = {};
   const memberId = req.params.userId;
+  const membershipId = req.query.membershipId;
   const currentUserId = req.user.get('id');
 
-  reenrollMember(memberId, currentUserId).then(data => {
-
+  reenrollMember(memberId, currentUserId, membershipId).then(data => {
+    res.status(200).send({});
   }, err => {
-
+    res.status(500).send(err);
   });
 
 
@@ -446,6 +447,8 @@ function cancelSubscription(req, res, next) {
   .then(() => {
     // 6. Upon success, update the subscription record
     subscription.status = 'canceled';
+    subscription.stripeSubscriptionId = null;
+    subscription.stripeSubscriptionItemId = null;
     // subscription.stripeSubscriptionId = null;
     // subscription.membershipId = null;
     return subscription.save();
@@ -500,7 +503,7 @@ router
   .delete(cancelSubscription);
 
 router
-  .route('/plan/re-enroll')
+  .route('/plan/:userId/re-enroll')
   .put(reEnroll);
 
 // Manage subscriptions for members of a family
@@ -515,9 +518,9 @@ router
   .get(getSubscription)
   .delete(cancelSubscription);
 
-router
-  .route('/members/:userId/plan/re-enroll')
-  .put(reEnroll);
+// router
+//   .route('/members/:userId/plan/re-enroll')
+//   .put(reEnroll);
 
 // ────────────────────────────────────────────────────────────────────────────────
 // WAIVERS

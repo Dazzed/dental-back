@@ -177,7 +177,8 @@ function stripe_webhook(request, response) {
         status = 'canceled';
         updateObject = {
           status,
-          stripeSubscriptionId: null
+          stripeSubscriptionId: null,
+          stripeSubscriptionItemId: null
         };
       }
       if (Object.keys(updateObject).length > 0) {

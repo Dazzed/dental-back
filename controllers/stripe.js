@@ -505,14 +505,7 @@ export default {
         if (err) {
           return reject(err);
         }
-        db.Subscription.update({
-          stripeSubscriptionId: null
-        },
-          {
-            where: {
-              stripeSubscriptionId: id
-            }
-          }).then(() => resolve(data));
+        return resolve(data);
       });
     });
   }
