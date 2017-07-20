@@ -72,7 +72,7 @@ function addMember(req, res, next) {
   .then((response) => {
     subscribeNewMember(parentMember.client.id, member, response.subscription).then((stripeResponse) => {
       res.status(HTTPStatus.CREATED);
-      res.json({ data: response }); 
+      res.json({ data: response });
     }, (errors) => {
       console.log("GOT ERRORS")
       console.log(errors);
@@ -120,7 +120,7 @@ function getMember(req, res, next) {
  * @param {Object} res - the express response
  * @param {Function} next - the express next request handler
  */
-function updateMember(req, res, next) {
+async function updateMember(req, res, next) {
   const data = _.pick(req.body, ['firstName', 'lastName',
     'birthDate', 'familyRelationship', 'sex', 'membershipType']);
 
@@ -132,33 +132,20 @@ function updateMember(req, res, next) {
 
   // FIXME: user update does not use a transaction
 
-  Promise.resolve()
   // Fetch the user record to update
-  .then(() => db.User.update(data, {
+  await db.User.update(data, {
     where: { addedBy: userId, id: req.params.memberId },
-  }))
-  // Update the phone number
-  .then(() => {
-    if (req.body.phone && req.locals.member.phone !== req.body.phone) {
-      return db.Phone.update({ number: req.body.phone }, {
-        where: { userId: req.params.memberId },
-      });
-    }
+  });
 
-    return null;
-  })
-  .then(() => {
+  // Update the phone number
+  if (req.body.phone && req.locals.member.phone !== req.body.phone) {
+    await db.Phone.update({ number: req.body.phone }, {
+      where: { userId: req.params.memberId },
+    });
     Object.assign(req.locals.member, data);
     req.locals.member.phone = req.body.phone;
-    res.json();
-  })
-  .catch((errors) => {
-    if (isPlainObject(errors)) {
-      next(new BadRequestError(errors));
-    }
-
-    next(errors);
-  });
+  }
+  res.json({success:true});
 }
 
 /**
@@ -207,9 +194,7 @@ router
   .put(
     userRequired,
     validateBody(MEMBER),
-    injectMemberFromUser(),
-    updateMember,
-    getMember)
+    updateMember)
   .delete(
     userRequired,
     injectMemberFromUser(),
