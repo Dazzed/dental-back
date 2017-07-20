@@ -63,7 +63,8 @@ export function subscribeUserAndMembers(req) {
         dentistId,
         clientId: {
           $in: allUsers
-        }
+        },
+        status: 'active',
       }
     }).then((usersSubscription) => {
       callback(null, usersSubscription);
@@ -276,6 +277,25 @@ function createNewAnnualSubscription({ membership, paymentProfile, subscriptionO
           where: {
             id: subscriptionObject.id
           }
+        }).then(subscription => {
+          return resolve(subscription);
+        }, err => reject(err));
+      }, err => reject(err));
+  });
+}
+
+export function createNewAnnualSubscriptionLocal({ membership, paymentProfile }) {
+  return new Promise((resolve, reject) => {
+    // Create Stripe subscription.
+    stripe.createSubscription(membership.stripePlanId, paymentProfile.stripeCustomerId)
+      .then(subscription => {
+        // Update the local subscription record to 'active'.
+        db.Subscription.create({
+          clientId: paymentProfile.primaryAccountHolder,
+          dentistId: membership.userId,
+          paymentProfileId: paymentProfile.id,
+          status: 'active',
+          stripeSubscriptionId: subscription.id 
         }).then(subscription => {
           return resolve(subscription);
         }, err => reject(err));

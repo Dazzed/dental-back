@@ -9,6 +9,7 @@ import Moment from 'moment';
 import db from '../../models';
 import stripe from '../stripe';
 import { BadRequestError } from '../errors';
+import { reenrollMember } from '../../utils/reenroll';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -150,88 +151,93 @@ function reEnroll(req, res, next) {
   let subscription = {};
   let membership = {};
   let payProfile = {};
-  const memberId = req.params.userId || null;
+  const memberId = req.params.userId;
+  const currentUserId = req.user.get('id');
 
-  let preFetch = Promise.resolve();
+  reenrollMember(memberId, currentUserId).then(data => {
+
+  }, err => {
+
+  });
+
 
   // Check if subscribing a family member
-  if (memberId) {
-    // Get the Family Member
-    preFetch = preFetch
-    .then(() => (
-      db.User.find({
-        where: {
-          id: memberId,
-          addedBy: req.user.get('id'),
-        },
-      })
-    ))
-    .then((member) => {
-      if (!member) throw new Error('Member does not exist');
-      req.user = member;
-    });
-  }
+  // if (memberId) {
+  //   // Get the Family Member
+  //   preFetch = preFetch
+  //   .then(() => (
+  //     db.User.find({
+  //       where: {
+  //         id: memberId,
+  //       },
+  //     })
+  //   ))
+  //   .then((member) => {
+  //     if (!member) throw new Error('Member does not exist');
+  //     req.user = member;
+  //   });
+  // }
 
-  preFetch
-  .then(() => (
-    db.Subscription.find({
-      where: { clientId: req.user.get('id') },
-    })
-    .then((s) => {
-      // 1. Get current subscription && validate subscription DNE
-      if (!s) throw new Error('User somehow does not have an existing subscription record'); // this should never happen (unless you are a dentist)
-      if (s.dentistId !== req.params.dentistId) throw new Error('Patient can only re-enroll into an existing plan. To switch, use change plan.');
-      const isAlmostExpiring = (Moment().subtract(30, 'days').diff(Moment(s.endAt), 'days') >= 0);
-      if ((s.stripeSubscriptionId !== null || s.status === 'expired' || isAlmostExpiring)) throw new Error('User is not qualified to re-enroll or does not have less than 30 days in their current annual plan');
-      subscription = s;
-      return db.Membership.find({ where: { id: s.membershipId, userId: req.params.dentistId } });
-    })
-    .then((m) => {
-      // 2. Get Membership && validate plan exists
-      if (!m) throw new Error('Requested membership plan does not exist for Dentist');
-      if (m.type !== 'year') throw new Error('Current membership plan is not an annual plan');
-      return stripe.getMembershipPlan(m.stripePlanId);
-    })
-    .then((m) => {
-      // 3. Get plan name from stripe
-      membership = m;
-      // 4. Get Payment Profile
-      return db.PaymentProfile.find({
-        $or: [{
-          primaryAccountHolder: req.user.get('id'),
-        }, {
-          primaryAccountHolder: req.user.addedBy,
-        }],
-      });
-    })
-    .then((pp) => {
-      if (!pp) throw new Error('Current user somehow somehow has no active payment profile'); // this should never happen
-      payProfile = pp;
-      return Promise.resolve();
-    })
-    .then(() => (
-      // 6. Check if this is an annual subscription, if so, charge the full cost, and give 100% off on the subscription
-      stripe.issueCharge(membership.amount, payProfile.stripeCustomerId, `Annual Subscription: ${membership.name}`)
-    ))
-    .then(() => (
-      // 100% off the subscription but register it so our hooks can track when it expires
-      stripe.createSubscription(membership.name, payProfile.stripeCustomerId, 100)
-    ))
-    .then((newSubscription) => {
-      subscription.stripeSubscriptionId = newSubscription.id;
-      subscription.membershipId = req.params.membershipId;
-      subscription.endAt = Moment().add(1, 'year');
-      subscription.status = 'active';
-      return subscription.save();
-    })
-    .then(() => {
-      req.user.reEnrollmentFee = true;
-      return req.user.save();
-    })
-    .then(() => res.json({}))
-    .catch(err => next(new BadRequestError(err)))
-  ))
-  .catch(err => next(new BadRequestError(err)));
+  // preFetch
+  // .then(() => (
+  //   db.Subscription.find({
+  //     where: { clientId: req.user.get('id') },
+  //   })
+  //   .then((s) => {
+  //     // 1. Get current subscription && validate subscription DNE
+  //     if (!s) throw new Error('User somehow does not have an existing subscription record'); // this should never happen (unless you are a dentist)
+  //     if (s.dentistId !== req.params.dentistId) throw new Error('Patient can only re-enroll into an existing plan. To switch, use change plan.');
+  //     const isAlmostExpiring = (Moment().subtract(30, 'days').diff(Moment(s.endAt), 'days') >= 0);
+  //     if ((s.stripeSubscriptionId !== null || s.status === 'expired' || isAlmostExpiring)) throw new Error('User is not qualified to re-enroll or does not have less than 30 days in their current annual plan');
+  //     subscription = s;
+  //     return db.Membership.find({ where: { id: s.membershipId, userId: req.params.dentistId } });
+  //   })
+  //   .then((m) => {
+  //     // 2. Get Membership && validate plan exists
+  //     if (!m) throw new Error('Requested membership plan does not exist for Dentist');
+  //     if (m.type !== 'year') throw new Error('Current membership plan is not an annual plan');
+  //     return stripe.getMembershipPlan(m.stripePlanId);
+  //   })
+  //   .then((m) => {
+  //     // 3. Get plan name from stripe
+  //     membership = m;
+  //     // 4. Get Payment Profile
+  //     return db.PaymentProfile.find({
+  //       $or: [{
+  //         primaryAccountHolder: req.user.get('id'),
+  //       }, {
+  //         primaryAccountHolder: req.user.addedBy,
+  //       }],
+  //     });
+  //   })
+  //   .then((pp) => {
+  //     if (!pp) throw new Error('Current user somehow somehow has no active payment profile'); // this should never happen
+  //     payProfile = pp;
+  //     return Promise.resolve();
+  //   })
+  //   .then(() => (
+  //     // 6. Check if this is an annual subscription, if so, charge the full cost, and give 100% off on the subscription
+  //     stripe.issueCharge(membership.amount, payProfile.stripeCustomerId, `Annual Subscription: ${membership.name}`)
+  //   ))
+  //   .then(() => (
+  //     // 100% off the subscription but register it so our hooks can track when it expires
+  //     stripe.createSubscription(membership.name, payProfile.stripeCustomerId, 100)
+  //   ))
+  //   .then((newSubscription) => {
+  //     subscription.stripeSubscriptionId = newSubscription.id;
+  //     subscription.membershipId = req.params.membershipId;
+  //     subscription.endAt = Moment().add(1, 'year');
+  //     subscription.status = 'active';
+  //     return subscription.save();
+  //   })
+  //   .then(() => {
+  //     req.user.reEnrollmentFee = true;
+  //     return req.user.save();
+  //   })
+  //   .then(() => res.json({}))
+  //   .catch(err => next(new BadRequestError(err)))
+  // ))
+  // .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -407,7 +413,7 @@ function cancelSubscription(req, res, next) {
   .then((payProfile) => {
     if (payProfile !== null) {
       // Charge the user for cancelling
-      // return stripe.issueCharge(EARLY_CANCELLATION_PENALTY, payProfile.stripeCustomerId, 'Early Cancellation Penalty Charge');
+      return stripe.issueCharge(EARLY_CANCELLATION_PENALTY, payProfile.stripeCustomerId, 'Early Cancellation Penalty Charge');
     }
     return Promise.resolve();
   })
@@ -422,10 +428,15 @@ function cancelSubscription(req, res, next) {
   })
   .then((stripeSubscription) => {
     console.log(stripeSubscription);
-    const subscriptionItem = stripeSubscription.items.data.find(s => s.plan.id == membership.stripePlanId);
-    return stripe.updateSubscriptionItem(subscriptionItem.id, {
-      quantity: subscriptionItem.quantity - 1
-    });
+    let quantity = stripeSubscription.items.data.reduce((acc, item) => acc += item.quantity, 0);
+    if (quantity == 1) {
+      return stripe.deleteSubscription(stripeSubscription.id);
+    } else {
+      const subscriptionItem = stripeSubscription.items.data.find(s => s.plan.id == membership.stripePlanId);
+      return stripe.updateSubscriptionItem(subscriptionItem.id, {
+        quantity: subscriptionItem.quantity - 1
+      });
+    }
   })
   .then(() => {
     // Turn on Re-Enrollment flag because user should be charged if signing up again
@@ -439,7 +450,7 @@ function cancelSubscription(req, res, next) {
     // subscription.membershipId = null;
     return subscription.save();
   })
-  .then(() => res.json({}))
+  .then(() => res.send({ user }))
   .catch(err => next(new BadRequestError(err)));
 }
 

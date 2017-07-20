@@ -497,6 +497,24 @@ export default {
         return resolve(invoiceItem);
       });
     });
+  },
+
+  deleteSubscription(id) {
+    return new Promise((resolve, reject) => {
+      stripe.subscriptions.del(id, (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+        db.Subscription.update({
+          stripeSubscriptionId: null
+        },
+          {
+            where: {
+              stripeSubscriptionId: id
+            }
+          }).then(() => resolve(data));
+      });
+    });
   }
 
 };

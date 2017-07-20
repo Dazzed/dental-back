@@ -8,6 +8,23 @@ var async = require('async');
 
 const router = new Router({ mergeParams: true });
 
+function waterfaller(functions) {
+  return new Promise((resolve, reject) => {
+    async.waterfall(
+      functions,
+      (err, data) => {
+        if (err && err !== 'ok') {
+          console.log("ERROR in waterfaller");
+          console.log(err);
+          return reject(err);
+        }  else {
+          return resolve(data);
+        }
+      }
+    );
+  });
+}
+
 function stripe_webhook(request, response) {
 
   var { body } = request;
@@ -150,15 +167,21 @@ function stripe_webhook(request, response) {
 
     function performLocalActions(attempt_count, stripeSubscriptionId, callback) {
       let status;
+      let updateObject = {};
       if (attempt_count === 1) {
         status = 'late';
-      } else if (attempt_count === 4) {
-        status = 'inactive';
-      }
-      if (status) {
-        db.Subscription.update({
+        updateObject = {
           status
-        },
+        };
+      } else if (attempt_count === 4) {
+        status = 'canceled';
+        updateObject = {
+          status,
+          stripeSubscriptionId: null
+        };
+      }
+      if (Object.keys(updateObject).length > 0) {
+        db.Subscription.update(updateObject,
           {
             where: {
               stripeSubscriptionId
@@ -208,6 +231,86 @@ function stripe_webhook(request, response) {
         }
       });
   }
+
+  else if (body.type == "invoice.created") {
+    const stripeCustomerId = body.data.object.customer;
+    function queryPaymentProfile(callback) {
+      db.PaymentProfile.findOne({
+        where: {
+          stripeCustomerId
+        }
+      }).then(paymentProfile => {
+        if (!paymentProfile) {
+          return callback('No matching records in payment profile. invoice.created failed.');
+        }
+        let paymentProfileId = paymentProfile.id;
+        callback(null, paymentProfileId);
+      });
+    }
+
+    function getClientSubscriptions(paymentProfileId, callback) {
+      db.Subscription.findAll({
+        where: {
+          paymentProfileId
+        }
+      }).then(clientSubscriptions => {
+        callback(null, clientSubscriptions);
+      })
+    }
+
+    function getDentistMembershipPlans(clientSubscriptions, callback) {
+      if (clientSubscriptions.length > 0) {
+        const { dentistId } = clientSubscriptions[0];
+        db.Membership.findAll({
+          where: {
+            userId: dentistId
+          }
+        }).then(dentistMembershipPlans => {
+          callback(null, clientSubscriptions, dentistMembershipPlans);
+        });
+      } else {
+        callback(null, [], []);
+      }
+    }
+    
+    function updateObsoleteSubscriptionItems(clientSubscriptions, dentistMembershipPlans, callback) {
+      stripe.getCustomer(stripeCustomerId).then(stripeCustomerObject => {
+        async.each(stripeCustomerObject.subscriptions.data, (subscription, eachiCallback) => {
+          async.each(subscription, (sub, eachjCallback) => {
+            const existingPlan = dentistMembershipPlans.find(p => p.stripePlanId == sub.plan.id);
+            if (existingPlan.active) {
+              return eachjCallback();
+            }
+            const newPlan = dentistMembershipPlans.find(p => {
+              return p.active == true && p.name == existingPlan.name && p.type == existingPlan.type && p.subscription_age_group == existingPlan.subscription_age_group;
+            });
+            const isThreeMonthsOld = moment().add('1', 'month').isAfter(moment(newPlan.createdAt).add('3','month'));
+            if (isThreeMonthsOld) {
+              stripe.updateSubscriptionItem(sub.id, { plan: newPlan.stripePlanId })
+                .then(() => {
+                  eachjCallback();
+                });
+            } else {
+              eachjCallback();
+            }
+          }, function eachjCallback() {
+            eachiCallback();
+          })
+        }, function eachiCallback(err,data) {
+          callback();
+        });
+      }, err => callback(err));
+    }
+    
+    waterfaller(
+      [
+        queryPaymentProfile,
+        getClientSubscriptions,
+        getDentistMembershipPlans,
+        updateObsoleteSubscriptionItems
+      ]
+    ).then(data => console.log("invoice.created hook executed successfully"), err => console.log(err));
+  }
   response.status(200).send({});
 }
 
@@ -216,3 +319,4 @@ router
   .post(stripe_webhook);
 
 export default router;
+
