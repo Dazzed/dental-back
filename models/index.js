@@ -27,3 +27,21 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 export default db;
+
+db.Membership.findAll({
+  where: {
+    createdAt: {
+      $eq: sequelize.fn('to_char', sequelize.col('createdAt'), 'MM-DD')
+    }
+  }
+}).then(d => console.log(d), e => console.log(e));
+
+// db.Membership.findAll({
+//   attributes: [
+//       'id',
+//       'active',
+//       [sequelize.fn('to_char', sequelize.col('createdAt'), 'MM-DD'), 'date_col_formed']
+//   ]})
+//   .then(function(result) {
+//     console.log(result);
+//   });

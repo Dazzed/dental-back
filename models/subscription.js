@@ -29,7 +29,12 @@ export default function (sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: sequelize.fn('NOW'),
-    }
+    },
+    stripeSubscriptionIdUpdatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null,
+    },
   }, {
     tableName: 'subscriptions',
 
