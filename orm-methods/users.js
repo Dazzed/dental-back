@@ -278,12 +278,9 @@ export const instance = {
    *
    * @param {string} [id=this.get('id')]
    */
-  getFullClient(id = this.get('id')) {
-    let user = {};
-
-    return Promise.resolve()
-    .then(() => (
-      db.User.find({
+  async getFullClient(id = this.get('id')) {
+    let userObj =
+      await db.User.find({
         where: {
           id,
           type: 'client',
@@ -308,20 +305,24 @@ export const instance = {
           model: db.Subscription,
           as: 'clientSubscription',
           attributes: ['stripeSubscriptionId'],
+        }, {
+          model: db.Phone,
+          as: 'phoneNumbers',
+        }, {
+          model: db.Address,
+          as: 'addresses',
         }]
-      })
-    ))
-    .then((userObj) => {
-      // Get the user's subscription
-      if (!userObj) throw new Error('User does not exist');
-      user = userObj.toJSON();
-      return userObj.getMySubscription();
-    })
-    .then((subscription) => {
-      user.subscription = subscription;
-      delete user.clientSubscription;
-      return user;
-    });
+      });
+
+    if (!userObj) {
+      throw new Error('User does not exist');
+    }
+
+    let user = userObj.toJSON();
+    const subscription = await userObj.getMySubscription();
+    user.subscription = subscription;
+    delete user.clientSubscription;
+    return user;
   },
 
   /**
