@@ -581,13 +581,22 @@ export const model = {
     return db.User.find({
       attributes: { exclude: userFieldsExcluded },
       where: {
-        addedBy,
         id: memberId,
         isDeleted: false,
       },
       include: [{
         model: db.Phone,
         as: 'phoneNumbers',
+      }, {
+        model: db.Subscription,
+        as: 'clientSubscription',
+        include:[ {
+          model: db.Membership,
+          as: 'membership',
+        }]
+      }, {
+        model: db.Address,
+        as: 'addresses',
       }],
       subquery: false,
     })
@@ -600,7 +609,7 @@ export const model = {
         delete parsed.phoneNumbers;
       }
 
-      return member.getSubscription();
+      return member.getMySubscription();
     })
     .then((subscription) => {
       parsed.subscription = subscription;

@@ -121,30 +121,50 @@ function getMember(req, res, next) {
  * @param {Function} next - the express next request handler
  */
 async function updateMember(req, res, next) {
-  const data = _.pick(req.body, ['firstName', 'lastName',
-    'birthDate', 'familyRelationship', 'sex', 'membershipType']);
+  const data = _.pick(req.body, ['firstName', 'lastName', 'birthDate',
+    'familyRelationship', 'sex', 'city', 'state', 'zipCode', 'contactMethod']);
 
-  let userId = req.params.userId;
+  let userId = req.params.memberId;
+  let addedBy = req.params.userId;
 
   if (userId === 'me') {
     userId = req.user.get('id');
+  }
+
+  if (addedBy === userId) {
+    addedBy = null;
   }
 
   // FIXME: user update does not use a transaction
 
   // Fetch the user record to update
   await db.User.update(data, {
-    where: { addedBy: userId, id: req.params.memberId },
+    where: { id: userId, addedBy },
   });
+
+  if (req.body.address && req.body.address !== req.locals.member.address) {
+    await db.Address.update({ value: req.body.address }, {
+      where: { userId: userId },
+    });
+    Object.assign(req.locals.member, req.body);
+  }
+
+  if (req.body.clientSubscription && req.body.clientSubscription.membershipId &&
+    req.body.clientSubscription !== req.body.clientSubscription.membershipId) {
+    await db.Subscription.update({ membershipId: req.body.clientSubscription.membershipId }, {
+      where: { clientId: userId },
+    });
+    Object.assign(req.locals.member, req.body);
+  }
 
   // Update the phone number
   if (req.body.phone && req.locals.member.phone !== req.body.phone) {
     await db.Phone.update({ number: req.body.phone }, {
       where: { userId: req.params.memberId },
     });
-    Object.assign(req.locals.member, data);
-    req.locals.member.phone = req.body.phone;
+    Object.assign(req.locals.member, req.body);
   }
+
   res.json({success:true});
 }
 
@@ -193,7 +213,7 @@ router
     getMember)
   .put(
     userRequired,
-    validateBody(MEMBER),
+    injectMemberFromUser(),
     updateMember)
   .delete(
     userRequired,
