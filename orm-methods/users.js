@@ -162,36 +162,30 @@ export const instance = {
           as: 'memberships'
         }, {
           model: db.Subscription,
-          as: 'clientSubscription'
+          as: 'clientSubscription',
+          include: [{
+            model: db.Membership,
+            as: 'membership'
+          }]
         }, {
           model: db.Phone,
           as: 'phoneNumbers',
+        }, {
+          model: db.Address,
+          as: 'addresses',
         }],
         subquery: false,
       });
 
-      const parsed = await Promise.all(
-        users.map(userObj => (
-          new Promise(async (res, rej) => {
-            const subscription = await userObj.getMySubscription();
-            const parsed = userObj.toJSON();
-
-            parsed.subscription = subscription;
-
-            parsed.phone = parsed.phoneNumbers[0] ?
-            parsed.phoneNumbers[0].number : undefined;
-
-            delete parsed.clientSubscription;
-            delete parsed.phoneNumbers;
-            res(parsed);
-          })
-
-          )
-        )
-      ).catch((err) => {
-        console.log(err);
-      });
-      return parsed;
+    const parsed = [];
+    for (const user of users) {
+      const subscription = await user.getMySubscription();
+      const userParsed = user.toJSON();
+      userParsed.subscription = subscription;
+      userParsed.phone = userParsed.phoneNumbers[0] ? userParsed.phoneNumbers[0].number : undefined;
+      parsed.push(userParsed);
+    }
+    return parsed;
   },
 
   /**
