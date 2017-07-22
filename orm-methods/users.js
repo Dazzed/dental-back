@@ -304,7 +304,6 @@ export const instance = {
         }, {
           model: db.Subscription,
           as: 'clientSubscription',
-          attributes: ['stripeSubscriptionId'],
           include:[ {
             model: db.Membership,
             as: 'membership',
