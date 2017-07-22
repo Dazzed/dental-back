@@ -305,7 +305,11 @@ export const instance = {
           model: db.Subscription,
           as: 'clientSubscription',
           attributes: ['stripeSubscriptionId'],
-        }, {
+          include:[ {
+            model: db.Membership,
+            as: 'membership',
+          }]
+        },{
           model: db.Phone,
           as: 'phoneNumbers',
         }, {
@@ -321,7 +325,6 @@ export const instance = {
     let user = userObj.toJSON();
     const subscription = await userObj.getMySubscription();
     user.subscription = subscription;
-    delete user.clientSubscription;
     return user;
   },
 
