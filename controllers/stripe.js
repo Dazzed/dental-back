@@ -494,14 +494,9 @@ export default {
     });
   },
 
-  createInvoiceItem(customerId, amount, invoiceId) {
+  createInvoiceItem(object) {
     return new Promise((resolve, reject) => {
-      stripe.invoiceItems.create({
-        customer: customerId,
-        amount,
-        currency: 'usd',
-        invoice: invoiceId
-      }, (err, invoiceItem) => {
+      stripe.invoiceItems.create(object, (err, invoiceItem) => {
         if (err) {
           return reject(err);
         }

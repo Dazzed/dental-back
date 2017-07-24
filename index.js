@@ -147,22 +147,3 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 module.exports = app;
-
-var db = require('./models');
-
-// db.User.findOne({
-//   where: {
-//     id: 74
-//   }
-// }).then(u => {
-//   u.getSubscription().then(sub => console.log(sub), err => console.log(err));
-// })
-
-// db.Membership.findAll({
-//   where: {
-//     createdAt: {
-//       $eq: 
-//     }
-//   }
-// })
-
