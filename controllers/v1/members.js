@@ -142,15 +142,14 @@ async function updateMember(req, res, next) {
     where: { id: userId, addedBy },
   });
 
-  if (req.body.address && req.body.address !== req.locals.member.address) {
+  if (req.body.address) {
     await db.Address.update({ value: req.body.address }, {
       where: { userId: userId },
     });
     Object.assign(req.locals.member, req.body);
   }
 
-  if (req.body.clientSubscription && req.body.clientSubscription.membershipId &&
-    req.body.clientSubscription !== req.body.clientSubscription.membershipId) {
+  if (req.body.clientSubscription && req.body.clientSubscription.membershipId) {
     await db.Subscription.update({ membershipId: req.body.clientSubscription.membershipId }, {
       where: { clientId: userId },
     });
@@ -158,9 +157,9 @@ async function updateMember(req, res, next) {
   }
 
   // Update the phone number
-  if (req.body.phone && req.locals.member.phone !== req.body.phone) {
+  if (req.body.phone) {
     await db.Phone.update({ number: req.body.phone }, {
-      where: { userId: req.params.memberId },
+      where: { userId: userId },
     });
     Object.assign(req.locals.member, req.body);
   }
