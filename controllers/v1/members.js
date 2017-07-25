@@ -61,7 +61,7 @@ function getMembers(req, res, next) {
  * @param {Function} next - the express next request handler
  */
 function addMember(req, res, next) {
-  const {
+  let {
     member,
     parentMember
   } = req.body;
@@ -70,6 +70,7 @@ function addMember(req, res, next) {
     return db.User.addAdditionalMember(member, req.user, parentMember);
   })
   .then((response) => {
+    member = {...member, id: response.id};
     subscribeNewMember(parentMember.client.id, member, response.subscription).then((stripeResponse) => {
       res.status(HTTPStatus.CREATED);
       res.json({ data: response }); 
