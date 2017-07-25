@@ -178,7 +178,8 @@ function stripe_webhook(request, response) {
         updateObject = {
           status,
           stripeSubscriptionId: null,
-          stripeSubscriptionItemId: null
+          stripeSubscriptionItemId: null,
+          membershipId: null,
         };
       }
       if (Object.keys(updateObject).length > 0) {
@@ -235,6 +236,7 @@ function stripe_webhook(request, response) {
 
   else if (body.type == "invoice.created") {
     const stripeCustomerId = body.data.object.customer;
+
     function queryPaymentProfile(callback) {
       db.PaymentProfile.findOne({
         where: {
@@ -277,7 +279,7 @@ function stripe_webhook(request, response) {
     function updateObsoleteSubscriptionItems(clientSubscriptions, dentistMembershipPlans, callback) {
       stripe.getCustomer(stripeCustomerId).then(stripeCustomerObject => {
         async.each(stripeCustomerObject.subscriptions.data, (subscription, eachiCallback) => {
-          async.each(subscription, (sub, eachjCallback) => {
+          async.each(subscription.items.data, (sub, eachjCallback) => {
             const existingPlan = dentistMembershipPlans.find(p => p.stripePlanId == sub.plan.id);
             if (existingPlan.active) {
               return eachjCallback();
@@ -286,16 +288,29 @@ function stripe_webhook(request, response) {
               return p.active == true && p.name == existingPlan.name && p.type == existingPlan.type && p.subscription_age_group == existingPlan.subscription_age_group;
             });
             const isThreeMonthsOld = moment().add('1', 'month').isAfter(moment(newPlan.createdAt).add('3','month'));
-            if (isThreeMonthsOld) {
+            if (isThreeMonthsOld || newPlan.type == 'year') {
               stripe.updateSubscriptionItem(sub.id, { plan: newPlan.stripePlanId })
                 .then(() => {
-                  eachjCallback();
-                });
+                  db.Subscription.update({
+                    membershipId: newPlan.membershipId
+                  }, {
+                    where: {
+                      paymentProfileId: clientSubscriptions[0].paymentProfileId,
+                      stripeSubscriptionId: subscription.id,
+                      stripeSubscriptionItemId: sub.id,
+                      membershipId: existingPlan.id
+                    }
+                  }).then(updatedSub => eachjCallback(), err => eachjCallback(err));
+                }, err => eachjCallback(err));
             } else {
               eachjCallback();
             }
-          }, function eachjCallback() {
-            eachiCallback();
+          }, function eachjCallback(err) {
+            if (!err) {
+              eachiCallback();
+            } else {
+              eachiCallback(err);
+            }
           })
         }, function eachiCallback(err,data) {
           callback();

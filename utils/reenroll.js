@@ -119,65 +119,13 @@ export function reenrollMember(userId, currentUserId, membershipId) {
       });
     });
 
-    let stripeSubscriptionItemId;
-    let stripeSubscriptionId;
-    accountHolderSubscriptions.forEach(sub => {
-      if (membershipPlan.type === 'month') {
-        stripeSubscriptionId = sub.stripeSubscriptionId;
-      } else if (moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0) {
-        stripeSubscriptionId = sub.stripeSubscriptionId;
-      }
-      if (sub.membership.id === membershipPlan.id) {
-        if (membershipPlan.type === 'month' || (membershipPlan.type === 'year' && moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0)) {
-          stripeSubscriptionItemId = sub.stripeSubscriptionItemId;
-          stripeSubscriptionId = sub.stripeSubscriptionId;
-        }
-      }
-    });
-
-    if (stripeSubscriptionItemId) {
-      stripe.getSubscriptionItem(stripeSubscriptionItemId).then(item => {
-        stripe.updateSubscriptionItem(stripeSubscriptionItemId, {
-          quantity: item.quantity + 1
-        })
-          .then(item => {
-            userSubscription.stripeSubscriptionId = stripeSubscriptionId;
-            userSubscription.stripeSubscriptionItemId = stripeSubscriptionItemId;
-            userSubscription.status = 'active';
-            userSubscription.membershipId = membershipPlan.id;
-            userSubscription.save();
-            return callback(null, true);
-          });
-      }, err => callback(err));
-    } else if (stripeSubscriptionId) {
-      stripe.createSubscriptionItem({
-        subscription: stripeSubscriptionId,
-        plan: membershipPlan.stripePlanId,
-        quantity: 1,
-      }).then(item => {
-        userSubscription.stripeSubscriptionId = stripeSubscriptionId;
-        userSubscription.stripeSubscriptionItemId = item.id;
-        userSubscription.status = 'active';
-        userSubscription.membershipId = membershipPlan.id;
-        userSubscription.save();
+    performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
+      if (!err) {
         return callback(null, true);
-      });
-    } else {
-      db.PaymentProfile.findOne({
-        where: {
-          id: userSubscription.paymentProfileId
-        }
-      }).then(profile => {
-        stripe.createSubscription(membershipPlan.stripePlanId, profile.stripeCustomerId).then(sub => {
-          userSubscription.stripeSubscriptionId = sub.id;
-          userSubscription.stripeSubscriptionItemId = sub.items.data[0].id;
-          userSubscription.status = 'active';
-          userSubscription.membershipId = membershipPlan.id;
-          userSubscription.save();
-          return callback(null, true);
-        }, err => callback(err));
-      }, err => callback(err));
-    }
+      } else {
+        return callback(err);
+      }
+    })
   }
 
     
@@ -189,4 +137,66 @@ export function reenrollMember(userId, currentUserId, membershipId) {
       reenrollOperation
     ]).then(data => resolve(data), err => reject(err));
   });
+}
+
+export function performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, callback) {
+  let stripeSubscriptionItemId;
+  let stripeSubscriptionId;
+  accountHolderSubscriptions.forEach(sub => {
+    if (membershipPlan.type === 'month') {
+      stripeSubscriptionId = sub.stripeSubscriptionId;
+    } else if (moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0) {
+      stripeSubscriptionId = sub.stripeSubscriptionId;
+    }
+    if (sub.membership.id === membershipPlan.id) {
+      if (membershipPlan.type === 'month' || (membershipPlan.type === 'year' && moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0)) {
+        stripeSubscriptionItemId = sub.stripeSubscriptionItemId;
+        stripeSubscriptionId = sub.stripeSubscriptionId;
+      }
+    }
+  });
+
+  if (stripeSubscriptionItemId) {
+    stripe.getSubscriptionItem(stripeSubscriptionItemId).then(item => {
+      stripe.updateSubscriptionItem(stripeSubscriptionItemId, {
+        quantity: item.quantity + 1
+      })
+        .then(item => {
+          userSubscription.stripeSubscriptionId = stripeSubscriptionId;
+          userSubscription.stripeSubscriptionItemId = stripeSubscriptionItemId;
+          userSubscription.status = 'active';
+          userSubscription.membershipId = membershipPlan.id;
+          userSubscription.save();
+          return callback(null, true);
+        });
+    }, err => callback(err));
+  } else if (stripeSubscriptionId) {
+    stripe.createSubscriptionItem({
+      subscription: stripeSubscriptionId,
+      plan: membershipPlan.stripePlanId,
+      quantity: 1,
+    }).then(item => {
+      userSubscription.stripeSubscriptionId = stripeSubscriptionId;
+      userSubscription.stripeSubscriptionItemId = item.id;
+      userSubscription.status = 'active';
+      userSubscription.membershipId = membershipPlan.id;
+      userSubscription.save();
+      return callback(null, true);
+    });
+  } else {
+    db.PaymentProfile.findOne({
+      where: {
+        id: userSubscription.paymentProfileId
+      }
+    }).then(profile => {
+      stripe.createSubscription(membershipPlan.stripePlanId, profile.stripeCustomerId).then(sub => {
+        userSubscription.stripeSubscriptionId = sub.id;
+        userSubscription.stripeSubscriptionItemId = sub.items.data[0].id;
+        userSubscription.status = 'active';
+        userSubscription.membershipId = membershipPlan.id;
+        userSubscription.save();
+        return callback(null, true);
+      }, err => callback(err));
+    }, err => callback(err));
+  }
 }

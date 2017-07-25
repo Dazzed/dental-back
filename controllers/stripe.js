@@ -463,7 +463,7 @@ export default {
 
   createSubscriptionItem(subscriptionItemObject) {
     return new Promise((resolve, reject) => {
-      stripe.subscriptions.create(subscriptionItemObject, (err, subscription) => {
+      stripe.subscriptionItems.create(subscriptionItemObject, (err, subscription) => {
         if (err) {
           return reject(err);
         }

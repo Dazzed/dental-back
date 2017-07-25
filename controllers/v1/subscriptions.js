@@ -10,7 +10,7 @@ import db from '../../models';
 import stripe from '../stripe';
 import { BadRequestError } from '../errors';
 import { reenrollMember } from '../../utils/reenroll';
-
+import { changePlanUtil } from '../../utils/change_plan';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -159,51 +159,12 @@ function changePlan(req, res, next) {
   let subscription = {};
   let membership = {};
 
-  // 1. Get the requested user object
-  db.User.find({ where: { id: req.params.userId } })
-    .then((userObj) => {
-      if (!userObj) throw new Error('Requested user does not exist!');
-      user = userObj;
-      // 2. Get the subscription of the user requested (must check on dentistId too)
-      return db.Subscription.find({
-        where: {
-          clientId: req.params.userId,
-          dentistId: req.params.dentistId,
-        },
-      });
-    })
-    .then((sub) => {
-      if (!sub) throw new Error('User has no subscription object'); // this should never happen (unless the user is a dentist)
-      subscription = sub;
-      // 3. Block if sub not found or current user is not the clientId in sub (unless the clientId is a family member)
-      if (sub.stripeSubscriptionId === null) {
-        throw new Error('Current user has no currently existing subscription to switch from or is not a patient type user');
-      } else if ((req.user.get('id') === sub.clientId) || // current user owns this subscription
-        (req.user.get('id') === sub.dentistId) || // current user is the dentist
-        (req.user.get('id') === user.get('addedBy'))) { // current user is the parent of the requested user
-        // 4. Get the requested membership plan of the dentist
-        return db.Membership.find({ where: { id: req.params.membershipId, userId: req.params.dentistId } });
-      } else {
-        throw new Error('Current user account does not have access to change the membership plan of the requested user');
-      }
-    })
-    .then((m) => {
-      // 5. Get additional membership details from Stripe
-      if (!m) throw new Error('Requested membership plan does not exist for Dentist');
-      return stripe.getMembershipPlan(m.stripePlanId);
-    })
-    .then((m) => {
-      membership = m;
-      // 6. Update the subscription to the new plan (make sure to prorate it)
-      return stripe.updateSubscription(subscription.stripeSubscriptionId, membership.name);
-    })
-    .then(() => {
-      subscription.membershipId = req.params.membershipId;
-      subscription.status = 'active';
-      subscription.save();
-    })
-    .then(() => res.json({}))
-    .catch(err => next(new BadRequestError(err)));
+  const memberId = req.params.userId;
+  const { membershipId, subscriptionId } = req.query;
+  const currentUserId = req.user.get('id');
+
+  changePlanUtil(memberId, currentUserId, membershipId, subscriptionId)
+    .then(data => res.status(200).send({}), err => res.status(500).send(err));
 }
 
 /**
@@ -350,11 +311,6 @@ function cancelSubscription(req, res, next) {
           quantity: subscriptionItem.quantity - 1
         });
       }
-    })
-    .then(() => {
-      // Turn on Re-Enrollment flag because user should be charged if signing up again
-      user.reEnrollmentFee = true;
-      return user.save();
     })
     .then(() => {
       // 6. Upon success, update the subscription record
