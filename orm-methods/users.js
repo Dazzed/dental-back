@@ -42,7 +42,7 @@ export const instance = {
       }]
     })
 
-    if (!sub || !sub.membership) {
+    if (!sub || !sub.membership ) {
       return {};
     }
 
@@ -80,94 +80,68 @@ export const instance = {
     const dentistId = this.get('id');
 
     const subs = await db.Subscription.findAll({
-      where: { dentistId },
-      attributes: {
-        exclude: ['paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
-      },
-      status: { $not: 'canceled' },
-      include: [{
-        model: db.Membership,
-        as: 'membership',
-      }, {
-        model: db.User,
-        as: 'client',
+        where: { dentistId },
         attributes: {
-          exclude: userFieldsExcluded,
+          exclude: ['id', 'paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
         },
-        where: { isDeleted: false },
+        status: { $not: 'canceled' },
         include: [{
+          model: db.Membership,
+          as: 'membership',
+        }, {
           model: db.User,
-          as: 'members',
+          as: 'client',
           attributes: {
             exclude: userFieldsExcluded,
           },
-        }, {
-          model: db.Phone,
-          as: 'phoneNumbers',
-        }, {
-          model: db.Subscription,
-          as: 'clientSubscription',
+          where: { isDeleted: false },
           include: [{
-            model: db.Membership,
-            as: 'membership'
+            model: db.User,
+            as: 'members',
+            attributes: {
+              exclude: userFieldsExcluded,
+            },
+          }, {
+            model: db.Phone,
+            as: 'phoneNumbers',
+          }, {
+            model: db.Subscription,
+            as: 'clientSubscription',
+            include: [{
+              model: db.Membership,
+              as: 'membership'
+            }]
+          }, {
+            model: db.Review,
+            as: 'clientReviews',
+            attributes: { exclude: ['clientId', 'dentistId'] },
+          }, {
+            model: db.Address,
+            as: 'addresses'
           }]
-        }, {
-          model: db.Review,
-          as: 'clientReviews',
-          attributes: { exclude: ['clientId', 'dentistId'] },
-        }, {
-          model: db.Address,
-          as: 'addresses'
         }]
-      }]
-    })
-      .then((subs) => {
-        // TODO : Check the commented code and compare with the latter version.
-        // const subList = [];
+      });
+      const subList = [];
 
-        // for (const sub of subs) {
-        //   const plan = await sub.membership.getPlanCosts();
-        //   const subObj = sub.toJSON();
-        //   subObj.membership = plan;
-        //   if (subObj.client.members.length > 0 ) {
-        //     for (const member of subObj.client.members) {
-        //       let { status } = subs.find(s => s.client.id === member.id);
-        //       member.status = status;
-        //     }
-        //   }
-        //   if (subObj.client.phoneNumbers.length > 0) {
-        //     subObj.client.phone = subObj.client.phoneNumbers[0] ? subObj.client.phoneNumbers[0].number : null;
-        //   }
-        //   if (subObj.client.addresses.length > 0) {
-        //     subObj.client.address = subObj.client.addresses[0] ? subObj.client.addresses[0].value : null;
-        //   }
-        //   subList.push(subObj);
-        // }
-        // return subList;
-        Promise.all(subs.map(s => s.membership.getPlanCosts()))
-          .then((plans) => {
-            subs = subs.map(s => s.toJSON());
-            subs.forEach((s, i) => (subs[i].membership = plans[i]));
-            // Let's construct the status and membership property for the primary patient's subordinate members.
-            subs = subs.map(sub => {
-              if (sub.client.members.length > 0) {
-                sub.client.members = sub.client.members.map(member => {
-                  let { status, membership, id } = subs.find(s => s.client.id === member.id);
-                  return {
-                    ...member,
-                    status,
-                    membership,
-                    subscriptionId: id
-                  };
-                });
-              }
-              return { ...sub };
-            });
-            resolve(subs);
-          })
-          .catch(reject)
-      })
-      .catch(reject)
+      for (const sub of subs) {
+        const plan = await sub.membership.getPlanCosts();
+        const subObj = sub.toJSON();
+        subObj.membership = plan;
+        if (subObj.client.members.length > 0 ) {
+          for (const member of subObj.client.members) {
+            let { status } = subs.find(s => s.client.id === member.id);
+            member.status = status;
+          }
+        }
+        if (subObj.client.phoneNumbers.length > 0) {
+          subObj.client.phone = subObj.client.phoneNumbers[0] ? subObj.client.phoneNumbers[0].number : null;
+        }
+        if (subObj.client.addresses.length > 0) {
+          subObj.client.address = subObj.client.addresses[0] ? subObj.client.addresses[0].value : null;
+        }
+        subList.push(subObj);
+      }
+      return subList;
   },
 
   /**
@@ -177,34 +151,34 @@ export const instance = {
    */
   async getMyMembers() {
     const users = await db.User.findAll({
-      attributes: { exclude: userFieldsExcluded },
-      where: {
-        $or: [{
-          addedBy: this.get('id'),
-        }, {
-          id: this.get('id'),
-        }],
-        isDeleted: false,
-      },
-      include: [{
-        model: db.Membership,
-        as: 'memberships'
-      }, {
-        model: db.Subscription,
-        as: 'clientSubscription',
+        attributes: { exclude: userFieldsExcluded },
+        where: {
+          $or: [{
+            addedBy: this.get('id'),
+          }, {
+            id: this.get('id'),
+          }],
+          isDeleted: false,
+        },
         include: [{
           model: db.Membership,
-          as: 'membership'
-        }]
-      }, {
-        model: db.Phone,
-        as: 'phoneNumbers',
-      }, {
-        model: db.Address,
-        as: 'addresses',
-      }],
-      subquery: false,
-    });
+          as: 'memberships'
+        }, {
+          model: db.Subscription,
+          as: 'clientSubscription',
+          include: [{
+            model: db.Membership,
+            as: 'membership'
+          }]
+        }, {
+          model: db.Phone,
+          as: 'phoneNumbers',
+        }, {
+          model: db.Address,
+          as: 'addresses',
+        }],
+        subquery: false,
+      });
 
     const parsed = [];
     for (const user of users) {
@@ -227,18 +201,18 @@ export const instance = {
     return db.Subscription.find({
       where: { clientId: this.get('id') },
     })
-      .then((subscription) => {
-        if (!subscription) throw new Error('User has no associated dentist');
-        return db.User.find({
-          where: { id: subscription.dentistId },
-        });
-      })
-      .then(d => d.getFullDentist())
-      .then((dentist) => {
-        // Add all review ratings
-        dentist.rating = (_(dentist.dentistReviews).sumBy(r => r.rating) || 0) / dentist.dentistReviews.length;
-        return dentist;
+    .then((subscription) => {
+      if (!subscription) throw new Error('User has no associated dentist');
+      return db.User.find({
+        where: { id: subscription.dentistId },
       });
+    })
+    .then(d => d.getFullDentist())
+    .then((dentist) => {
+      // Add all review ratings
+      dentist.rating = (_(dentist.dentistReviews).sumBy(r => r.rating) || 0) / dentist.dentistReviews.length;
+      return dentist;
+    });
   },
 
   /**
@@ -257,21 +231,21 @@ export const instance = {
     let primaryAccountHolder = this.get('addedBy') ? this.get('addedBy') : this.get('id');
 
     let transactionFunction = (transaction) => {
-      return db.PaymentProfile.find({ where: { primaryAccountHolder }, transaction })
-        .then((profile) => {
-          if (!profile) throw new Error('User has no associated payment profile');
-          return db.Subscription.create({
+      return db.PaymentProfile.find({ where: { primaryAccountHolder } , transaction })
+      .then((profile) => {
+        if (!profile) throw new Error('User has no associated payment profile');
+        return db.Subscription.create({
             clientId: clientId,
             membershipId: membershipId,
             dentistId: dentistId,
             paymentProfileId: profile.id,
           }, {
-              transaction
-            });
-        })
-        .catch((errors) => {
-          console.log(errors);
+            transaction
         });
+      })
+      .catch((errors) => {
+          console.log(errors);
+      });
     };
 
     if (_.isNull(transaction)) {
@@ -327,11 +301,11 @@ export const instance = {
         }, {
           model: db.Subscription,
           as: 'clientSubscription',
-          include: [{
+          include:[ {
             model: db.Membership,
             as: 'membership',
           }]
-        }, {
+        },{
           model: db.Phone,
           as: 'phoneNumbers',
         }, {
@@ -364,129 +338,129 @@ export const instance = {
     let d = {};
 
     return Promise.resolve()
-      .then(() => (
-        // get the dentist user with the memberships, dentistInfo (with dentistInfoService, workingHours, officeImages),
-        // dentistReviews (with clients)
-        db.User.find({
-          where: {
-            id,
-            $or: [{
-              type: 'dentist',
-            }, {
-              type: 'admin',
-            }],
+    .then(() => (
+      // get the dentist user with the memberships, dentistInfo (with dentistInfoService, workingHours, officeImages),
+      // dentistReviews (with clients)
+      db.User.find({
+        where: {
+          id,
+          $or: [{
+            type: 'dentist',
+          }, {
+            type: 'admin',
+          }],
+        },
+        attributes: {
+          exclude: userFieldsExcluded
+        },
+        include: [
+          {
+            model: db.Membership,
+            as: 'memberships',
+            attributes: {
+              exclude: ['userId', 'dentistInfoId', 'stripePlanId'],
+            },
           },
-          attributes: {
-            exclude: userFieldsExcluded
+          {
+            model: db.Phone,
+            as: 'phoneNumbers',
           },
-          include: [
-            {
-              model: db.Membership,
-              as: 'memberships',
-              attributes: {
-                exclude: ['userId', 'dentistInfoId', 'stripePlanId'],
-              },
+          {
+            model: db.DentistInfo,
+            as: 'dentistInfo',
+            attributes: {
+              exclude: ['userId', 'createdAt', 'updatedAt'],
             },
-            {
-              model: db.Phone,
-              as: 'phoneNumbers',
-            },
-            {
-              model: db.DentistInfo,
-              as: 'dentistInfo',
-              attributes: {
-                exclude: ['userId', 'createdAt', 'updatedAt'],
+            include: [
+              {
+                model: db.DentistInfoService,
+                as: 'services',
+                attributes: ['id', 'dentistInfoId', 'serviceId'],
+                include: [{
+                  model: db.Service,
+                  attributes: ['id', 'name'],
+                  as: 'service'
+                }]
               },
-              include: [
-                {
-                  model: db.DentistInfoService,
-                  as: 'services',
-                  attributes: ['id', 'dentistInfoId', 'serviceId'],
-                  include: [{
-                    model: db.Service,
-                    attributes: ['id', 'name'],
-                    as: 'service'
-                  }]
-                },
-                {
-                  model: db.WorkingHours,
-                  as: 'workingHours',
-                  attributes: {
-                    exclude: ['dentistInfoId', 'createdAt', 'updatedAt'],
-                  },
-                },
-                {
-                  model: db.DentistInfoPhotos,
-                  attributes: ['url'],
-                  as: 'officeImages'
-                }
-              ]
-            },
-            {
-              model: db.Review,
-              as: 'dentistReviews',
-              attributes: {
-                exclude: ['createdAt', 'updatedAt', 'dentistId'],
-              },
-              include: [{
-                model: db.User,
-                as: 'client',
+              {
+                model: db.WorkingHours,
+                as: 'workingHours',
                 attributes: {
-                  exclude: userFieldsExcluded
+                  exclude: ['dentistInfoId', 'createdAt', 'updatedAt'],
                 },
-              }],
-            }
-          ]
-        })
-      ))
-      .then((dentist) => {
-        if (dentist == null) throw new Error('No dentist found');
-        d = dentist.toJSON();
-        const dentistInfoId = d.dentistInfo ? d.dentistInfo.id : 0;
-        // Retrieve Price Codes
-        return db.MembershipItem.findAll({
-          where: { dentistInfoId },
-          include: [{
-            model: db.PriceCodes,
-            as: 'priceCode'
-          }]
-        });
-      })
-      .then((items) => {
-        d.dentistInfo = d.dentistInfo || {};
-
-        d.dentistInfo.priceCodes = items.map((i) => {
-          const temp = i.priceCode.toJSON();
-          temp.price = parseInt(i.get('price'), 10).toFixed(2);
-          return temp;
-        });
-
-        // Hide anonymous reviews
-        d.dentistReviews = d.dentistReviews.map((r) => {
-          delete r.clientId;
-          if (r.isAnonymous) delete r.client;
-          return r;
-        });
-
-        // Remap services
-        if (d.dentistInfo.services) {
-          d.dentistInfo.services = d.dentistInfo.services.map(s => ({
-            id: s.id,
-            name: (s.service ? s.service.name || null : ''),
-          }));
-        }
-
-        return db.Subscription.count({
-          where: {
-            dentistId: id,
-            status: SUBSCRIPTION_STATES_LOOKUP.active,
+              },
+              {
+                model: db.DentistInfoPhotos,
+                attributes: ['url'],
+                as: 'officeImages'
+              }
+            ]
+          },
+          {
+            model: db.Review,
+            as: 'dentistReviews',
+            attributes: {
+              exclude: ['createdAt', 'updatedAt', 'dentistId'],
+            },
+            include: [{
+              model: db.User,
+              as: 'client',
+              attributes: {
+                exclude: userFieldsExcluded
+              },
+            }],
           }
-        });
+        ]
       })
-      .then((activeMemberCount) => {
-        d.dentistInfo.activeMemberCount = activeMemberCount;
-      })
-      .then(() => d)
+    ))
+    .then((dentist) => {
+      if (dentist == null) throw new Error('No dentist found');
+      d = dentist.toJSON();
+      const dentistInfoId = d.dentistInfo ? d.dentistInfo.id : 0;
+      // Retrieve Price Codes
+      return db.MembershipItem.findAll({
+        where: { dentistInfoId },
+        include: [{
+          model: db.PriceCodes,
+          as: 'priceCode'
+        }]
+      });
+    })
+    .then((items) => {
+      d.dentistInfo = d.dentistInfo || {};
+
+      d.dentistInfo.priceCodes = items.map((i) => {
+        const temp = i.priceCode.toJSON();
+        temp.price = parseInt(i.get('price'), 10).toFixed(2);
+        return temp;
+      });
+
+      // Hide anonymous reviews
+      d.dentistReviews = d.dentistReviews.map((r) => {
+        delete r.clientId;
+        if (r.isAnonymous) delete r.client;
+        return r;
+      });
+
+      // Remap services
+      if (d.dentistInfo.services) {
+        d.dentistInfo.services = d.dentistInfo.services.map(s => ({
+          id: s.id,
+          name: (s.service ? s.service.name || null : ''),
+        }));
+      }
+
+      return db.Subscription.count({
+        where: {
+          dentistId: id,
+          status: SUBSCRIPTION_STATES_LOOKUP.active,
+        }
+      });
+    })
+    .then((activeMemberCount) => {
+      d.dentistInfo.activeMemberCount = activeMemberCount;
+    })
+    .then(() => d)
   },
 
   /**
@@ -500,18 +474,18 @@ export const instance = {
     return db.Subscription.find({
       where: { clientId: this.get('id') }
     })
-      // 2. Get the payment profile
-      .then((sub) => {
-        if (!sub) throw new Error('User has no active subscription');
-        return db.PaymentProfile.find({ where: { id: sub.paymentProfileId } });
-      })
-      .then((profile) => {
-        if (!profile) throw new Error('User has no payment profile');
-        return {
-          primaryAccountHolder: (userId === profile.primaryAccountHolder),
-          stripeCustomerId: profile.stripeCustomerId,
-        };
-      });
+    // 2. Get the payment profile
+    .then((sub) => {
+      if (!sub) throw new Error('User has no active subscription');
+      return db.PaymentProfile.find({ where: { id: sub.paymentProfileId } });
+    })
+    .then((profile) => {
+      if (!profile) throw new Error('User has no payment profile');
+      return {
+        primaryAccountHolder: (userId === profile.primaryAccountHolder),
+        stripeCustomerId: profile.stripeCustomerId,
+      };
+    });
   },
 
   /**
@@ -613,7 +587,7 @@ export const model = {
       }, {
         model: db.Subscription,
         as: 'clientSubscription',
-        include: [{
+        include:[ {
           model: db.Membership,
           as: 'membership',
         }]
@@ -623,21 +597,21 @@ export const model = {
       }],
       subquery: false,
     })
-      .then((member) => {
-        parsed = member ? member.toJSON() : {};
+    .then((member) => {
+      parsed = member ? member.toJSON() : {};
 
-        if (member) {
-          parsed.phone = parsed.phoneNumbers[0] ?
-            parsed.phoneNumbers[0].number : null;
-          delete parsed.phoneNumbers;
-        }
+      if (member) {
+        parsed.phone = parsed.phoneNumbers[0] ?
+          parsed.phoneNumbers[0].number : null;
+        delete parsed.phoneNumbers;
+      }
 
-        return member.getMySubscription();
-      })
-      .then((subscription) => {
-        parsed.subscription = subscription;
-        return parsed;
-      });
+      return member.getMySubscription();
+    })
+    .then((subscription) => {
+      parsed.subscription = subscription;
+      return parsed;
+    });
   },
 
   /**
@@ -652,17 +626,17 @@ export const model = {
     data.email = _.replace(user.get('email'), '@', `${uuid()}@`);
     data.type = 'client';
     return db.User.create(data, { transaction })
-      .then((member) => {
-        return member.createSubscription(data.membershipId, data.dentistId, transaction)
-          .then((subscription) => {
-            let json = member.toJSON();
-            if (subscription) {
-              json.subscription = subscription.toJSON();
-            }
+    .then((member) => {
+      return member.createSubscription(data.membershipId, data.dentistId, transaction)
+      .then((subscription) => {
+        let json = member.toJSON();
+        if (subscription) {
+          json.subscription = subscription.toJSON();
+        }
 
-            return json;
-          });
+        return json;
       });
+    });
   },
 
   /**
@@ -682,16 +656,16 @@ export const model = {
       type: 'client',
     };
     return db.User.create(newMember)
-      .then((member) => {
-        return member.createSubscription(newMember.membershipId, dentist.id, null)
-          .then((subscription) => {
-            let json = member.toJSON();
-            if (subscription) {
-              json.subscription = subscription.toJSON();
-            }
+    .then((member) => {
+      return member.createSubscription(newMember.membershipId, dentist.id, null)
+      .then((subscription) => {
+        let json = member.toJSON();
+        if (subscription) {
+          json.subscription = subscription.toJSON();
+        }
 
-            return json;
-          });
+        return json;
       });
+    });
   }
 };
