@@ -216,7 +216,8 @@ export function subscribeNewMember(primaryAccountHolderId, newMember, subscripti
   function getUserSubscription(paymentProfile, membership, callback) {
     db.Subscription.findOne({
       include: [{
-        models: db.Membership
+        model: db.Membership,
+        as: 'membership'
       }],
       where: {
         clientId: newMember.id,
@@ -230,7 +231,7 @@ export function subscribeNewMember(primaryAccountHolderId, newMember, subscripti
       } = userSubscription;
 
       // throw an error if the subscription is active
-      if (stripeSubscriptionId || stripeSubscriptionItemId || status === 'active' || userSubscription.membershipId) {
+      if (stripeSubscriptionId || stripeSubscriptionItemId || status === 'active') {
         return callback("User already has an active subscription");
       }
       callback(null, paymentProfile, membership, userSubscription);
@@ -249,7 +250,7 @@ export function subscribeNewMember(primaryAccountHolderId, newMember, subscripti
       where: {
         dentistId: membership.userId,
         paymentProfileId: paymentProfile.id,
-        active: true
+        status: 'active'
       }
     })
       .then(subscriptions => {
