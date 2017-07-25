@@ -83,7 +83,7 @@ export const instance = {
       db.Subscription.findAll({
         where: { dentistId },
         attributes: {
-          exclude: ['id', 'paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
+          exclude: ['paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
         },
         status: { $not: 'canceled' },
         include: [{
@@ -124,11 +124,12 @@ export const instance = {
           subs = subs.map(sub => {
             if (sub.client.members.length > 0) {
               sub.client.members = sub.client.members.map(member => {
-                let { status, membership } = subs.find(s => s.client.id === member.id);
+                let { status, membership, id } = subs.find(s => s.client.id === member.id);
                 return {
                   ...member,
                   status,
-                  membership
+                  membership,
+                  subscriptionId: id
                 };
               });
             }

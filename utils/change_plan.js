@@ -66,6 +66,13 @@ export function changePlanUtil(userId, dentistId, newPlanId, subscriptionId) {
       }, err => callback(err));
   }
 
+  function updateLocalSubscription(userSubscription, userObj, callback) {
+    userSubscription.stripeSubscriptionId = null;
+    userSubscription.stripeSubscriptionItemId = null;
+    userSubscription.status = 'canceled';
+    userSubscription.save().then(s => callback(null, userSubscription, userObj), e => callback(e));
+  }
+
   function getNewMembershipPlan(userSubscription, userObj, callback) {
     db.Membership.findOne({
       where: {
@@ -95,10 +102,6 @@ export function changePlanUtil(userId, dentistId, newPlanId, subscriptionId) {
   }
 
   function enrollUserToNewPlan(accountHolderSubscriptions, membershipPlan, userSubscription, callback) {
-    // log("HERE")
-    // log(accountHolderSubscriptions)
-    // log(membershipPlan)
-    // log(userSubscription)
     performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
       if (!err) {
         return callback(null, true);
@@ -113,6 +116,7 @@ export function changePlanUtil(userId, dentistId, newPlanId, subscriptionId) {
       getUser,
       getCurrentUserSubscription,
       getSubscription,
+      updateLocalSubscription,
       getNewMembershipPlan,
       getPrimaryAccountHolderSubscriptions,
       enrollUserToNewPlan

@@ -155,12 +155,10 @@ function reEnroll(req, res) {
  * @param {Function} next - the next middleware function
  */
 function changePlan(req, res, next) {
-  let user = {};
-  let subscription = {};
-  let membership = {};
 
   const memberId = req.params.userId;
-  const { membershipId, subscriptionId } = req.query;
+  const { membershipId } = req.params;
+  const { subscriptionId } = req.query;
   const currentUserId = req.user.get('id');
 
   changePlanUtil(memberId, currentUserId, membershipId, subscriptionId)
