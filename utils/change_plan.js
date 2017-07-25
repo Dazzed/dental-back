@@ -16,10 +16,8 @@ function waterfaller(functions) {
           console.log("ERROR in waterfaller");
           console.log(err);
           return reject(err);
-        } else if (err === 'ok') {
-          return resolve({ shouldContinue: true, data });
         } else {
-          return resolve({ shouldContinue: false, data });
+          return resolve(data);
         }
       }
     );
@@ -39,9 +37,18 @@ export function changePlanUtil(userId, dentistId, newPlanId, subscriptionId) {
   }
 
   function getCurrentUserSubscription(userObj, callback) {
-    userObj.getMySubscription().then(subscription => {
-      return callback(null, subscription, userObj);
-    }, err => callback(err));
+    // userObj.getMySubscription().then(subscription => {
+    //   return callback(null, subscription, userObj);
+    // }, err => callback(err));
+    db.Subscription.findOne({
+      where: {
+        id: subscriptionId
+      },
+      include: [{
+        model: db.Membership,
+        as: 'membership',
+      }]
+    }).then(sub => callback(null, sub, userObj), e => callback(e));
   }
 
   function getSubscription(userSubscription, userObj, callback) {
@@ -88,6 +95,10 @@ export function changePlanUtil(userId, dentistId, newPlanId, subscriptionId) {
   }
 
   function enrollUserToNewPlan(accountHolderSubscriptions, membershipPlan, userSubscription, callback) {
+    // log("HERE")
+    // log(accountHolderSubscriptions)
+    // log(membershipPlan)
+    // log(userSubscription)
     performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
       if (!err) {
         return callback(null, true);
@@ -97,7 +108,7 @@ export function changePlanUtil(userId, dentistId, newPlanId, subscriptionId) {
     });
   }
 
-  return new Promise((resolve , reject) => {
+  return new Promise((resolve, reject) => {
     waterfaller([
       getUser,
       getCurrentUserSubscription,
