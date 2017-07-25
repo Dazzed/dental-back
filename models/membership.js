@@ -50,7 +50,8 @@ export default function (sequelize, DataTypes) {
     },
     active: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
+      allowNull: false,
+      defaultValue: true
     }
   }, {
     tableName: 'memberships',
