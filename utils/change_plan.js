@@ -70,6 +70,7 @@ export function changePlanUtil(userId, dentistId, newPlanId, subscriptionId) {
     userSubscription.stripeSubscriptionId = null;
     userSubscription.stripeSubscriptionItemId = null;
     userSubscription.status = 'canceled';
+    userSubscription.stripeSubscriptionIdUpdatedAt = moment();
     userSubscription.save().then(s => callback(null, userSubscription, userObj), e => callback(e));
   }
 

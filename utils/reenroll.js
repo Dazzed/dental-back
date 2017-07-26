@@ -56,7 +56,7 @@ export function reenrollMember(userId, currentUserId, membershipId) {
       } = userSubscription;
 
       // throw an error if the subscription is active
-      if (stripeSubscriptionId || stripeSubscriptionItemId || status === 'active' || userSubscription.membershipId) {
+      if (stripeSubscriptionId || stripeSubscriptionItemId || status === 'active') {
         return callback("User already has an active subscription");
       }
       callback(null, membershipPlan, userSubscription);
@@ -155,7 +155,7 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
       }
     }
   });
-
+  
   if (stripeSubscriptionItemId) {
     stripe.getSubscriptionItem(stripeSubscriptionItemId).then(item => {
       stripe.updateSubscriptionItem(stripeSubscriptionItemId, {
@@ -166,11 +166,12 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
           userSubscription.stripeSubscriptionItemId = stripeSubscriptionItemId;
           userSubscription.status = 'active';
           userSubscription.membershipId = membershipPlan.id;
+          userSubscription.stripeSubscriptionIdUpdatedAt = moment();
           userSubscription.save();
           return callback(null, true);
         });
     }, err => callback(err));
-  } else if (stripeSubscriptionId) {
+  } else if (stripeSubscriptionId && membershipPlan.type !== 'year') {
     stripe.createSubscriptionItem({
       subscription: stripeSubscriptionId,
       plan: membershipPlan.stripePlanId,
@@ -180,6 +181,7 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
       userSubscription.stripeSubscriptionItemId = item.id;
       userSubscription.status = 'active';
       userSubscription.membershipId = membershipPlan.id;
+      userSubscription.stripeSubscriptionIdUpdatedAt = moment();
       userSubscription.save();
       return callback(null, true);
     });
@@ -194,6 +196,7 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
         userSubscription.stripeSubscriptionItemId = sub.items.data[0].id;
         userSubscription.status = 'active';
         userSubscription.membershipId = membershipPlan.id;
+        userSubscription.stripeSubscriptionIdUpdatedAt = moment();
         userSubscription.save();
         return callback(null, true);
       }, err => callback(err));

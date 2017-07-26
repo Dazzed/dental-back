@@ -472,6 +472,17 @@ export default {
     });
   },
 
+  getSubscriptionItem(id) {
+    return new Promise((resolve, reject) => {
+      stripe.subscriptionItems.retrieve(id, (err, item) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(item);
+      });
+    });
+  },
+
   createSubscriptionWithItems(subscriptionObject) {
     return new Promise((resolve, reject) => {
       stripe.subscriptions.create(subscriptionObject, (err, subscription) => {
