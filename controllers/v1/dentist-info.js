@@ -267,6 +267,8 @@ async function updateDentistInfo(req, res, next) {
     if (officeInfo.officeImages) {
       // update office images.
       const previousImages = dentistInfo.get('officeImages');
+
+      // Go through the images to add.
       officeInfo.officeImages.forEach((imageUrl) => {
         const imageAlreadyExists =
             previousImages.find(s => s.dataValues.url === imageUrl);
@@ -279,6 +281,20 @@ async function updateDentistInfo(req, res, next) {
           );
         }
       });
+
+      // Go through the office images to destroy.
+      for (const instance of previousImages) {
+        const imageShouldExist =
+            officeInfo.officeImages.find(s => s.url === instance.dataValues.url);
+        if (!imageShouldExist) {
+          queries.push(db.DentistInfoPhotos.destroy({
+            where: {
+              url: instance.dataValues.url,
+              dentistInfoId: dentistInfo.get('id'),
+            }
+          }));
+        }
+      }
     }
   Promise.all(queries).then(data => {
     return;
