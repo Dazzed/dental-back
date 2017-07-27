@@ -965,10 +965,6 @@ bluebird@^3.0.5, bluebird@^3.3.4, bluebird@^3.4.1, bluebird@^3.4.6, bluebird@^3.
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.0.tgz#791420d7f551eea2897453a8a77653f96606d67c"
 
-bluebird@~2.9.24:
-  version "2.9.34"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-2.9.34.tgz#2f7b4ec80216328a9fddebdf69c8d4942feff7d8"
-
 body-parser@1.12.4:
   version "1.12.4"
   resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.12.4.tgz#090700c4ba28862a8520ef378395fdee5f61c229"
@@ -1423,7 +1419,7 @@ delegates@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delegates/-/delegates-1.0.0.tgz#84c6e159b81904fdca59a0ef44cd870d31250f9a"
 
-depd@1.1.0, depd@^1.0.1, depd@^1.1.0, depd@~1.1.0:
+depd@1.1.0, depd@^1.1.0, depd@~1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/depd/-/depd-1.1.0.tgz#e1bd82c6aab6ced965b97b88b17ed3e528ca18c3"
 
@@ -1492,10 +1488,6 @@ doctrine@^2.0.0:
 dotenv@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-2.0.0.tgz#bd759c357aaa70365e01c96b7b0bec08a6e0d949"
-
-dottie@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/dottie/-/dottie-0.3.1.tgz#4185f777489960ac084131de3f9a14a179bb749f"
 
 dottie@^1.0.0:
   version "1.1.1"
@@ -2178,10 +2170,6 @@ generate-object-property@^1.1.0:
   resolved "https://registry.yarnpkg.com/generate-object-property/-/generate-object-property-1.2.0.tgz#9c0e1c40308ce804f4783618b937fa88f99d50d0"
   dependencies:
     is-property "^1.0.0"
-
-generic-pool@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/generic-pool/-/generic-pool-2.2.0.tgz#8b465c1a7588ea9dd2bb133bda0bb66bfef8a63e"
 
 generic-pool@2.4.2:
   version "2.4.2"
@@ -3381,11 +3369,7 @@ lodash@4.16.x:
   version "4.16.6"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.6.tgz#d22c9ac660288f3843e16ba7d2b5d06cca27d777"
 
-lodash@^3.5.0, lodash@~3.8.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.8.0.tgz#376eb98bdcd9382a9365c33c4cb8250de1325b91"
-
-lodash@^4.0.0, lodash@^4.11.1, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.14.2, lodash@^4.17.0, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.3.0:
+lodash@^4.0.0, lodash@^4.11.1, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.14.2, lodash@^4.17.0, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.3.0, lodash@~4.17.4:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -3583,19 +3567,13 @@ mocha@^3.0.1:
     mkdirp "0.5.1"
     supports-color "3.1.2"
 
-moment-timezone@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.3.1.tgz#3ef47856b02d53b718a10a5ec2023aa299e07bf5"
-  dependencies:
-    moment ">= 2.6.0"
-
 moment-timezone@^0.5.4:
   version "0.5.13"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.13.tgz#99ce5c7d827262eb0f1f702044177f60745d7b90"
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.x.x, "moment@>= 2.6.0", "moment@>= 2.9.0", moment@^2.13.0, moment@^2.16.0, moment@^2.17.1, moment@^2.18.1, moment@^2.9.0:
+moment@2.x.x, "moment@>= 2.9.0", moment@^2.13.0, moment@^2.16.0, moment@^2.17.1, moment@^2.18.1:
   version "2.18.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
 
@@ -3702,7 +3680,7 @@ node-pre-gyp@^0.6.29:
     tar "^2.2.1"
     tar-pack "^3.4.0"
 
-node-uuid@1.x, node-uuid@~1.4.1:
+node-uuid@1.x:
   version "1.4.8"
   resolved "https://registry.yarnpkg.com/node-uuid/-/node-uuid-1.4.8.tgz#b040eb0923968afabf8d32fb1f17f1167fdab907"
 
@@ -3947,13 +3925,13 @@ passport-jwt@^2.1.0:
     jsonwebtoken "^7.0.0"
     passport-strategy "^1.0.0"
 
-passport-local-sequelize@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/passport-local-sequelize/-/passport-local-sequelize-0.6.0.tgz#25a75c3d224e4f415d3cd21a9e60b4d788c626a6"
+passport-local-sequelize@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/passport-local-sequelize/-/passport-local-sequelize-0.7.0.tgz#dc418846b327b2f69bf3c4727011eebd9901c8fe"
   dependencies:
-    lodash "~3.8.0"
+    lodash "~4.17.4"
     passport-local "~1.0.0"
-    sequelize "~3.1.1"
+    sequelize "~3.30.1"
 
 passport-local@^1.0.0, passport-local@~1.0.0:
   version "1.0.0"
@@ -4722,7 +4700,7 @@ sequelize-cli@^2.7.0:
     umzug "^1.11.0"
     yargs "^7.0.1"
 
-sequelize@^3.30.4:
+sequelize@^3.30.4, sequelize@~3.30.1:
   version "3.30.4"
   resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-3.30.4.tgz#bda2df1e31854b099e4149a111e9fc0a5ca1d1a4"
   dependencies:
@@ -4742,23 +4720,6 @@ sequelize@^3.30.4:
     uuid "^3.0.0"
     validator "^5.2.0"
     wkx "0.2.0"
-
-sequelize@~3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-3.1.1.tgz#0ac3ab132da470ba6a266bacff11c56b7e9ab1ae"
-  dependencies:
-    bluebird "~2.9.24"
-    depd "^1.0.1"
-    dottie "^0.3.1"
-    generic-pool "2.2.0"
-    inflection "^1.6.0"
-    lodash "^3.5.0"
-    moment "^2.9.0"
-    moment-timezone "^0.3.1"
-    node-uuid "~1.4.1"
-    shimmer "1.0.0"
-    toposort-class "~0.3.0"
-    validator "^3.34.0"
 
 sequencify@~0.0.7:
   version "0.0.7"
@@ -4802,10 +4763,6 @@ shelljs@^0.7.5:
     glob "^7.0.0"
     interpret "^1.0.0"
     rechoir "^0.6.2"
-
-shimmer@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/shimmer/-/shimmer-1.0.0.tgz#49c2d71c678360b802be18b278382d1cbb805c39"
 
 shimmer@1.1.0:
   version "1.1.0"
@@ -5213,10 +5170,6 @@ toposort-class@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/toposort-class/-/toposort-class-1.0.1.tgz#7ffd1f78c8be28c3ba45cd4e1a3f5ee193bd9988"
 
-toposort-class@~0.3.0:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/toposort-class/-/toposort-class-0.3.1.tgz#d1333aed734f8608ced1286218bd2c45f60eff48"
-
 touch@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/touch/-/touch-1.0.0.tgz#449cbe2dbae5a8c8038e30d71fa0ff464947c4de"
@@ -5367,7 +5320,7 @@ uue@^3.1.0:
   dependencies:
     extend "~3.0.0"
 
-uuid@3.0.1, uuid@3.0.x, uuid@^3.0.0:
+uuid@3.0.1, uuid@3.0.x:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.1.tgz#6544bba2dfda8c1cf17e629a3a305e2bb1fee6c1"
 
@@ -5375,7 +5328,7 @@ uuid@^2.0.1:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-2.0.3.tgz#67e2e863797215530dff318e5bf9dcebfd47b21a"
 
-uuid@^3.1.0:
+uuid@^3.0.0, uuid@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
 
@@ -5395,10 +5348,6 @@ validate-npm-package-license@^3.0.1:
 validator@5.7.x, validator@^5.2.0, validator@^5.5.0:
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/validator/-/validator-5.7.0.tgz#7a87a58146b695ac486071141c0c49d67da05e5c"
-
-validator@^3.34.0:
-  version "3.43.0"
-  resolved "https://registry.yarnpkg.com/validator/-/validator-3.43.0.tgz#96464b992d4196833d97a194bf40b19ff54bae05"
 
 validator@^6.0.0:
   version "6.3.0"

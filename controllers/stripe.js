@@ -461,6 +461,28 @@ export default {
     });
   },
 
+  createSubscriptionItem(subscriptionItemObject) {
+    return new Promise((resolve, reject) => {
+      stripe.subscriptionItems.create(subscriptionItemObject, (err, subscription) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(subscription);
+      });
+    });
+  },
+
+  getSubscriptionItem(id) {
+    return new Promise((resolve, reject) => {
+      stripe.subscriptionItems.retrieve(id, (err, item) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(item);
+      });
+    });
+  },
+
   createSubscriptionWithItems(subscriptionObject) {
     return new Promise((resolve, reject) => {
       stripe.subscriptions.create(subscriptionObject, (err, subscription) => {
@@ -479,6 +501,28 @@ export default {
           return reject(err);
         }
         return resolve(item);
+      });
+    });
+  },
+
+  createInvoiceItem(object) {
+    return new Promise((resolve, reject) => {
+      stripe.invoiceItems.create(object, (err, invoiceItem) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(invoiceItem);
+      });
+    });
+  },
+
+  deleteSubscription(id) {
+    return new Promise((resolve, reject) => {
+      stripe.subscriptions.del(id, (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(data);
       });
     });
   }

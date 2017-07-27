@@ -76,14 +76,13 @@ export const instance = {
    *
    * @returns {Promise<User[]>}
    */
-  getClients() {
+  async getClients() {
     const dentistId = this.get('id');
 
-    return new Promise((resolve, reject) => {
-      db.Subscription.findAll({
+    const subs = await db.Subscription.findAll({
         where: { dentistId },
         attributes: {
-          exclude: ['id', 'paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
+          exclude: ['paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
         },
         status: { $not: 'canceled' },
         include: [{
@@ -106,6 +105,13 @@ export const instance = {
             model: db.Phone,
             as: 'phoneNumbers',
           }, {
+            model: db.Subscription,
+            as: 'clientSubscription',
+            include: [{
+              model: db.Membership,
+              as: 'membership'
+            }]
+          }, {
             model: db.Review,
             as: 'clientReviews',
             attributes: { exclude: ['clientId', 'dentistId'] },
@@ -114,31 +120,29 @@ export const instance = {
             as: 'addresses'
           }]
         }]
-      })
-      .then((subs) => {
-        Promise.all(subs.map(s => s.membership.getPlanCosts()))
-        .then((plans) => {
-          subs = subs.map(s => s.toJSON());
-          subs.forEach((s, i) => (subs[i].membership = plans[i]));
-          // Let's construct the status property for the primary patient's subordinate members.
-          subs = subs.map(sub => {
-            if (sub.client.members.length > 0) {
-              sub.client.members = sub.client.members.map(member => {
-                let { status } = subs.find(s => s.client.id === member.id);
-                return {
-                  ...member,
-                  status
-                };
-              });
-            }
-            return {...sub};
-          });
-          resolve(subs);
-        })
-        .catch(reject);
-      })
-      .catch(reject);
-    });
+      });
+     const subList = [];
+      for (const sub of subs) {
+        const plan = await sub.membership.getPlanCosts();
+        const subObj = sub.toJSON();
+        subObj.membership = plan;
+        if (subObj.client.members.length > 0 ) {
+          for (const member of subObj.client.members) {
+            let { status, membership, id } = subs.find(s => s.client.id === member.id);
+            member.status = status;
+            member.membership = membership;
+            member.subscriptionId = id;
+          }
+        }
+        if (subObj.client.phoneNumbers.length > 0) {
+          subObj.client.phone = subObj.client.phoneNumbers[0] ? subObj.client.phoneNumbers[0].number : null;
+        }
+        if (subObj.client.addresses.length > 0) {
+          subObj.client.address = subObj.client.addresses[0] ? subObj.client.addresses[0].value : null;
+        }
+        subList.push(subObj);
+      }
+      return subList;
   },
 
   /**
@@ -162,36 +166,30 @@ export const instance = {
           as: 'memberships'
         }, {
           model: db.Subscription,
-          as: 'clientSubscription'
+          as: 'clientSubscription',
+          include: [{
+            model: db.Membership,
+            as: 'membership'
+          }]
         }, {
           model: db.Phone,
           as: 'phoneNumbers',
+        }, {
+          model: db.Address,
+          as: 'addresses',
         }],
         subquery: false,
       });
 
-      const parsed = await Promise.all(
-        users.map(userObj => (
-          new Promise(async (res, rej) => {
-            const subscription = await userObj.getMySubscription();
-            const parsed = userObj.toJSON();
-
-            parsed.subscription = subscription;
-
-            parsed.phone = parsed.phoneNumbers[0] ?
-            parsed.phoneNumbers[0].number : undefined;
-
-            delete parsed.clientSubscription;
-            delete parsed.phoneNumbers;
-            res(parsed);
-          })
-
-          )
-        )
-      ).catch((err) => {
-        console.log(err);
-      });
-      return parsed;
+    const parsed = [];
+    for (const user of users) {
+      const subscription = await user.getMySubscription();
+      const userParsed = user.toJSON();
+      userParsed.subscription = subscription;
+      userParsed.phone = userParsed.phoneNumbers[0] ? userParsed.phoneNumbers[0].number : undefined;
+      parsed.push(userParsed);
+    }
+    return parsed;
   },
 
   /**
@@ -278,12 +276,9 @@ export const instance = {
    *
    * @param {string} [id=this.get('id')]
    */
-  getFullClient(id = this.get('id')) {
-    let user = {};
-
-    return Promise.resolve()
-    .then(() => (
-      db.User.find({
+  async getFullClient(id = this.get('id')) {
+    let userObj =
+      await db.User.find({
         where: {
           id,
           type: 'client',
@@ -307,21 +302,27 @@ export const instance = {
         }, {
           model: db.Subscription,
           as: 'clientSubscription',
-          attributes: ['stripeSubscriptionId'],
+          include:[ {
+            model: db.Membership,
+            as: 'membership',
+          }]
+        },{
+          model: db.Phone,
+          as: 'phoneNumbers',
+        }, {
+          model: db.Address,
+          as: 'addresses',
         }]
-      })
-    ))
-    .then((userObj) => {
-      // Get the user's subscription
-      if (!userObj) throw new Error('User does not exist');
-      user = userObj.toJSON();
-      return userObj.getMySubscription();
-    })
-    .then((subscription) => {
-      user.subscription = subscription;
-      delete user.clientSubscription;
-      return user;
-    });
+      });
+
+    if (!userObj) {
+      throw new Error('User does not exist');
+    }
+
+    let user = userObj.toJSON();
+    const subscription = await userObj.getMySubscription();
+    user.subscription = subscription;
+    return user;
   },
 
   /**
@@ -578,13 +579,22 @@ export const model = {
     return db.User.find({
       attributes: { exclude: userFieldsExcluded },
       where: {
-        addedBy,
         id: memberId,
         isDeleted: false,
       },
       include: [{
         model: db.Phone,
         as: 'phoneNumbers',
+      }, {
+        model: db.Subscription,
+        as: 'clientSubscription',
+        include:[ {
+          model: db.Membership,
+          as: 'membership',
+        }]
+      }, {
+        model: db.Address,
+        as: 'addresses',
       }],
       subquery: false,
     })
@@ -597,7 +607,7 @@ export const model = {
         delete parsed.phoneNumbers;
       }
 
-      return member.getSubscription();
+      return member.getMySubscription();
     })
     .then((subscription) => {
       parsed.subscription = subscription;
