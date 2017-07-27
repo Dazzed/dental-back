@@ -76,79 +76,10 @@ export const instance = {
    *
    * @returns {Promise<User[]>}
    */
-  // async getClients() {
-  //   const dentistId = this.get('id');
-
-  //   const subs = await db.Subscription.findAll({
-  //       where: { dentistId },
-  //       attributes: {
-  //         exclude: ['id', 'paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
-  //       },
-  //       status: { $not: 'canceled' },
-  //       include: [{
-  //         model: db.Membership,
-  //         as: 'membership',
-  //       }, {
-  //         model: db.User,
-  //         as: 'client',
-  //         attributes: {
-  //           exclude: userFieldsExcluded,
-  //         },
-  //         where: { isDeleted: false },
-  //         include: [{
-  //           model: db.User,
-  //           as: 'members',
-  //           attributes: {
-  //             exclude: userFieldsExcluded,
-  //           },
-  //         }, {
-  //           model: db.Phone,
-  //           as: 'phoneNumbers',
-  //         }, {
-  //           model: db.Subscription,
-  //           as: 'clientSubscription',
-  //           include: [{
-  //             model: db.Membership,
-  //             as: 'membership'
-  //           }]
-  //         }, {
-  //           model: db.Review,
-  //           as: 'clientReviews',
-  //           attributes: { exclude: ['clientId', 'dentistId'] },
-  //         }, {
-  //           model: db.Address,
-  //           as: 'addresses'
-  //         }]
-  //       }]
-  //     });
-  //     const subList = [];
-
-  //     for (const sub of subs) {
-  //       const plan = await sub.membership.getPlanCosts();
-  //       const subObj = sub.toJSON();
-  //       subObj.membership = plan;
-  //       if (subObj.client.members.length > 0 ) {
-  //         for (const member of subObj.client.members) {
-  //           let { status } = subs.find(s => s.client.id === member.id);
-  //           member.status = status;
-  //         }
-  //       }
-  //       if (subObj.client.phoneNumbers.length > 0) {
-  //         subObj.client.phone = subObj.client.phoneNumbers[0] ? subObj.client.phoneNumbers[0].number : null;
-  //       }
-  //       if (subObj.client.addresses.length > 0) {
-  //         subObj.client.address = subObj.client.addresses[0] ? subObj.client.addresses[0].value : null;
-  //       }
-  //       subList.push(subObj);
-  //     }
-  //     return subList;
-  // },
-
-  getClients() {
+  async getClients() {
     const dentistId = this.get('id');
 
-    return new Promise((resolve, reject) => {
-      db.Subscription.findAll({
+    const subs = await db.Subscription.findAll({
         where: { dentistId },
         attributes: {
           exclude: ['paymentProfileId', 'membershipId', 'clientId', 'dentistId'],
@@ -174,6 +105,13 @@ export const instance = {
             model: db.Phone,
             as: 'phoneNumbers',
           }, {
+            model: db.Subscription,
+            as: 'clientSubscription',
+            include: [{
+              model: db.Membership,
+              as: 'membership'
+            }]
+          }, {
             model: db.Review,
             as: 'clientReviews',
             attributes: { exclude: ['clientId', 'dentistId'] },
@@ -182,35 +120,30 @@ export const instance = {
             as: 'addresses'
           }]
         }]
-      })
-      .then((subs) => {
-        Promise.all(subs.map(s => s.membership.getPlanCosts()))
-        .then((plans) => {
-          subs = subs.map(s => s.toJSON());
-          subs.forEach((s, i) => (subs[i].membership = plans[i]));
-          // Let's construct the status and membership property for the primary patient's subordinate members.
-          subs = subs.map(sub => {
-            if (sub.client.members.length > 0) {
-              sub.client.members = sub.client.members.map(member => {
-                let { status, membership, id } = subs.find(s => s.client.id === member.id);
-                return {
-                  ...member,
-                  status,
-                  membership,
-                  subscriptionId: id
-                };
-              });
-            }
-            return {...sub};
-          });
-          resolve(subs);
-        })
-        .catch(reject);
-      })
-      .catch(reject);
-    });
+      });
+     const subList = [];
+      for (const sub of subs) {
+        const plan = await sub.membership.getPlanCosts();
+        const subObj = sub.toJSON();
+        subObj.membership = plan;
+        if (subObj.client.members.length > 0 ) {
+          for (const member of subObj.client.members) {
+            let { status, membership, id } = subs.find(s => s.client.id === member.id);
+            member.status = status;
+            member.membership = membership;
+            member.subscriptionId = id;
+          }
+        }
+        if (subObj.client.phoneNumbers.length > 0) {
+          subObj.client.phone = subObj.client.phoneNumbers[0] ? subObj.client.phoneNumbers[0].number : null;
+        }
+        if (subObj.client.addresses.length > 0) {
+          subObj.client.address = subObj.client.addresses[0] ? subObj.client.addresses[0].value : null;
+        }
+        subList.push(subObj);
+      }
+      return subList;
   },
-
 
   /**
    * Gets associated members of this primary account
