@@ -132,6 +132,7 @@ export const instance = {
             member.status = status;
             member.membership = membership;
             member.subscriptionId = id;
+            member.membershipId = membership.id;
           }
         }
         if (subObj.client.phoneNumbers.length > 0) {
@@ -186,6 +187,7 @@ export const instance = {
       const subscription = await user.getMySubscription();
       const userParsed = user.toJSON();
       userParsed.subscription = subscription;
+      userParsed.membershipId = userParsed.clientSubscription.membership.id;
       userParsed.phone = userParsed.phoneNumbers[0] ? userParsed.phoneNumbers[0].number : undefined;
       parsed.push(userParsed);
     }
