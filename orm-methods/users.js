@@ -126,6 +126,7 @@ export const instance = {
         const plan = await sub.membership.getPlanCosts();
         const subObj = sub.toJSON();
         subObj.membership = plan;
+        subObj.client.membership = plan;
         if (subObj.client.members.length > 0 ) {
           for (const member of subObj.client.members) {
             let { status, membership, id } = subs.find(s => s.client.id === member.id);

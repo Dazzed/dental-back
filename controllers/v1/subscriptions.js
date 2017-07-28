@@ -35,6 +35,7 @@ function subscribe(req, res, next) {
   const memberId = req.params.userId || null;
 
   let preFetch = Promise.resolve();
+  console.log('hmmm');
 
   // Check if subscribing a family member
   if (memberId) {
@@ -61,17 +62,20 @@ function subscribe(req, res, next) {
       })
         .then((s) => {
           // 1. Get current subscription && validate subscription DNE
+          console.log('hmmm');
           if (!s) throw new Error('User somehow does not have an existing subscription record'); // this should never happen (unless you are a dentist)
           if (s.stripeSubscriptionId !== null) throw new Error('User is already subscribed to a plan');
           subscription = s;
           return db.Membership.find({ where: { id: req.params.membershipId, userId: req.params.dentistId } });
         })
         .then((m) => {
+          console.log('hmmm2');
           // 2. Get Membership && validate plan exists
           if (!m) throw new Error('Requested membership plan does not exist for Dentist');
           return stripe.getMembershipPlan(m.stripePlanId);
         })
         .then((m) => {
+          console.log('hmmm3');
           // 3. Get plan name from stripe
           membership = m;
           // 4. Get Payment Profile
@@ -84,6 +88,7 @@ function subscribe(req, res, next) {
           });
         })
         .then((pp) => {
+          console.log('hmmm4');
           if (!pp) throw new Error('Current user somehow somehow has no active payment profile'); // this should never happen
           payProfile = pp;
           // 5. Check if user should be charged for re-enrollment
@@ -94,6 +99,7 @@ function subscribe(req, res, next) {
           return Promise.resolve();
         })
         .then(() => {
+          console.log('hmmm5');
           // 6. Check if this is an annual subscription, if so, charge the full cost, and give 100% off on the subscription
           if (membership.interval === 'year') {
             isAnnualSub = true;
@@ -103,6 +109,7 @@ function subscribe(req, res, next) {
           return Promise.resolve();
         })
         .then(() => {
+          console.log('hmmm6');
           if (isAnnualSub) {
             // 100% off the subscription but register it so our hooks can track when it expires
             return stripe.createSubscription(membership.name, payProfile.stripeCustomerId, 100);
@@ -110,6 +117,7 @@ function subscribe(req, res, next) {
           return stripe.createSubscription(membership.name, payProfile.stripeCustomerId);
         })
         .then((newSubscription) => {
+          console.log('hmmm7');
           subscription.stripeSubscriptionId = newSubscription.id;
           subscription.membershipId = req.params.membershipId;
           subscription.endAt = Moment().add(1, endTimeInterval);
@@ -140,7 +148,9 @@ function reEnroll(req, res) {
   const membershipId = req.query.membershipId;
   const currentUserId = req.user.get('id');
 
+  console.log('hay');
   reenrollMember(memberId, currentUserId, membershipId).then(data => {
+    console.log('hay hay');
     res.status(200).send({});
   }, err => {
     res.status(500).send(err);
