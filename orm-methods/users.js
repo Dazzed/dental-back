@@ -77,6 +77,7 @@ export const instance = {
    * @returns {Promise<User[]>}
    */
   async getClients() {
+    console.log('get clients');
     const dentistId = this.get('id');
 
     const subs = await db.Subscription.findAll({
@@ -127,13 +128,17 @@ export const instance = {
         const subObj = sub.toJSON();
         subObj.membership = plan;
         subObj.client.membership = plan;
+        subObj.client.status = subObj.client.clientSubscription.status;
+        subObj.client.subscriptionId = subObj.client.clientSubscription.id;
+        subObj.client.membershipId = subObj.client.clientSubscription.membership.id;
         if (subObj.client.members.length > 0 ) {
           for (const member of subObj.client.members) {
-            let { status, membership, id } = subs.find(s => s.client.id === member.id);
-            member.status = status;
-            member.membership = membership;
-            member.subscriptionId = id;
-            member.membershipId = membership.id;
+            const clientSubscription = subs.find(s => s.client.id === member.id);
+            member.clientSubscription = clientSubscription;
+            member.status = clientSubscription.status;
+            member.membership = clientSubscription.membership;
+            member.subscriptionId = clientSubscription.id;
+            member.membershipId = clientSubscription.membership.id;
           }
         }
         if (subObj.client.phoneNumbers.length > 0) {
@@ -144,6 +149,7 @@ export const instance = {
         }
         subList.push(subObj);
       }
+      console.log('get clients');
       return subList;
   },
 
