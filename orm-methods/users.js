@@ -77,7 +77,6 @@ export const instance = {
    * @returns {Promise<User[]>}
    */
   async getClients() {
-    console.log('get clients');
     const dentistId = this.get('id');
 
     const subs = await db.Subscription.findAll({
@@ -149,7 +148,6 @@ export const instance = {
         }
         subList.push(subObj);
       }
-      console.log('get clients');
       return subList;
   },
 

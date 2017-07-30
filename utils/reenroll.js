@@ -25,16 +25,12 @@ function waterfaller(functions) {
 }
 
 export function reenrollMember(userId, currentUserId, membershipId) {
-  console.log('oh boy');
-
   function getMembershipPlan(callback) {
-    console.log('1. memberhip plan');
     db.Membership.findOne({
       where: {
         id: membershipId
       }
     }).then(plan => {
-      console.log('1. memberhip plan success');
       callback(null, plan)
     }, err => {
       callback(err)
@@ -42,7 +38,6 @@ export function reenrollMember(userId, currentUserId, membershipId) {
   }
 
   function getUserSubscription(membershipPlan, callback) {
-    console.log('2. user subscriptions');
     db.Subscription.findOne({
       where: {
         clientId: userId,
@@ -64,12 +59,10 @@ export function reenrollMember(userId, currentUserId, membershipId) {
         return callback("User already has an active subscription");
       }
       callback(null, membershipPlan, userSubscription);
-      console.log('2. user sub success');
     }, err => callback(err));
   }
 
   function getPrimaryAccountHolderSubscriptions(membershipPlan, userSubscription, callback) {
-    console.log('3. primary account holder');
     db.Subscription.findAll({
       where: {
         dentistId: membershipPlan.userId,
@@ -85,13 +78,11 @@ export function reenrollMember(userId, currentUserId, membershipId) {
       }]
     })
     .then(subscriptions => {
-      console.log('3. account sub success');
       return callback(null, subscriptions, membershipPlan, userSubscription);
     }, err => callback(err));
   }
 
   function reenrollOperation(accountHolderSubscriptions, membershipPlan, userSubscription, callback) {
-    console.log('4. reenroll op');
     //1. iterate over accountHolderSubscriptions.
     //2. For monthly, Check if the target membership plan matches any plan the account holder already is subscribed to.
     //  2.1) If found, increment the stripe subscription item quantity.
@@ -106,14 +97,12 @@ export function reenrollMember(userId, currentUserId, membershipId) {
         id: userSubscription.paymentProfileId
       }
     }).then(profile => {
-      console.log('find prof');
       paymentProfile = profile;
       db.User.findOne({
         where: {
           id: profile.primaryAccountHolder
         }
       }).then(userObj => {
-        console.log('enrollment');
         if (userObj.reEnrollmentFeeWaiver == true) {
           stripe.createInvoiceItem({
             customer: paymentProfile.stripeCustomerId,
@@ -121,7 +110,6 @@ export function reenrollMember(userId, currentUserId, membershipId) {
             currency: 'usd',
             description: 're-enrollment Fee'
           }).then(invoiceItem => {
-            console.log('4. enrollment done');
             console.log("Invoice item for reenrollOperation success for user Id -> " + paymentProfile.primaryAccountHolder);
           },err => {
             console.log("Error in creating invoiceItem on Re-enroll operation for user Id -> " + paymentProfile.primaryAccountHolder);
@@ -131,9 +119,7 @@ export function reenrollMember(userId, currentUserId, membershipId) {
     });
 
     performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
-      console.log('5. performing enrollment');
       if (!err) {
-        console.log('5. enroll success');
         return callback(null, true);
       } else {
         return callback(err);
@@ -153,11 +139,10 @@ export function reenrollMember(userId, currentUserId, membershipId) {
 }
 
 export function performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, callback) {
-  console.log('performing enrollment now....');
   let stripeSubscriptionItemId;
   let stripeSubscriptionId;
   const clientId = userSubscription.clientId;
-  
+
   accountHolderSubscriptions.forEach(sub => {
     if (sub.clientId !== clientId) {
       return;
@@ -177,13 +162,11 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
   });
 
   if (stripeSubscriptionItemId) {
-    console.log('here2');
     stripe.getSubscriptionItem(stripeSubscriptionItemId).then(item => {
       stripe.updateSubscriptionItem(stripeSubscriptionItemId, {
         quantity: item.quantity + 1
       })
         .then(item => {
-          console.log('here3');
           userSubscription.stripeSubscriptionId = stripeSubscriptionId;
           userSubscription.stripeSubscriptionItemId = stripeSubscriptionItemId;
           userSubscription.status = 'active';
@@ -194,13 +177,11 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
         });
     }, err => callback(err));
   } else if (stripeSubscriptionId && membershipPlan.type !== 'year') {
-    console.log('here4');
     stripe.createSubscriptionItem({
       subscription: stripeSubscriptionId,
       plan: membershipPlan.stripePlanId,
       quantity: 1,
     }).then(item => {
-      console.log('here5');
       userSubscription.stripeSubscriptionId = stripeSubscriptionId;
       userSubscription.stripeSubscriptionItemId = item.id;
       userSubscription.status = 'active';
@@ -210,13 +191,11 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
       return callback(null, true);
     });
   } else {
-    console.log('here6');
     db.PaymentProfile.findOne({
       where: {
         id: userSubscription.paymentProfileId
       }
     }).then(profile => {
-      console.log('here7');
       stripe.createSubscription(membershipPlan.stripePlanId, profile.stripeCustomerId).then(sub => {
         userSubscription.stripeSubscriptionId = sub.id;
         userSubscription.stripeSubscriptionItemId = sub.items.data[0].id;
@@ -224,7 +203,6 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
         userSubscription.membershipId = membershipPlan.id;
         userSubscription.stripeSubscriptionIdUpdatedAt = moment();
         userSubscription.save();
-        console.log('....done');
         return callback(null, true);
       }, err => callback(err));
     }, err => callback(err));
