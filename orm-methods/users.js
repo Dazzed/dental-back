@@ -123,7 +123,7 @@ export const instance = {
       });
      const subList = [];
       for (const sub of subs) {
-        const plan = await sub.membership.getPlanCosts();
+        const plan = await sub.membership.getPlanCostsLocal();
         const subObj = sub.toJSON();
         subObj.membership = plan;
         subObj.client.membership = subObj.client.clientSubscription;
