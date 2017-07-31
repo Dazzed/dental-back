@@ -61,8 +61,19 @@ export function subscriptionChargeFailedNotification(user, attempt_count) {
 
   let to_email = new sendgrid.Email(user.email);
   let subject = EMAIL_SUBJECTS.client.subscriptionChargeFailed;
+  let days_late;
+  attempt_count = parseInt(attempt_count);
+  if (attempt_count == 1) {
+    days_late = 1;
+  } else if (attempt_count == 2) {
+    days_late = 7;
+  } else if (attempt_count == 3) {
+    days_late = 14;
+  } else {
+    days_late = 21;
+  }
   let content = new sendgrid.Content(
-    'text/html', template({ user})
+    'text/html', template({ user, days_late })
   );
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
