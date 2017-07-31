@@ -70,6 +70,14 @@ export default {
       site,
       user
     });
+  },
+  clientWelcomeEmail(res, user) {
+    return mail(res.mailer, 'auth/client/welcome', {
+      to: user.email,
+      subject: EMAIL_SUBJECTS.client.welcome,
+      site,
+      user
+    });
   }
   // TODO: add all mailer calls here from endpoints
 
