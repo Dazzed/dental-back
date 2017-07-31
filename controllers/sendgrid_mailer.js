@@ -78,3 +78,16 @@ export function subscriptionChargeFailedNotification(user, attempt_count) {
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
 }
+
+export function subscriptionCancellationNotification(user) {
+  var templateString = fs.readFileSync('./views/notifications/subscription_cancellation.ejs', 'utf-8');
+  var template = ejs.compile(templateString);
+
+  let to_email = new sendgrid.Email(user.email);
+  let subject = EMAIL_SUBJECTS.client.subscriptionCancellation;
+  let content = new sendgrid.Content(
+    'text/html', template({ user})
+  );
+  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  sendMail(mail);
+}

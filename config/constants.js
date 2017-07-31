@@ -97,7 +97,8 @@ export const EMAIL_SUBJECTS = {
   client: {
     welcome: 'Welcome to the Dental Marketplace!',
     membershipPriceUpdate: 'Membership price update',
-    subscriptionChargeFailed: 'Recurring Payment Failure'
+    subscriptionChargeFailed: 'Recurring Payment Failure',
+    subscriptionCancellation: 'Subscription Cancellation'
   },
   dentist: {
     welcome: 'Welcome to the Dental Marketplace!',
