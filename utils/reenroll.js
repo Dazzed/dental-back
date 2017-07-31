@@ -25,7 +25,6 @@ function waterfaller(functions) {
 }
 
 export function reenrollMember(userId, currentUserId, membershipId) {
-
   function getMembershipPlan(callback) {
     db.Membership.findOne({
       where: {
@@ -128,7 +127,7 @@ export function reenrollMember(userId, currentUserId, membershipId) {
     })
   }
 
-    
+
   return new Promise((resolve, reject) => {
     waterfaller([
       getMembershipPlan,
@@ -142,7 +141,13 @@ export function reenrollMember(userId, currentUserId, membershipId) {
 export function performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, callback) {
   let stripeSubscriptionItemId;
   let stripeSubscriptionId;
+  const clientId = userSubscription.clientId;
+
   accountHolderSubscriptions.forEach(sub => {
+    if (sub.clientId !== clientId) {
+      return;
+    }
+
     if (membershipPlan.type === 'month') {
       stripeSubscriptionId = sub.stripeSubscriptionId;
     } else if (moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0) {
@@ -155,7 +160,7 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
       }
     }
   });
-  
+
   if (stripeSubscriptionItemId) {
     stripe.getSubscriptionItem(stripeSubscriptionItemId).then(item => {
       stripe.updateSubscriptionItem(stripeSubscriptionItemId, {
