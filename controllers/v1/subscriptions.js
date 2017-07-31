@@ -317,7 +317,7 @@ function cancelSubscription(req, res, next) {
       subscription.stripeSubscriptionId = null;
       subscription.stripeSubscriptionItemId = null;
       if (user.addedBy) {
-        User.findOne({where: { id: user.addedBy }}).then(u => {
+        db.User.findOne({where: { id: user.addedBy }}).then(u => {
           subscriptionCancellationNotification(u);
         })
       } else {
