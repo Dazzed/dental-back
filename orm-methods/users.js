@@ -123,16 +123,21 @@ export const instance = {
       });
      const subList = [];
       for (const sub of subs) {
-        const plan = await sub.membership.getPlanCosts();
+        const plan = await sub.membership.getPlanCostsLocal();
         const subObj = sub.toJSON();
         subObj.membership = plan;
+        subObj.client.membership = subObj.client.clientSubscription;
+        subObj.client.status = subObj.client.clientSubscription.status;
+        subObj.client.subscriptionId = subObj.client.clientSubscription.id;
+        subObj.client.membershipId = subObj.client.clientSubscription.membership.id;
         if (subObj.client.members.length > 0 ) {
           for (const member of subObj.client.members) {
-            let { status, membership, id } = subs.find(s => s.client.id === member.id);
-            member.status = status;
-            member.membership = membership;
-            member.subscriptionId = id;
-            member.membershipId = membership.id;
+            const clientSubscription = subs.find(s => s.client.id === member.id);
+            member.clientSubscription = clientSubscription;
+            member.status = clientSubscription.status;
+            member.membership = clientSubscription.membership;
+            member.subscriptionId = clientSubscription.id;
+            member.membershipId = clientSubscription.membership.id;
           }
         }
         if (subObj.client.phoneNumbers.length > 0) {
@@ -651,16 +656,18 @@ export const model = {
    * @param {object} primaryMember - the parent user
    * @returns {Promise<Member>}
    */
-  addAdditionalMember(newMember, dentist, primaryMember) {
+  addAdditionalMember(newMember, dentistId, primaryMember) {
+    const memberId = primaryMember.client ? primaryMember.client.id : primaryMember.id;
+    const memberEmail = primaryMember.client ? primaryMember.client.email : primaryMember.email;
     newMember = {
       ...newMember,
-      addedBy: primaryMember.client.id,
-      email: _.replace(primaryMember.client.email, '@', `${uuid()}@`),
+      addedBy: memberId,
+      email: _.replace(memberEmail, '@', `${uuid()}@`),
       type: 'client',
     };
     return db.User.create(newMember)
     .then((member) => {
-      return member.createSubscription(newMember.membershipId, dentist.id, null)
+      return member.createSubscription(newMember.membershipId, dentistId, null)
       .then((subscription) => {
         let json = member.toJSON();
         if (subscription) {

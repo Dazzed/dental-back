@@ -36,6 +36,25 @@ export const instance = {
       })
       .catch(reject);
     });
+  },
+  getPlanCostsLocal() {
+    return new Promise((resolve, reject) => {
+      let price = parseInt(this.price);
+      let monthlyPrice = (this.type === 'month' ? price : (price / 12));
+      let annualPrice = (this.type === 'month' ? (price * 12) : price);
+      const type = (this.type === 'month' ? 'monthly' : 'annual');
+
+      // Convert to float
+      // Code commented out because we already convert it to actual dollar price and save it to the DB.
+      // monthlyPrice = monthlyPrice > 0 ? monthlyPrice / 100 : monthlyPrice;
+      // annualPrice = annualPrice > 0 ? annualPrice / 100 : annualPrice;
+      resolve({
+        type,
+        monthlyPrice,
+        annualPrice,
+        dentistId: this.get('userId')
+      });
+    });
   }
 };
 

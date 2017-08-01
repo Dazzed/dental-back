@@ -11,6 +11,7 @@ import stripe from '../stripe';
 import { BadRequestError } from '../errors';
 import { reenrollMember } from '../../utils/reenroll';
 import { changePlanUtil } from '../../utils/change_plan';
+import { subscriptionCancellationNotification } from '../sendgrid_mailer';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -315,6 +316,13 @@ function cancelSubscription(req, res, next) {
       subscription.status = 'canceled';
       subscription.stripeSubscriptionId = null;
       subscription.stripeSubscriptionItemId = null;
+      if (user.addedBy) {
+        db.User.findOne({where: { id: user.addedBy }}).then(u => {
+          subscriptionCancellationNotification(u);
+        })
+      } else {
+        subscriptionCancellationNotification(user);
+      }
       return subscription.save();
     })
     .then(() => res.send({ user }))
