@@ -182,7 +182,6 @@ async function updateDentistInfo(req, res, next) {
       });
     }
 
-    // TODO(sameep): Fix dentist edit form for memberships.
     if (membership.length > 0) {
       membership.forEach(m => {
         queries.push(
@@ -191,7 +190,9 @@ async function updateDentistInfo(req, res, next) {
           },
           {
             where: {
-              id: m.id
+              dentistInfoId: user.dentistInfo.id,
+              type: m.type,
+              subscription_age_group: m.subscription_age_group
             }
           })
         );
