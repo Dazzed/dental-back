@@ -65,13 +65,15 @@ function addMember(req, res, next) {
     member,
     parentMember
   } = req.body;
+  const dentistId = member.dentistId;
   Promise.resolve()
   .then(() => {
-    return db.User.addAdditionalMember(member, req.user, parentMember);
+    return db.User.addAdditionalMember(member, dentistId, parentMember);
   })
   .then((response) => {
     member = {...member, id: response.id};
-    subscribeNewMember(parentMember.client.id, member, response.subscription).then((stripeResponse) => {
+    const parentMemberId = parentMember.client ? parentMember.client.id : parentMember.id;
+    subscribeNewMember(parentMemberId, member, response.subscription).then((stripeResponse) => {
       res.status(HTTPStatus.CREATED);
       res.json({ data: response });
     }, (errors) => {

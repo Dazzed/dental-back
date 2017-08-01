@@ -656,16 +656,18 @@ export const model = {
    * @param {object} primaryMember - the parent user
    * @returns {Promise<Member>}
    */
-  addAdditionalMember(newMember, dentist, primaryMember) {
+  addAdditionalMember(newMember, dentistId, primaryMember) {
+    const memberId = primaryMember.client ? primaryMember.client.id : primaryMember.id;
+    const memberEmail = primaryMember.client ? primaryMember.client.email : primaryMember.email;
     newMember = {
       ...newMember,
-      addedBy: primaryMember.client.id,
-      email: _.replace(primaryMember.client.email, '@', `${uuid()}@`),
+      addedBy: memberId,
+      email: _.replace(memberEmail, '@', `${uuid()}@`),
       type: 'client',
     };
     return db.User.create(newMember)
     .then((member) => {
-      return member.createSubscription(newMember.membershipId, dentist.id, null)
+      return member.createSubscription(newMember.membershipId, dentistId, null)
       .then((subscription) => {
         let json = member.toJSON();
         if (subscription) {
