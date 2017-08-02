@@ -60,39 +60,40 @@ function getMembers(req, res, next) {
  * @param {Object} res - the express response
  * @param {Function} next - the express next request handler
  */
-function addMember(req, res, next) {
+async function addMember(req, res, next) {
   let {
     member,
     parentMember
   } = req.body;
   const dentistId = member.dentistId;
-  Promise.resolve()
-  .then(() => {
-    return db.User.addAdditionalMember(member, dentistId, parentMember);
-  })
-  .then((response) => {
-    member = {...member, id: response.id};
-    const parentMemberId = parentMember.client ? parentMember.client.id : parentMember.id;
-    subscribeNewMember(parentMemberId, member, response.subscription).then((stripeResponse) => {
-      res.status(HTTPStatus.CREATED);
-      res.json({ data: response });
-    }, (errors) => {
-      console.log("GOT ERRORS")
-      console.log(errors);
-      if (isPlainObject(errors)) {
-        next(new BadRequestError(errors));
-      }
+  const response = await db.User.addAdditionalMember(member, dentistId, parentMember);
 
-      next(errors);
-    });
-  })
-  .catch((errors) => {
+  member = {...member, id: response.id};
+  const parentMemberId = parentMember.client ? parentMember.client.id : parentMember.id;
+
+  try {
+    const stripeResponse = await subscribeNewMember(parentMemberId, member, response.subscription);
+    const sub = await db.Subscription.find({
+      where: { clientId: response.id },
+      include: [{
+        model: db.Membership,
+        as: 'membership'
+      }]
+    })
+    const newMemberInfo = response;
+    newMemberInfo.clientSubscription = sub.toJSON();
+    newMemberInfo.membershipId = newMemberInfo.clientSubscription.membershipId;
+    delete newMemberInfo.subscription;
+    res.status(HTTPStatus.CREATED);
+    res.json({ data: newMemberInfo });
+  } catch (errors) {
+    console.log("GOT ERRORS")
+    console.log(errors);
     if (isPlainObject(errors)) {
       next(new BadRequestError(errors));
     }
-
     next(errors);
-  });
+  }
 }
 
 /**
