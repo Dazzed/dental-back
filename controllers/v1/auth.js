@@ -231,11 +231,9 @@ function normalUserSignup(req, res, next) {
   })
   .catch((errors) => {
     const done = () => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
-
-      return next(errors);
+      res
+      .status(HTTPStatus.BAD_REQUEST)
+      .json(errors);
     };
 
     // Delete the user object that was created
