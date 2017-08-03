@@ -125,7 +125,7 @@ function getMember(req, res, next) {
  * @param {Function} next - the express next request handler
  */
 async function updateMember(req, res, next) {
-  const data = _.pick(req.body, ['firstName', 'lastName', 'birthDate',
+  const data = _.pick(req.body, ['firstName', 'lastName', 'birthDate', 'email',
     'familyRelationship', 'sex', 'city', 'state', 'zipCode', 'contactMethod']);
 
   let userId = req.params.memberId;
