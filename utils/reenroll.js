@@ -149,7 +149,9 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
     }
 
     if (membershipPlan.type === 'month') {
-      stripeSubscriptionId = sub.stripeSubscriptionId;
+      if (sub.membershipId === membershipPlan.id) {
+        stripeSubscriptionId = sub.stripeSubscriptionId;
+      }
     } else if (moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0) {
       stripeSubscriptionId = sub.stripeSubscriptionId;
     }

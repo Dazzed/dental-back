@@ -59,6 +59,39 @@ export const instance = {
     };
   },
 
+  async getMySubscriptionLocal() {
+    const userId = this.get('id');
+    let subscriptionObj = {};
+
+    if (this.get('type') === 'dentist') {
+      throw new Error('Dentist cannot have a subscription');
+    }
+
+    const sub = await db.Subscription.find({
+      where: { clientId: userId },
+      include: [{
+        model: db.Membership,
+        as: 'membership'
+      }]
+    });
+
+    if (!sub || !sub.membership) {
+      return {};
+    }
+
+    subscriptionObj = sub;
+    // const subDetails = await sub.getStripeDetails();
+    // subscriptionObj.started = subDetails.start;
+
+    const planCosts = await subscriptionObj.membership.getPlanCostsLocal();
+    return {
+      costs: planCosts,
+      since: subscriptionObj.started,
+      status: subscriptionObj.status,
+      plan: subscriptionObj.membership.name,
+    };
+  },
+
   /**
    * Retrieves reviews made against this dentist user
    *
@@ -189,7 +222,7 @@ export const instance = {
 
     const parsed = [];
     for (const user of users) {
-      const subscription = await user.getMySubscription();
+      const subscription = await user.getMySubscriptionLocal();
       const userParsed = user.toJSON();
       userParsed.subscription = subscription;
       userParsed.membershipId = userParsed.clientSubscription.membership.id;
