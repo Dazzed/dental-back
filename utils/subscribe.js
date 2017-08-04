@@ -1,5 +1,6 @@
 import db from '../models';
 import stripe from '../controllers/stripe';
+import { performEnrollment } from './reenroll';
 
 var async = require('async');
 var moment = require('moment');
@@ -181,162 +182,54 @@ export function subscribeUserAndMembers(req) {
   });
 }
 
-export function subscribeNewMember(primaryAccountHolderId, newMember, subscriptionObject) {
-
-  function getPaymentProfile(callback) {
-    db.PaymentProfile.find({
-      where: {
-        primaryAccountHolder: primaryAccountHolderId
-      }
-    }).then((profile) => {
-      if (!profile) {
-        return callback(`No payment Profile found with id ${primaryAccountHolderId}`);
-      }
-      return callback(null, profile);
-    }, (err) => {
-      return callback(err);
-    });
-  }
-
-  function getMembershipDetail(paymentProfile, callback) {
-    db.Membership.find({
+export async function subscribeNewMember(primaryAccountHolderId, newMember, subscriptionObject) {
+  try {
+    const membershipPlan = await db.Membership.findOne({
       where: {
         id: newMember.membershipId
       }
-    }).then((membership) => {
-      if (membership.type === 'year') {
-        return callback('ok', { membership, paymentProfile, subscriptionObject });
-      }
-      return callback(null, paymentProfile, membership);
-    }, err => {
-      return callback(err);
     });
-  }
 
-  function getUserSubscription(paymentProfile, membership, callback) {
-    db.Subscription.findOne({
+    const userSubscription = await db.Subscription.find({
       include: [{
         model: db.Membership,
         as: 'membership'
       }],
       where: {
         clientId: newMember.id,
-        dentistId: membership.userId,
-      }
-    }).then(userSubscription => {
-      const {
-        stripeSubscriptionId,
-        stripeSubscriptionItemId,
-        status
-      } = userSubscription;
-
-      // throw an error if the subscription is active
-      if (stripeSubscriptionId || stripeSubscriptionItemId || status === 'active') {
-        return callback("User already has an active subscription");
-      }
-      callback(null, paymentProfile, membership, userSubscription);
-    }, err => callback(err));
-  }
-
-  function getPrimaryUserSubscriptions(paymentProfile, membership, userSubscription, callback) {
-    db.Subscription.findAll({
-      include: [{
-        model: db.Membership,
-        as: 'membership',
-        where: {
-          type: membership.type
-        }
-      }],
-      where: {
-        dentistId: membership.userId,
-        paymentProfileId: paymentProfile.id,
-        status: 'active'
-      }
-    })
-      .then(subscriptions => {
-        return callback(null, subscriptions, membership, userSubscription);
-      }, err => callback(err));
-  }
-
-  function addMemberOperation(accountHolderSubscriptions, membershipPlan, userSubscription, callback) {
-    let stripeSubscriptionItemId;
-    let stripeSubscriptionId;
-    accountHolderSubscriptions.forEach(sub => {
-      if (membershipPlan.type === 'month') {
-        stripeSubscriptionId = sub.stripeSubscriptionId;
-      } else if (moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0) {
-        stripeSubscriptionId = sub.stripeSubscriptionId;
-      }
-      if (sub.membership.id === membershipPlan.id) {
-        if (membershipPlan.type === 'month' || (membershipPlan.type === 'year' && moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0)) {
-          stripeSubscriptionItemId = sub.stripeSubscriptionItemId;
-          stripeSubscriptionId = sub.stripeSubscriptionId;
-        }
+        dentistId: membershipPlan.userId
       }
     });
 
-    if (stripeSubscriptionItemId) {
-      stripe.getSubscriptionItem(stripeSubscriptionItemId).then(item => {
-        stripe.updateSubscriptionItem(stripeSubscriptionItemId, {
-          quantity: item.quantity + 1
-        })
-          .then(item => {
-            userSubscription.stripeSubscriptionId = stripeSubscriptionId;
-            userSubscription.stripeSubscriptionItemId = stripeSubscriptionItemId;
-            userSubscription.stripeSubscriptionIdUpdatedAt = moment();
-            userSubscription.status = 'active';
-            userSubscription.membershipId = membershipPlan.id;
-            userSubscription.save();
-            return callback(null, true);
-          });
-      }, err => callback(err));
-    } else if (stripeSubscriptionId) {
-      stripe.createSubscriptionItem({
-        subscription: stripeSubscriptionId,
-        plan: membershipPlan.stripePlanId,
-        quantity: 1,
-      }).then(item => {
-        userSubscription.stripeSubscriptionId = stripeSubscriptionId;
-        userSubscription.stripeSubscriptionItemId = item.id;
-        userSubscription.stripeSubscriptionIdUpdatedAt = moment();
-        userSubscription.status = 'active';
-        userSubscription.membershipId = membershipPlan.id;
-        userSubscription.save();
-        return callback(null, true);
-      });
-    } else {
-      db.PaymentProfile.findOne({
-        where: {
-          id: userSubscription.paymentProfileId
-        }
-      }).then(profile => {
-        stripe.createSubscription(membershipPlan.stripePlanId, profile.stripeCustomerId).then(sub => {
-          userSubscription.stripeSubscriptionId = sub.id;
-          userSubscription.stripeSubscriptionItemId = sub.items.data[0].id;
-          userSubscription.stripeSubscriptionIdUpdatedAt = moment();
-          userSubscription.status = 'active';
-          userSubscription.membershipId = membershipPlan.id;
-          userSubscription.save();
-          return callback(null, true);
-        }, err => callback(err));
-      }, err => callback(err));
-    }
-  }
+    const paymentProfile = await db.PaymentProfile.findOne({
+      where: {
+        primaryAccountHolder: primaryAccountHolderId
+      }
+    });
+    if (!paymentProfile) throw(`No payment Profile found with id ${primaryAccountHolderId}`);
 
-  return new Promise((resolve, reject) => {
-    // Waterfaller final callback has shouldContinue Bool flag to indicate if we have to create a new annual subscription for the
-    // new user. It is true when the new added member opts for annual subscription. So that we create a new subscription under
-    // the primary account holder.
-    waterfaller([
-      getPaymentProfile,
-      getMembershipDetail,
-      getUserSubscription,
-      getPrimaryUserSubscriptions,
-      addMemberOperation
-    ]).then(data => {
-      return resolve(data);
-    }, err => reject(err));
-  });
+    const accountHolderSubscriptions = await db.Subscription.findAll({
+      include: [{
+        model: db.Membership,
+        as: 'membership'
+      }],
+      where: {
+        dentistId: membershipPlan.userId,
+        paymentProfileId: paymentProfile.id,
+        status: 'active'
+      }
+    });
+
+    performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
+      if (err) {
+        throw err;
+      } else {
+        return data;
+      }
+    });
+  } catch (e) {
+    throw e;
+  }
 }
 
 /*

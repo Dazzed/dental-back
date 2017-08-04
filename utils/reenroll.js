@@ -144,7 +144,7 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
   const clientId = userSubscription.clientId;
 
   accountHolderSubscriptions.forEach(sub => {
-    if (sub.clientId !== clientId) {
+    if (sub.clientId === clientId) {
       return;
     }
 

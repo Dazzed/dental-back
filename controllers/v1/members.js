@@ -68,18 +68,18 @@ async function addMember(req, res, next) {
   const dentistId = member.dentistId;
   const response = await db.User.addAdditionalMember(member, dentistId, parentMember);
 
-  member = {...member, id: response.id};
+  member = { ...member, id: response.id };
   const parentMemberId = parentMember.client ? parentMember.client.id : parentMember.id;
 
   try {
-    const stripeResponse = await subscribeNewMember(parentMemberId, member, response.subscription);
+    const subscriptionProcess = await subscribeNewMember(parentMemberId, member, response.subscription);
     const sub = await db.Subscription.find({
       where: { clientId: response.id },
       include: [{
         model: db.Membership,
         as: 'membership'
       }]
-    })
+    });
     const newMemberInfo = response;
     newMemberInfo.clientSubscription = sub.toJSON();
     newMemberInfo.membershipId = newMemberInfo.clientSubscription.membershipId;
@@ -87,7 +87,7 @@ async function addMember(req, res, next) {
     res.status(HTTPStatus.CREATED);
     res.json({ data: newMemberInfo });
   } catch (errors) {
-    console.log("GOT ERRORS")
+    console.log('GOT ERRORS in addMember action');
     console.log(errors);
     if (isPlainObject(errors)) {
       next(new BadRequestError(errors));
