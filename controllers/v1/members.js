@@ -83,6 +83,7 @@ async function addMember(req, res, next) {
     const newMemberInfo = response;
     newMemberInfo.clientSubscription = sub.toJSON();
     newMemberInfo.membershipId = newMemberInfo.clientSubscription.membershipId;
+    newMemberInfo.clientSubscription.status = 'active';
     delete newMemberInfo.subscription;
     res.status(HTTPStatus.CREATED);
     res.json({ data: newMemberInfo });
