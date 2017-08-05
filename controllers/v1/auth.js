@@ -221,7 +221,7 @@ function normalUserSignup(req, res, next) {
     });
   })
   .then(() => {
-    Mailer.clientWelcomeEmail(res, userObj);
+
     const excludedKeys = ['hash', 'salt', 'verified', 'authorizeId',
       'paymentId', 'activationKey', 'resetPasswordKey', 'isDeleted'];
 

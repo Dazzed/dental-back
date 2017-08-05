@@ -1,6 +1,7 @@
 import db from '../models';
 import stripe from '../controllers/stripe';
 import { performEnrollment } from './reenroll';
+import Mailer from '../controllers/mailer';
 
 var async = require('async');
 var moment = require('moment');
@@ -44,7 +45,7 @@ function disambiguateSubscriptionId(subscriptionData, usersSubscription, dentist
 }
 
 // A function that collects the user and his related members information and creates a stripe subscription.
-export function subscribeUserAndMembers(req) {
+export function subscribeUserAndMembers(req, res) {
   const { user, paymentProfile: { stripeCustomerId } } = req.locals;
   // const { token } = req.params;
   const primaryUserSubscription = req.locals.subscription;
@@ -153,6 +154,7 @@ export function subscribeUserAndMembers(req) {
       promises.push(stripe.createSubscriptionWithItems(annualSubscriptionObject));
     }
     Promise.all(promises).then(data => {
+      Mailer.clientWelcomeEmail(res, req.locals.user);
       callback(null, data, usersSubscription, dentistPlans);
     }, err => {
       rollbackNewUser(usersSubscription).then(d => callback(err), e => callback(e));
