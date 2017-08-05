@@ -154,7 +154,9 @@ export function subscribeUserAndMembers(req) {
     }
     Promise.all(promises).then(data => {
       callback(null, data, usersSubscription, dentistPlans);
-    }, err => callback(err));
+    }, err => {
+      rollbackNewUser(usersSubscription).then(d => callback(err), e => callback(e));
+    });
   }
 
   function markSubscriptionsActive(subscriptionData, usersSubscription, dentistPlans, callback) {
@@ -206,7 +208,7 @@ export async function subscribeNewMember(primaryAccountHolderId, newMember, subs
         primaryAccountHolder: primaryAccountHolderId
       }
     });
-    if (!paymentProfile) throw(`No payment Profile found with id ${primaryAccountHolderId}`);
+    if (!paymentProfile) throw (`No payment Profile found with id ${primaryAccountHolderId}`);
 
     const accountHolderSubscriptions = await db.Subscription.findAll({
       include: [{
@@ -284,4 +286,28 @@ export function createNewAnnualSubscriptionLocal({ membership, paymentProfile })
         }, err => reject(err));
       }, err => reject(err));
   });
+}
+
+// Helper to clear user subscriptions and user records if his charge fails initially when he is registered.
+async function rollbackNewUser(usersSubscription, primaryUserSubscription) {
+  try {
+    const primaryAccountHolderId = primaryUserSubscription.clientId;
+
+    const deleteAddresses = await db.Address.destroy({ where: { userId: primaryAccountHolderId } });
+
+    const deletePhones = await db.Phone.destroy({ where: { userId: primaryAccountHolderId } });
+
+    let idsToDelete = usersSubscription.map(s => s.id);
+    const deleteSubscriptions = await db.Subscription.destroy({ where: { id: { $in: idsToDelete } } });
+
+    const deletePaymentProfile = await db.PaymentProfile.destroy({ where: { primaryAccountHolder: primaryAccountHolderId } });
+
+    idsToDelete = usersSubscription.map(s => s.clientId);
+    const deleteUsers = await db.User.destroy({ where: { id: { $in: idsToDelete } } });
+
+    return true;
+  } catch(e) {
+    console.log("Error in rollbackNewUser",e);
+    throw e;
+  }
 }
