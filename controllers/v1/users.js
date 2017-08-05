@@ -308,10 +308,10 @@ function addPaymentSource(req, res, next) {
 }
 
 function addPaymentSourceAndSubscribe(req, res) {
-  subscribeUserAndMembers(req).then(data => {
+  subscribeUserAndMembers(req, res).then(data => {
     res.status(200).send({});  
   }, err => {
-    res.status(500).send(err);
+    res.status(400).send(err);
   });
 }
 
