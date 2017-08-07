@@ -12,6 +12,10 @@
             "args": ["install"]
         },
         {
+            "taskName": "build",
+            "args": ["run", "debug"]
+        },
+        {
             "taskName": "update",
             "args": ["update"]
         },
@@ -22,6 +26,10 @@
         {
           "taskName": "dev",
           "args": ["run", "dev"]
+        },
+        {
+          "taskName": "debug",
+          "args": ["run", "debug"]
         },
         {
           "taskName": "migrate",

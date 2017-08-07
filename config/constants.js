@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const USER_ORIGIN_OPTIONS = ['external', 'internal'];
 
 // TODO: update with real data before go production
@@ -94,8 +96,12 @@ export const CONTACT_SUPPORT_EMAIL = 'info@dentalhq.com';
 export const EMAIL_SUBJECTS = {
   client: {
     welcome: 'Welcome to the Dental Marketplace!',
+    membershipPriceUpdate: 'Membership price update',
+    subscriptionChargeFailed: 'Recurring Payment Failure',
+    subscriptionCancellation: 'Subscription Cancellation'
   },
   dentist: {
+    welcome: 'Welcome to the Dental Marketplace!',
     activation_required: 'Activate Your Account',
     invite_patient: 'Invitation to join',
     new_patient: 'New Patient from DentalHQ',
@@ -103,15 +109,45 @@ export const EMAIL_SUBJECTS = {
   },
   activation_complete: 'Welcome to the Dental Marketplace!',
   contact_support: 'A New DentalHQ.com Contact Form Message',
+  password_reset: 'Password Reset Request',
 };
 
 
 export const SUBSCRIPTION_STATES = [
+  'trialing',
   'active',
-  'canceled',
   'inactive',
   'past_due',
+  'canceled',
+  'unpaid',
+  'expired'
 ];
+
+export const SUBSCRIPTION_STATES_LOOKUP = _.keyBy(SUBSCRIPTION_STATES, state => state);
+
+
+export const SUBSCRIPTION_TYPES = [
+  'month',
+  'year'
+];
+
+
+export const SUBSCRIPTION_TYPES_LOOKUP = {
+  month: SUBSCRIPTION_TYPES[0],
+  year: SUBSCRIPTION_TYPES[1],
+};
+
+
+export const SUBSCRIPTION_AGE_GROUPS = [
+  'adult',
+  'child'
+];
+
+
+export const SUBSCRIPTION_AGE_GROUPS_LOOKUP = {
+  adult: SUBSCRIPTION_AGE_GROUPS[0],
+  child: SUBSCRIPTION_AGE_GROUPS[1],
+};
 
 
 export const RECOMMENDED_DISCOUNT = 25;
@@ -197,3 +233,10 @@ export const CODES_FOR_CALC_FULL_COST = [
   '0220',
   '0140',
 ];
+
+export const AUTHORIZE_HOOK_EVENTS = {
+  REFUND_CREATED: 'net.authorize.payment.refund.created',
+  SUBSCRIPTION_SUSPENDED: 'net.authorize.customer.subscription.suspended',
+  SUBSCRIPTION_TERMINATED: 'net.authorize.customer.subscription.terminated',
+  SUBSCRIPTION_CANCELLED: 'net.authorize.customer.subscription.cancelled',
+};

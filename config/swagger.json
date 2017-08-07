@@ -70,44 +70,140 @@
                     }
                 }
             }
+          },
+          "401": {
+            "description": "Unauthorized access",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dentist/{officeId}/{year}/{month}/general": {
+      "get": {
+        "tags": [
+          "Admin Statistics"
+        ],
+        "summary": "General Office Revenue Report",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JWT",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The PDF report"
+          },
+          "403": {
+            "description": "Status 403",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "officeId",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The ID of the office to draw the report on"
         },
-        "/api/v1/dentist/{officeId}/{year}/{month}/general": {
-            "get": {
-                "tags": [
-                    "Admin Statistics"
-                ],
-                "summary": "General Office Revenue Report",
-                "parameters": [
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true,
-                        "type": "string",
-                        "description": "The JWT",
-                        "x-example": "JWT xxxxx.yyyyy.zzzzz"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The PDF report"
-                    }
-                }
-            },
-            "parameters": [
-                {
-                    "name": "officeId",
-                    "in": "path",
-                    "required": true,
-                    "type": "number",
-                    "description": "The ID of the office to draw the report on"
-                },
-                {
-                    "name": "year",
-                    "in": "path",
-                    "required": true,
-                    "type": "number",
-                    "description": "The year for which the report is compiled from",
-                    "x-example": 2017
+        {
+          "name": "year",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The year for which the report is compiled from",
+          "x-example": 2017
+        },
+        {
+          "name": "month",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The month for which the report is compiled from (1 - 12)",
+          "x-example": 2
+        }
+      ]
+    },
+    "/api/v1/reports/dentists/{year}/{month}": {
+      "get": {
+        "tags": [
+          "Admin Statistics"
+        ],
+        "summary": "Retrieve Master Report",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JWT",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The PDF report"
+          },
+          "403": {
+            "description": "Restricted to Admins only",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "year",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The year in which the report is to be labeled as"
+        },
+        {
+          "name": "month",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The month in which the report is to labeled as"
+        }
+      ]
+    },
+    "/api/v1/accounts/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "Attempts to login as user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "email",
+                "password"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "the email of the user account"
                 },
                 {
                     "name": "month",
@@ -744,89 +840,172 @@
                     "description": "the time when the record was last updated"
                 }
             }
-        },
-        "Membership": {
-            "type": "object",
-            "required": [
-                "activationCode",
-                "adultYearlyFeeActivated",
-                "childYearlyFeeActivated",
-                "createdAt",
-                "description",
-                "discount",
-                "id",
-                "isActive",
-                "monthly",
-                "name",
-                "price",
-                "recommendFee",
-                "updatedAt",
-                "withDiscount",
-                "yearly"
-            ],
-            "properties": {
-                "id": {
-                    "type": "number",
-                    "description": "unique identifier"
-                },
-                "name": {
-                    "type": "string",
-                    "description": "display name of the membership"
-                },
-                "price": {
-                    "type": "string",
-                    "description": "price of the membership"
-                },
-                "monthly": {
-                    "type": "string",
-                    "description": "the monthly cost"
-                },
-                "yearly": {
-                    "type": "string",
-                    "description": "the annual cost"
-                },
-                "withDiscount": {
-                    "type": "string",
-                    "description": "the cost altered with discount pricing"
-                },
-                "description": {
-                    "type": "string",
-                    "description": "a brief summary of the membership"
-                },
-                "activationCode": {
-                    "type": "string",
-                    "description": "the membership activation code"
-                },
-                "discount": {
-                    "type": "number",
-                    "description": "the discount"
-                },
-                "recommendFee": {
-                    "type": "boolean",
-                    "description": "true if recommendation fee is valid"
-                },
-                "isActive": {
-                    "type": "boolean",
-                    "description": "true if membership is valid"
-                },
-                "adultYearlyFeeActivated": {
-                    "type": "boolean",
-                    "description": "true if the adult yearly fee is to be used"
-                },
-                "childYearlyFeeActivated": {
-                    "type": "boolean",
-                    "description": "true if the child yearly fee is to be used"
-                },
-                "createdAt": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "the recorded start of the membership"
-                },
-                "updatedAt": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "the last time the membership record was updated"
+          }
+        }
+      }
+    },
+    "/api/v1/reports/dentist/{officeId}/general": {
+      "get": {
+        "tags": [
+          "Dentist Office"
+        ],
+        "summary": "Get Monthly Membership Report",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "description": "The JWT",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The PDF report"
+          },
+          "401": {
+            "description": "Status 401"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "officeId",
+          "in": "path",
+          "required": true,
+          "type": "number"
+        }
+      ]
+    },
+    "/api/v1/dentists/{dentistId}/{phoneId}": {
+      "get": {
+        "tags": [
+          "Dentists"
+        ],
+        "summary": "List Dentists",
+        "description": "Gets a specific dentist or all dentists",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JWT",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The dentist object",
+            "schema": {
+              "required": [
+                "data"
+              ],
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Dentist - User"
+                  }
                 }
+              }
+            }
+          },
+          "403": {
+            "description": "Status 403",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "dentistId",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The Dentist ID. (Leave empty if attempting to fetch all dentists)",
+          "x-example": 12
+        },
+        {
+          "name": "phoneId",
+          "in": "path",
+          "required": true,
+          "type": "number",
+          "description": "The Phone ID. (Must be provided if changing the phone number)"
+        }
+      ]
+    },
+    "/api/v1/pricing": {
+      "get": {
+        "tags": [
+          "Price Codes"
+        ],
+        "summary": "List Price Codes",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JSON Web Token",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of price codes submitted by all dentist offices",
+            "schema": {
+              "required": [
+                "data"
+              ],
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "description": "the response object",
+                  "items": {
+                    "$ref": "#/definitions/Price Code"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Status 403",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Price Codes"
+        ],
+        "summary": "Save new Price Code",
+        "consumes": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "The JSON Web Token",
+            "x-example": "JWT xxxxx.yyyyy.zzzzz"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Price Code"
+            },
+            "x-examples": {
+              "application/json": "{\n  \"description\": \"Periodic Exam\",\n  \"code\": \"0120\"\n}"
             }
         },
         "Price Code": {
@@ -845,6 +1024,614 @@
                     "description": "the pricing code"
                 }
             }
+          },
+          "403": {
+            "description": "Status 403",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
         }
+      }
     }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "required": [
+        "accountHolder",
+        "addedBy",
+        "avatar",
+        "birthDate",
+        "cancellationFee",
+        "cancellationFeeWaiver",
+        "city",
+        "contactMethod",
+        "createdAt",
+        "email",
+        "familyRelationship",
+        "firstName",
+        "isDeleted",
+        "lastName",
+        "middleName",
+        "origin",
+        "payingMember",
+        "reEnrollmentFee",
+        "reEnrollmentFeeWaiver",
+        "sex",
+        "state",
+        "termsAndConditions",
+        "type",
+        "updatedAt",
+        "waiverCreatedAt",
+        "zipCode"
+      ],
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "the id of the user"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "the first name of the user"
+        },
+        "middleName": {
+          "type": "string",
+          "description": "the middle name of the user"
+        },
+        "lastName": {
+          "type": "string",
+          "description": "the last name of the user"
+        },
+        "birthDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "when the user was born"
+        },
+        "email": {
+          "type": "string",
+          "description": "the user's email"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "the url to the user's image"
+        },
+        "city": {
+          "type": "string",
+          "description": "the city location"
+        },
+        "state": {
+          "type": "string",
+          "description": "the state location"
+        },
+        "zipCode": {
+          "type": "string",
+          "description": "the zipcode location"
+        },
+        "sex": {
+          "type": "string",
+          "description": "the user's gender"
+        },
+        "contactMethod": {
+          "type": "string",
+          "description": "preferred method of contact"
+        },
+        "accountHolder": {
+          "type": "boolean",
+          "description": "true if the user is the family account holder"
+        },
+        "payingMember": {
+          "type": "boolean",
+          "description": "true if the user is a paying customer"
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "description": "true if the user is deleted"
+        },
+        "type": {
+          "type": "string",
+          "description": "specifies the user's account type"
+        },
+        "familyRelationship": {
+          "type": "string",
+          "description": "specifies the user's family relationship"
+        },
+        "origin": {
+          "type": "string",
+          "description": "the origin of the user",
+          "enum": [
+            "external",
+            "internal"
+          ]
+        },
+        "cancellationFee": {
+          "type": "boolean",
+          "description": "true if the user incurs a cancellation fee"
+        },
+        "reEnrollmentFee": {
+          "type": "boolean",
+          "description": "true if the user incurs a re-enrollment fee"
+        },
+        "cancellationFeeWaiver": {
+          "type": "boolean",
+          "description": "true if the cancellation fee should be waived"
+        },
+        "reEnrollmentFeeWaiver": {
+          "type": "boolean",
+          "description": "true if the re-enrollment fee should be waived"
+        },
+        "termsAndConditions": {
+          "type": "boolean",
+          "description": "true if the user accepted terms and conditions"
+        },
+        "waiverCreatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time when the waiver was created"
+        },
+        "addedBy": {
+          "type": "number",
+          "description": "the associated user who added this user"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time when the user was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the last time the user was updated"
+        }
+      },
+      "description": "The user object"
+    },
+    "Dentist": {
+      "type": "object",
+      "required": [
+        "acceptsChildren",
+        "address",
+        "childMembership",
+        "childMembershipId",
+        "city",
+        "createdAt",
+        "email",
+        "id",
+        "logo",
+        "membership",
+        "message",
+        "officeImages",
+        "officeName",
+        "phone",
+        "state",
+        "updatedAt",
+        "url",
+        "workingHours",
+        "zipCode"
+      ],
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "the unique id of the user"
+        },
+        "officeName": {
+          "type": "string",
+          "description": "the dentist office name"
+        },
+        "url": {
+          "type": "string",
+          "description": "the url of the office"
+        },
+        "email": {
+          "type": "string",
+          "description": "the email of the office"
+        },
+        "phone": {
+          "type": "string",
+          "description": "the phone number for the office"
+        },
+        "message": {
+          "type": "string",
+          "description": "the office message"
+        },
+        "address": {
+          "type": "string",
+          "description": "address of the office"
+        },
+        "city": {
+          "type": "string",
+          "description": "city of the office"
+        },
+        "state": {
+          "type": "string",
+          "description": "state of the office"
+        },
+        "zipCode": {
+          "type": "string",
+          "description": "zip-code for the office"
+        },
+        "acceptsChildren": {
+          "type": "boolean",
+          "description": "true if the office accepts children as members"
+        },
+        "childStartingAge": {
+          "type": "number",
+          "description": "the starting age for child members if accepted"
+        },
+        "logo": {
+          "type": "string",
+          "description": "AWS S3 URL for the dentist office logo"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "when the office record was first created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "last time the office record was updated"
+        },
+        "childMembershipId": {
+          "type": "number",
+          "description": "the child membership ID"
+        },
+        "workingHours": {
+          "type": "array",
+          "description": "the hours of the week for when the office is open",
+          "items": {
+            "$ref": "#/definitions/Work Hours"
+          }
+        },
+        "membership": {
+          "$ref": "#/definitions/Membership"
+        },
+        "childMembership": {
+          "$ref": "#/definitions/Membership"
+        },
+        "officeImages": {
+          "type": "array",
+          "description": "collection of image URLs from AWS S3 bucket",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "The DentalHQ user object"
+    },
+    "Dentist - User": {
+      "type": "object",
+      "required": [
+        "accountHolder",
+        "addedBy",
+        "avatar",
+        "birthDate",
+        "cancellationFee",
+        "cancellationFeeWaiver",
+        "city",
+        "contactMethod",
+        "createdAt",
+        "dentistInfo",
+        "dentistSpecialtyId",
+        "email",
+        "familyRelationship",
+        "firstName",
+        "isDeleted",
+        "lastName",
+        "middleName",
+        "origin",
+        "payingMember",
+        "reEnrollmentFee",
+        "reEnrollmentFeeWaiver",
+        "sex",
+        "state",
+        "termsAndConditions",
+        "type",
+        "updatedAt",
+        "waiverCreatedAt",
+        "zipCode"
+      ],
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "the id of the user"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "the first name of the user"
+        },
+        "middleName": {
+          "type": "string",
+          "description": "the middle name of the user"
+        },
+        "lastName": {
+          "type": "string",
+          "description": "the last name of the user"
+        },
+        "birthDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "when the user was born"
+        },
+        "email": {
+          "type": "string",
+          "description": "the user's email"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "the url to the user's image"
+        },
+        "city": {
+          "type": "string",
+          "description": "the city location"
+        },
+        "state": {
+          "type": "string",
+          "description": "the state location"
+        },
+        "zipCode": {
+          "type": "string",
+          "description": "the zipcode location"
+        },
+        "sex": {
+          "type": "string",
+          "description": "the user's gender"
+        },
+        "contactMethod": {
+          "type": "string",
+          "description": "preferred method of contact"
+        },
+        "accountHolder": {
+          "type": "boolean",
+          "description": "true if the user is the family account holder"
+        },
+        "payingMember": {
+          "type": "boolean",
+          "description": "true if the user is a paying customer"
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "description": "true if the user is deleted"
+        },
+        "type": {
+          "type": "string",
+          "description": "specifies the user's account type"
+        },
+        "familyRelationship": {
+          "type": "string",
+          "description": "specifies the user's family relationship"
+        },
+        "origin": {
+          "type": "string",
+          "description": "the origin of the user",
+          "enum": [
+            "external",
+            "internal"
+          ]
+        },
+        "cancellationFee": {
+          "type": "boolean",
+          "description": "true if the user incurs a cancellation fee"
+        },
+        "reEnrollmentFee": {
+          "type": "boolean",
+          "description": "true if the user incurs a re-enrollment fee"
+        },
+        "cancellationFeeWaiver": {
+          "type": "boolean",
+          "description": "true if the cancellation fee should be waived"
+        },
+        "reEnrollmentFeeWaiver": {
+          "type": "boolean",
+          "description": "true if the re-enrollment fee should be waived"
+        },
+        "termsAndConditions": {
+          "type": "boolean",
+          "description": "true if the user accepted terms and conditions"
+        },
+        "waiverCreatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time when the waiver was created"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time when the user was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the last time the user was updated"
+        },
+        "dentistSpecialtyId": {
+          "type": "number",
+          "description": "the user's dentist specialty"
+        },
+        "addedBy": {
+          "type": "number",
+          "description": "the associated user account who added this user"
+        },
+        "dentistInfo": {
+          "$ref": "#/definitions/Dentist"
+        }
+      },
+      "description": "The user dentist object"
+    },
+    "Work Hours": {
+      "type": "object",
+      "required": [
+        "createdAt",
+        "day",
+        "endAt",
+        "id",
+        "isOpen",
+        "startAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "unique identifier"
+        },
+        "day": {
+          "type": "string",
+          "description": "day of the week",
+          "enum": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ]
+        },
+        "isOpen": {
+          "type": "boolean",
+          "description": "true if the office is open on the day"
+        },
+        "startAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time office opens"
+        },
+        "endAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time office closes"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time when the record was first created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the time when the record was last updated"
+        }
+      }
+    },
+    "Membership": {
+      "type": "object",
+      "required": [
+        "activationCode",
+        "adultYearlyFeeActivated",
+        "childYearlyFeeActivated",
+        "createdAt",
+        "description",
+        "discount",
+        "id",
+        "isActive",
+        "monthly",
+        "name",
+        "price",
+        "recommendFee",
+        "updatedAt",
+        "withDiscount",
+        "yearly"
+      ],
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "unique identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "display name of the membership"
+        },
+        "price": {
+          "type": "string",
+          "description": "price of the membership"
+        },
+        "monthly": {
+          "type": "string",
+          "description": "the monthly cost"
+        },
+        "yearly": {
+          "type": "string",
+          "description": "the annual cost"
+        },
+        "withDiscount": {
+          "type": "string",
+          "description": "the cost altered with discount pricing"
+        },
+        "description": {
+          "type": "string",
+          "description": "a brief summary of the membership"
+        },
+        "activationCode": {
+          "type": "string",
+          "description": "the membership activation code"
+        },
+        "discount": {
+          "type": "number",
+          "description": "the discount"
+        },
+        "recommendFee": {
+          "type": "boolean",
+          "description": "true if recommendation fee is valid"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "true if membership is valid"
+        },
+        "adultYearlyFeeActivated": {
+          "type": "boolean",
+          "description": "true if the adult yearly fee is to be used"
+        },
+        "childYearlyFeeActivated": {
+          "type": "boolean",
+          "description": "true if the child yearly fee is to be used"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the recorded start of the membership"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "the last time the membership record was updated"
+        }
+      }
+    },
+    "Price Code": {
+      "type": "object",
+      "required": [
+        "code",
+        "description"
+      ],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "the laymen explanation of the price code"
+        },
+        "code": {
+          "type": "string",
+          "description": "the pricing code"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "required": [
+        "error"
+      ],
+      "properties": {
+        "error": {
+          "required": [
+            "statusCode"
+          ],
+          "type": "object",
+          "properties": {
+            "statusCode": {
+              "type": "number",
+              "description": "the status code"
+            }
+          }
+        }
+      }
+    }
+  }
 }

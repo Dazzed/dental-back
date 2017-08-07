@@ -1,13 +1,14 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
 import { Router } from 'express';
 
 import db from '../../models';
 import { userRequired, adminRequired } from '../middlewares';
-// import { BadRequestError } from '../errors';
-
-const router = new Router({ mergeParams: true });
+import { BadRequestError } from '../errors';
 
 // ────────────────────────────────────────────────────────────────────────────────
-// HANDLERS
+// ROUTER
 
 /**
  * Retrieves dentist offices count
@@ -18,7 +19,7 @@ function getDentistsCount() {
   return new Promise((resolve, reject) => {
     db.DentistInfo.count({
       where: { id: { gt: 0 } }
-    }).then(count => {
+    }).then((count) => {
       resolve({ dentistOfficeCount: count });
     }).catch(err => reject(err));
   });
@@ -33,7 +34,7 @@ function getActiveUserCount() {
   return new Promise((resolve, reject) => {
     db.User.count({
       where: { verified: true }
-    }).then(count => {
+    }).then((count) => {
       resolve({ activeUserCount: count });
     }).catch(err => reject(err));
   });
@@ -44,19 +45,26 @@ function getActiveUserCount() {
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
+ * @param {Function} next - the express next request handler
  */
-function getStats(req, res) {
+function getStats(req, res, next) {
   Promise.all([
     getDentistsCount(),
     getActiveUserCount(),
-  ]).then(stats => {
+  ]).then((stats) => {
     res.json({ data: stats.reduce((a, b) => Object.assign(a, b)) });
-  });
+  }).catch(err => next(new BadRequestError(err)));
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
-// ROUTES
+// ENDPOINTS
 
-router.route('/').get(userRequired, adminRequired, getStats);
+const router = new Router({ mergeParams: true });
+
+router.route('/')
+  .get(
+    userRequired,
+    adminRequired,
+    getStats);
 
 export default router;

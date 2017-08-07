@@ -1,23 +1,22 @@
-/* eslint consistent-return:0, no-else-return: 0 */
+/* eslint consistent-return:0, no-else-return: 0, max-len:0 */
+// ────────────────────────────────────────────────────────────────────────────────
+
 import { Router } from 'express';
-import passport from 'passport';
 import moment from 'moment';
-import isPlainObject from 'is-plain-object';
 import _ from 'lodash';
 
 import {
-  ensureCreditCard
-} from '../payments';
-
-import {
-  instance as UserInstance,
-} from '../../orm-methods/users';
-
-import {
+  userRequired,
+  dentistRequired,
+  injectSubscribedPatient,
   adminRequired,
+  validateBody,
 } from '../middlewares';
 
 import db from '../../models';
+
+import stripe from '../stripe';
+
 import { mailer } from '../../services/mailer';
 
 import {
@@ -31,12 +30,10 @@ import {
 } from '../../config/constants';
 
 import {
-  REVIEW,
+  UPDATE_DENTIST,
   INVITE_PATIENT,
   CONTACT_SUPPORT,
-  WAIVE_CANCELLATION,
   PATIENT_CARD_UPDATE,
-  UPDATE_DENTIST,
 } from '../../utils/schema-validators';
 
 import {
@@ -44,10 +41,19 @@ import {
   NotFoundError
 } from '../errors';
 
+// ────────────────────────────────────────────────────────────────────────────────
+// HELPERS
 
-const router = new Router({ mergeParams: true });
+const CONTACT_SUPPORT_NO_AUTH = (
+  Object.assign({
+    name: { notEmpty: true },
+    email: { notEmpty: true, isEmail: true }
+  }, CONTACT_SUPPORT)
+);
 
+// ────────────────────────────────────────────────────────────────────────────────
 
+/** Gets time in pacific standard time */
 function getDateTimeInPST() {
   const now = moment();
   const time = now.format('h:mm a');
@@ -57,210 +63,35 @@ function getDateTimeInPST() {
 }
 
 /**
- * Prepares a promise for fetching a dentist's information
+ * Invites a patient to register with a dentist office
  *
- * @param {object} req - the express request object
- * @param {object} res - the express response object
- * @param {function} next - the next web action to be triggered
- * @return {Promise<Dentist>}
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
  */
-function fetchDentist(userId) {
-  return new Promise((resolve, reject) => {
-    UserInstance.getFullDentist(userId)
-    .then(resolve)
-    .catch(reject);
-  });
-}
-
-/**
- * Obtains the details of one or several dentists
- *
- * @param {object} req - the express request object
- * @param {object} res - the express response object
- * @param {function} next - the next web action to be triggered
- */
-function listDentists(req, res, next) {
-  if (req.params.userId) {
-    // Fetch specific dentist info
-    fetchDentist(req.params.userId)
-    .then(dentist => res.json({ data: dentist }))
-    .catch(err => next(new BadRequestError(err)));
-  } else {
-    // Get all dentist info
-    db.User.findAll({
-      where: { type: 'dentist' },
-      attributes: ['id'],
-    })
-    .then(users => {
-      Promise.all(users.map(u => fetchDentist(u.id)))
-      .then(dentists => res.json({ data: dentists }))
-      .catch(err => next(new BadRequestError(err)));
-    })
-    .catch(err => next(new BadRequestError(err)));
-  }
-}
-
-function addReview(req, res, next) {
-  req.checkBody(REVIEW);
-
-  const errors = req.validationErrors(true);
-
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
-  db.Review.create({
-    title: req.body.title || '',
-    message: req.body.message,
-    rating: req.body.rating,
-    isAnonymous: req.body.isAnonymous,
-    clientId: req.user.get('id'),
-    dentistId: req.params.userId,
-  });
-
-  // get the dentist user from the database.
-  db.User.findById(req.params.userId).then(dentist => {
-    if (dentist) {
-      // send new review email notification to dentist.
-      mailer.sendEmail(res.mailer, {
-        template: 'dentists/new_review',
-        subject: EMAIL_SUBJECTS.dentist.new_review,
-        user: dentist
-      }, {
-        emailBody: dentistMessages.new_review.body
-      });
-
-      // create a new notification for the dentist about new review.
-      dentist.createNotification({
-        title: dentistMessages.new_review.title,
-        body: dentistMessages.new_review.body
-      });
-    }
-  });
-
-  return res.json({});
-}
-
-
-function updateReview(req, res, next) {
-  req.checkBody(REVIEW);
-
-  const errors = req.validationErrors(true);
-
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
-  return db.Review.find({
-    where: {
-      id: req.params.reviewId,
-      clientId: req.user.get('id')
-    }
-  })
-  .then(review => {
-    if (!review) return next(new NotFoundError());
-
-    review.update({
-      title: req.body.title || '',
-      message: req.body.message,
-      rating: req.body.rating,
-      isAnonymous: req.body.isAnonymous
-    });
-
-    return res.json({});
-  })
-  .catch(errs => next(new BadRequestError(errs)));
-}
-
-
-function deleteReview(req, res) {
-  db.Review.destroy({
-    where: {
-      id: req.params.reviewId,
-      clientId: req.user.get('id')
-    }
-  });
-
-  return res.json({});
-}
-
 function invitePatient(req, res, next) { // eslint-disable-line
-  req.checkBody(INVITE_PATIENT);
-
-  const errors = req.validationErrors(true);
-
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
   res.mailer.send('auth/dentist/invite_patient', {
     to: req.body.email,
     subject: EMAIL_SUBJECTS.dentist.invite_patient,
     site: process.env.SITE,
     dentist: req.user,
     message: req.body.message,
-  }, (err, info) => {
+  }, (err) => {
     if (err) {
-      console.log(err);
-      return next(new BadRequestError({}));
+      next(new BadRequestError({}));
+    } else {
+      res.json({});
     }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(info);
-    }
-
-    return res.json({});
   });
 }
 
-
-function contactSupport(req, res, next) { // eslint-disable-line
-  req.checkBody(CONTACT_SUPPORT);
-
-  const errors = req.validationErrors(true);
-
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
-  res.mailer.send('contact-support/index', {
-    to: CONTACT_SUPPORT_EMAIL, // process.env.CONTACT_SUPPORT_EMAIL ??
-    replyTo: req.user.get('email'),
-    subject: EMAIL_SUBJECTS.contact_support,
-    site: process.env.SITE,
-    dentist: req.user,
-    email: req.user.get('email'),
-    time: getDateTimeInPST(),
-    message: req.body.message,
-  }, (err, info) => {
-    if (err) {
-      console.log(err);
-      return next(new BadRequestError({}));
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(info);
-    }
-
-    return res.json({});
-  });
-}
-
-
-function contactSupportNoAuth(req, res, next) { // eslint-disable-line
-  req.checkBody(
-    Object.assign({
-      name: { notEmpty: true },
-      email: { notEmpty: true, isEmail: true }
-    }, CONTACT_SUPPORT)
-  );
-
-  const errors = req.validationErrors(true);
-
-  if (errors) {
-    return next(new BadRequestError(errors));
-  }
-
+/**
+ * Contacts support without being logged in
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ */
+function contactSupportNoAuth(req, res) {
   res.mailer.send('contact-support/index', {
     to: CONTACT_SUPPORT_EMAIL, // process.env.CONTACT_SUPPORT_EMAIL ??
     replyTo: req.body.email,
@@ -273,242 +104,192 @@ function contactSupportNoAuth(req, res, next) { // eslint-disable-line
   }, (err, info) => {
     if (err) {
       console.log(err);
-      return next(new BadRequestError({}));
+      res.json(new BadRequestError({}));
     }
 
     if (process.env.NODE_ENV === 'development') {
       console.log(info);
     }
 
-    return res.json({});
+    res.json({});
   });
 }
 
+/**
+ * Updates a Patient Card
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ */
+function updatePatientCard(req, res) {
+  let patient = req.locals.client;
+  // let dentist = req.user;
 
-function getSubscribedPatient(req, res, next) {
-  db.Subscription.findOne({
-    where: {
-      clientId: req.params.patientId,
-      dentistId: req.user.get('id')
-    },
-    include: [{
-      model: db.User,
-      as: 'client',
-      attributes: {
-        exclude: ['resetPasswordKey', 'salt', 'activationKey', 'verified']
-      }
-    }]
-  })
-  .then((subscription) => {
-    if (!subscription || !subscription.get('client')) throw new NotFoundError();
-    req.locals.client = subscription.get('client');
-    return next();
-  })
-  .catch(next);
-}
+  patient.getPaymentProfile()
+  .then((paymentProfile) => {
+    if(!paymentProfile.primaryAccountHolder) {
+      return res.json(new BadRequestError('Cannot update the card of a non-primary account holder patient.'));
+    }
 
-
-function waiveCancellationFee(req, res, next) {
-  req.checkBody(WAIVE_CANCELLATION);
-
-  req
-    .asyncValidationErrors(true)
-    .then(() => {
-      const body = _.pick(req.body, ['cancellationFee', 'reEnrollmentFee']);
-      return req.locals.client.update(body);
+    return stripe.updateCustomer(paymentProfile.stripeCustomerId, {
+      source: req.body.stripeToken
     })
-    .then((user) => res.json({ data: user.toJSON() }))
-    .catch((errors) => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
-
-      return next(errors);
-    });
-}
-
-
-function validateCreditCard(req, res, next) {
-  ensureCreditCard(req.locals.client, req.body.card)
-    .then(user => {
-      req.locals.chargeTo = user;
-      return next();
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors.json)) {
-        return next(new BadRequestError(errors.json));
-      }
-
-      return next(errors);
-    });
-}
-
-
-function updatePatientCard(req, res, next) {
-  req.checkBody(PATIENT_CARD_UPDATE);
-  // req.checkBody([
-  //   'periodontalDiseaseWaiver',
-  //   'cancellationFeeWaiver',
-  //   'reEnrollmentFeeWaiver',
-  //   'termsAndConditions'
-  // ], 'Please accept all conditions').equals(true);
-
-  req
-    .asyncValidationErrors(true)
     .then(() => {
-      const body = _.pick(req.body, [
+      let patientUpdate = _.pick(req.body, [
         'periodontalDiseaseWaiver',
         'cancellationFeeWaiver',
         'reEnrollmentFeeWaiver',
         'termsAndConditions'
       ]);
 
-      if (!req.locals.client.get('waiverCreatedAt')) {
-        body.waiverCreatedAt = new Date();
+      if(!patient.get('waiverCreatedAt')) {
+        patientUpdate.waiverCreatedAt = new Date();
       }
 
-      return req.locals.client.update(body);
-    })
-    .then(() => {
-      const client = req.locals.client.toJSON();
-      // updateCreditCard(req.locals.client.get('id'));
-      delete client.authorizeId;
-      delete client.paymentId;
-
-      return res.json({ data: client });
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
-      }
-
-      return next(errors);
+      patient.update(patientUpdate)
+      .then(() => {
+        return res.json({ data : patient.get({plain: true}) });
+      });
     });
+  });
+}
+
+/**
+ * Gets a dentist record without authorization
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - the express next request handler
+ */
+function getDentistNoAuth(req, res, next) {
+  db.User.findOne({
+    attributes: ['id'],
+    where: {
+      id: req.params.dentistId,
+      type: 'dentist',
+    },
+  })
+  .then((user) => {
+    if (user) return user.getFullDentist();
+    return null;
+  })
+  .then((user) => {
+    delete user.dentistInfo.priceCodes;
+    delete user.dentistInfo.activeMemberCount;
+    let data = user || {};
+    data = {
+      ...data,
+      stripe_public_key: process.env.STRIPE_PUBLIC_KEY
+    };
+    res.json({ data });
+  })
+  .catch(err => next(new BadRequestError(err)));
+}
+
+/**
+ * Lists all dentists in DentalHQ
+ *
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - the express next request handler
+ */
+function listDentists(req, res, next) {
+  db.User.findAll({ where: { type: 'dentist' } })
+  .then(dentists => Promise.all(dentists.map(d => d.getFullDentist())))
+  .then((dentists) => {
+    dentists = dentists.map(d => _(d).omit(['email', 'priceCodes', 'activeMemberCount']));
+    res.json({ data: dentists });
+  })
+  .catch(err => next(new BadRequestError(err)));
+}
+
+function getDentist(req, res, next) {
+  db.User.findOne({ where: { id: req.params.dentistId, type: 'dentist' } })
+  .then(d => d.getFullDentist())
+  .then((d) => {
+    d = _(d).omit(['email', 'priceCodes', 'activeMemberCount']);
+    res.json({ data: d });
+  })
+  .catch(err => next(new BadRequestError(err)));
 }
 
 /**
  * Updates a single dentist user
  *
- * @param {object} req - the express request object
- * @param {object} res - the express response object
- * @param {function} next - the next web action to be triggered
+ * @param {Object} req - express request
+ * @param {Object} res - express response
+ * @param {Function} next - next middleware function
  */
 function updateDentist(req, res, next) {
-  if (req.params.userId) {
-    req.checkBody(UPDATE_DENTIST);
-
-    req
-    .asyncValidationErrors(true)
-    .then(() => {
-      // Update the dentist account but only with allowed fields
-      (new Promise((resolve, reject) => {
-        const body = _.pick(req.body, EDIT_USER_BY_ADMIN);
-        if (req.body.phoneNumber) {
-          // Update the users phone number as well
-          db.Phone.update({ number: req.body.phoneNumber }, {
-            where: { userId: req.params.userId },
-          })
-          .then(() => resolve(body))
-          .catch(reject);
-        } else {
-          resolve(body);
-        }
-      })).then((body = {}) => {
-        // Update the user account
-        db.User.update(body, {
-          where: { id: req.params.userId, type: 'dentist' },
+  if (req.params.dentistId) {
+    // Update the dentist account but only with allowed fields
+    (new Promise((resolve, reject) => {
+      const body = _.pick(req.body, EDIT_USER_BY_ADMIN);
+      if (req.body.phoneNumber) {
+        // Update the users phone number as well
+        db.Phone.update({ number: req.body.phoneNumber }, {
+          where: { userId: req.params.dentistId },
         })
-        .then(() => res.json({ data: { success: true } }))
-        .catch(err => next(new BadRequestError(err)));
-      }).catch(() => next(new BadRequestError('Failed to update the user')));
-    })
-    .catch((errors) => {
-      if (isPlainObject(errors)) {
-        return next(new BadRequestError(errors));
+        .then(() => resolve(body))
+        .catch(reject);
+      } else {
+        resolve(body);
       }
-
-      return next(errors);
-    });
+    })).then((body = {}) => {
+      // Update the user account
+      db.User.update(body, {
+        where: { id: req.params.dentistId, type: 'dentist' },
+      })
+      .then(() => res.json({ data: { success: true } }))
+      .catch(err => next(new BadRequestError(err)));
+    }).catch(() => next(new BadRequestError('Failed to update the dentist')));
   } else {
-    next(new BadRequestError('Requested user does not exist'));
+    next(new BadRequestError('Requested dentist does not exist'));
   }
 }
 
-function getDentistNoAuth(req, res, next) {
-  db.User.findOne({
-    attributes: ['id'],
-    where: {
-      id: req.params.userId,
-      type: 'dentist'
-    }
-  })
-  .then(user => {
-    if (user) return user.getFullDentist();
-    return null;
-  })
-  .then(user => {
-    res.json({ data: user ? user.toJSON() : {} || {} });
-  })
-  .catch(next);
-}
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTES
+
+const router = new Router({ mergeParams: true });
 
 router
-  .route('/:userId/review')
-  .post(
-    passport.authenticate('jwt', { session: false }),
-    addReview);
-
-router
-  .route('/:userId/review/:reviewId')
+  .route('/patients/:patientId/update-card')
   .put(
-    passport.authenticate('jwt', { session: false }),
-    updateReview)
-  .delete(
-    passport.authenticate('jwt', { session: false }),
-    deleteReview);
-
-router
-  .route('/:userId/patients/:patientId/waive-fees')
-  .put(
-    passport.authenticate('jwt', { session: false }),
-    getSubscribedPatient,
-    waiveCancellationFee);
-
-router
-  .route('/:userId/patients/:patientId/update-card')
-  .put(
-    passport.authenticate('jwt', { session: false }),
-    getSubscribedPatient,
-    validateCreditCard,
+    userRequired,
+    dentistRequired,
+    validateBody(PATIENT_CARD_UPDATE),
+    injectSubscribedPatient(),
     updatePatientCard);
 
 router
-  .route('/:userId/no-auth')
+  .route('/details/:dentistId/no-auth')
   .get(getDentistNoAuth);
 
 router
-  .route('/:userId/invite_patient')
+  .route('/invite_patient')
   .post(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
+    validateBody(INVITE_PATIENT),
     invitePatient);
 
 router
-  .route('/:userId/contact_support')
-  .post(contactSupportNoAuth);
+  .route('/contact_support')
+  .post(
+    validateBody(CONTACT_SUPPORT_NO_AUTH),
+    contactSupportNoAuth);
 
 router
-  .route('/:userId?/:phoneId?')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    adminRequired,
-    listDentists)
+  .route('/details/all')
+  .get(listDentists);
+
+router
+  .route('/details/:dentistId')
+  .get(getDentist)
   .put(
-    passport.authenticate('jwt', { session: false }),
+    userRequired,
     adminRequired,
+    validateBody(UPDATE_DENTIST),
     updateDentist);
 
-module.exports = {
-  dentists: router,
-  listDentists,
-  updateDentist,
-};
+export default router;

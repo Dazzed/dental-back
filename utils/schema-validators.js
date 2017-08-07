@@ -2,7 +2,8 @@ import {
   SEX_TYPES,
   PREFERRED_CONTACT_METHODS,
   MEMBER_RELATIONSHIP_TYPES,
-  USER_ORIGIN_OPTIONS
+  USER_ORIGIN_OPTIONS,
+  SUBSCRIPTION_TYPES,
 } from '../config/constants';
 
 
@@ -10,7 +11,8 @@ export const PATIENT_CARD_UPDATE = {
   periodontalDiseaseWaiver: { notEmpty: true },
   cancellationFeeWaiver: { notEmpty: true },
   reEnrollmentFeeWaiver: { notEmpty: true },
-  termsAndConditions: { notEmpty: true }
+  termsAndConditions: { notEmpty: true },
+  stripeToken: { notEmpty: true }
 };
 
 
@@ -48,13 +50,11 @@ export const NEW_PASSWORD_VALIDATOR = {
 export const WAIVE_CANCELLATION = {
   cancellationFee: {
     notEmpty: true,
-    errorMessage: 'You must set whether you want '
-                  + 'to charge cancellation fee for this patient.'
+    errorMessage: 'You must set whether you want to charge cancellation fee for this patient.'
   },
   reEnrollmentFee: {
     notEmpty: true,
-    errorMessage: 'You must set whether you want '
-                  + 'to charge re-enrollment fee for this patient.'
+    errorMessage: 'You must set whether you want to charge re-enrollment fee for this patient.'
   }
 };
 
@@ -215,6 +215,27 @@ export const COMPLETE_NORMAL_USER_REGISTRATION = {
   },
 };
 
+export const ADD_MEMBER = {
+  'member.firstName': {
+    notEmpty: true,
+  },
+  'member.lastName': {
+    notEmpty: true,
+  },
+  'member.birthDate': {
+    notEmpty: true,
+    isDate: true,
+  },
+  'member.sex': {
+    notEmpty: true
+  },
+  'member.familyRelationship': {
+    notEmpty: true,
+    isIn: {
+      options: [Object.keys(MEMBER_RELATIONSHIP_TYPES)],
+    },
+  },
+};
 
 export const MEMBER = {
   firstName: {
@@ -281,9 +302,6 @@ export const DENTIST_USER_REGISTRATION = {
   zipCode: {
     notEmpty: true,
   },
-  // tos: {
-  //   notEmpty: true,
-  // },
 };
 
 
@@ -295,6 +313,29 @@ export const MEMBERSHIP = {
     notEmpty: true,
     isCurrency: true,
   }
+};
+
+
+export const MEMBERSHIP_FIELDS = {
+  name: {
+    optional: true,
+  },
+  description: {
+    optional: true,
+  },
+  discount: {
+    optional: true,
+  },
+  type: {
+    optional: true,
+    isIn: {
+      options: SUBSCRIPTION_TYPES,
+    },
+    errorMessage: 'Invalid Membership type provided (i.e. month, year, etc)',
+  },
+  price: {
+    optional: true,
+  },
 };
 
 
@@ -338,6 +379,12 @@ export const NEW_PRICING_CODE = {
     notEmpty: true,
   },
   code: {
+    notEmpty: true,
+  }
+};
+
+export const STRIPE_TOKEN = {
+  token: {
     notEmpty: true,
   }
 };

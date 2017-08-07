@@ -1,3 +1,10 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
+import { instance, model } from '../orm-methods/dentist-info';
+
+// ────────────────────────────────────────────────────────────────────────────────
+
 export default function (sequelize, DataTypes) {
   const DentistInfo = sequelize.define('DentistInfo', {
     officeName: {
@@ -67,22 +74,13 @@ export default function (sequelize, DataTypes) {
     },
   }, {
     tableName: 'dentistInfos',
-    classMethods: {
+    instanceMethods: instance,
+    classMethods: Object.assign({
       associate(models) {
+
         DentistInfo.hasMany(models.DentistInfoService, {
-          // through: 'dentistInfoService',
           foreignKey: 'dentistInfoId',
           as: 'services'
-        });
-
-        DentistInfo.belongsTo(models.Membership, {
-          foreignKey: 'membershipId',
-          as: 'membership'
-        });
-
-        DentistInfo.belongsTo(models.Membership, {
-          foreignKey: 'childMembershipId',
-          as: 'childMembership'
         });
 
         DentistInfo.hasMany(models.WorkingHours, {
@@ -100,12 +98,17 @@ export default function (sequelize, DataTypes) {
           as: 'officeImages'
         });
 
+        DentistInfo.hasMany(models.Membership, {
+          foreignKey: 'dentistInfoId',
+          as: 'memberships'
+        });
+
         DentistInfo.belongsTo(models.User, {
           foreignKey: 'userId',
           as: 'user'
         });
       }
-    }
+    }, model)
   });
 
   return DentistInfo;

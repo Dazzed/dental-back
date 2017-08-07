@@ -1,53 +1,81 @@
+// ────────────────────────────────────────────────────────────────────────────────
+// MODULES
+
+import _ from 'lodash';
 import { Router } from 'express';
-import passport from 'passport';
 
 import db from '../../models';
-import {
-  adminRequired,
-} from '../middlewares';
 
 import {
-  NotFoundError
+  EXCLUDE_FIELDS_LIST as excludeUserFields
+} from '../../models/user';
+
+import {
+  BadRequestError,
 } from '../errors';
 
-const userFieldsExcluded = ['hash', 'salt', 'activationKey',
-  'resetPasswordKey', 'verified', 'authorizeId', 'paymentId'];
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER
+
+/**
+ * Gets all members subscribed to the dentist whose id is set in params
+ *
+ * @param {object} req - the express request
+ * @param {object} res - the express response
+ * @param {Function} next - the express next request handler
+ */
+async function getMembers(req, res, next) {
+  if (req.params.dentistId === 'me') {
+    req.params.dentistId = req.user.get('id');
+  }
+
+  const user = await db.User.find({
+    where: { id: req.params.dentistId },
+  });
+  const members = await user.getClients();
+  res.json({ data: members });
+}
+
+function getPendingAmounts(req, res, next) {
+  // 1. Get all subscribed customers + the attached client info, keep track of status
+  // 2. Get their pending amounts
+  // 3. Return email, name, pending amount, status
+  let subs = [];
+
+  db.Subscription.findAll({
+    where: { dentistId: req.params.dentistId },
+    attributes: ['status', 'endAt', 'clientId', 'dentistId'],
+    include: [{
+      model: db.User,
+      attributes: {
+        exclude: excludeUserFields,
+      },
+      as: 'client',
+    }]
+  })
+  .then((_subs) => {
+    subs = _subs;
+    return Promise.all(subs.map(s => db.Subscription.getPendingAmount(s.clientId)));
+  })
+  .then((pendingAmounts) => {
+    res.json({ data: _.zip(subs, pendingAmounts).map(x => x.shift()) });
+  })
+  .catch((err) => {
+    next(new BadRequestError(err));
+  });
+}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// ROUTER ENDPOINTS
 
 const router = new Router({ mergeParams: true });
 
-
-/**
- * Gets all members subscribed to the dentist whose ID is set in params.
- */
-function getMembers(req, res, next) {
-  const dentistId = req.params.dentistId;
-
-  db.User.find({
-    attributes: { exclude: userFieldsExcluded },
-    where: {
-      id: dentistId,
-      type: 'dentist'
-    }
-  })
-  .then(dentist => {
-    if (!dentist) {
-      throw new NotFoundError('The dentist account was not found.');
-    }
-
-    return dentist.getClients().then(members => {
-      res.json({ data: members });
-    });
-  })
-  .catch(next);
-}
-
-
 router
   .route('/')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    adminRequired,
-    getMembers);
+  .get(getMembers);
 
+router
+  .route('/pending-amount')
+  .get(getPendingAmounts);
 
 export default router;
