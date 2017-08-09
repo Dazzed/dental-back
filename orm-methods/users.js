@@ -12,7 +12,7 @@ import { MembershipMethods } from '../orm-methods/memberships';
 import { generateRandomEmail } from '../utils/helpers';
 import stripe from '../controllers/stripe';
 
-const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'createdAt', 'updatedAt'];
+const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'updatedAt'];
 
 const PASSWORD_RESET_TIMEOUT = 1000 * 60 * 60 * 24; // 1 day.
 
@@ -360,7 +360,7 @@ export const instance = {
     }
 
     let user = userObj.toJSON();
-    const subscription = await userObj.getMySubscription();
+    const subscription = await userObj.getMySubscriptionLocal();
     user.subscription = subscription;
     return user;
   },
