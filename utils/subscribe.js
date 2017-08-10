@@ -49,9 +49,12 @@ export function subscribeUserAndMembers(req, res) {
   const { user, paymentProfile: { stripeCustomerId } } = req.locals;
   // const { token } = req.params;
   const primaryUserSubscription = req.locals.subscription;
-
-  const { dentistId } = primaryUserSubscription;
-
+  let dentistId;
+  if (primaryUserSubscription) {
+    dentistId = primaryUserSubscription.dentistId;
+  } else {
+    dentistId = req.locals.user.get('id');
+  }
 
   function getChildUsers(callback) {
     db.User.findAll({
@@ -69,12 +72,10 @@ export function subscribeUserAndMembers(req, res) {
     allUsers.push(user.id);
 
     db.Subscription.findAll({
-      where: {
+      where: { 
         dentistId,
-        clientId: {
-          $in: allUsers
-        },
-        status: 'inactive',
+        clientId: { $in: allUsers },
+        status: 'inactive' 
       }
     }).then((usersSubscription) => {
       callback(null, usersSubscription);
