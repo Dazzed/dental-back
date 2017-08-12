@@ -178,7 +178,7 @@ function normalUserSignup(req, res, next) {
         queries.push(
           db.Subscription.create({
             clientId: userObj.id,
-            membershipId: req.body.membershipId,
+            membershipId: Number(req.body.membershipId) || null,
             dentistId: req.body.dentistId || null,
             paymentProfile: {
               stripeCustomerId: customer.id,

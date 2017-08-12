@@ -49,11 +49,9 @@ export function subscribeUserAndMembers(req, res) {
   const { user, paymentProfile: { stripeCustomerId } } = req.locals;
   // const { token } = req.params;
   const primaryUserSubscription = req.locals.subscription;
-  let dentistId;
+  let dentistId = null;
   if (primaryUserSubscription) {
     dentistId = primaryUserSubscription.dentistId;
-  } else {
-    dentistId = req.locals.user.get('id');
   }
 
   function getChildUsers(callback) {
@@ -70,10 +68,8 @@ export function subscribeUserAndMembers(req, res) {
     let allUsers = [];
     allUsers = childUsers ? childUsers.map(c => c.id) : [];
     allUsers.push(user.id);
-
     db.Subscription.findAll({
       where: { 
-        dentistId,
         clientId: { $in: allUsers },
         status: 'inactive' 
       }
@@ -85,7 +81,7 @@ export function subscribeUserAndMembers(req, res) {
   function getDentistMembershipPlans(usersSubscription, callback) {
     db.Membership.findAll({
       where: {
-        userId: dentistId,
+        userId: dentistId || usersSubscription[0].dentistId,
         active: true
       }
     }).then((plans) => {
@@ -158,7 +154,7 @@ export function subscribeUserAndMembers(req, res) {
       Mailer.clientWelcomeEmail(res, req.locals.user);
       callback(null, data, usersSubscription, dentistPlans);
     }, err => {
-      rollbackNewUser(usersSubscription).then(d => callback(err), e => callback(e));
+      callback(err);
     });
   }
 
@@ -172,8 +168,32 @@ export function subscribeUserAndMembers(req, res) {
       sub.save();
       eachCallback();
     }, (err, data) => {
-      callback(null);
+      callback(null, usersSubscription, dentistPlans);
     });
+  }
+
+  async function createDuplicateSubscriptionForPAH(usersSubscription, dentistPlans, callback) {
+    const { paymentProfile } = req.locals;
+    const isPrimaryAccountHolderSubbed = await db.Subscription.findOne({
+      where: {
+        clientId: paymentProfile.primaryAccountHolder
+      }
+    });
+
+    if (isPrimaryAccountHolderSubbed) {
+      return callback(null);
+    } else {
+      const primaryAccountHolderSubscription = await db.Subscription.create({
+        clientId: paymentProfile.primaryAccountHolder,
+        dentistId: dentistPlans[0].userId,
+        membershipId: dentistPlans.find(p => p.name === 'default monthly membership').id,
+        status: 'inactive',
+        createdAt: moment()
+      });
+
+      return callback(null);
+    }
+    
   }
 
   return new Promise((resolve, reject) => {
@@ -182,7 +202,8 @@ export function subscribeUserAndMembers(req, res) {
       getSubscriptions,
       getDentistMembershipPlans,
       createStripeSubscription,
-      markSubscriptionsActive
+      markSubscriptionsActive,
+      createDuplicateSubscriptionForPAH,
     ]).then(() => resolve(), err => reject(err));
   });
 }
