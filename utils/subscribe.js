@@ -151,7 +151,7 @@ export function subscribeUserAndMembers(req, res) {
       promises.push(stripe.createSubscriptionWithItems(annualSubscriptionObject));
     }
     Promise.all(promises).then(data => {
-      Mailer.clientWelcomeEmail(res, req.locals.user);
+      Mailer.clientWelcomeEmail(res, req.locals.user, usersSubscription, dentistPlans);
       callback(null, data, usersSubscription, dentistPlans);
     }, err => {
       callback(err);
