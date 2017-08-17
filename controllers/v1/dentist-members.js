@@ -32,7 +32,7 @@ async function getMembers(req, res, next) {
   const user = await db.User.find({
     where: { id: req.params.dentistId },
   });
-  const members = await user.getClients();
+  const members = await user.getClientsRevised();
   res.json({ data: members });
 }
 
