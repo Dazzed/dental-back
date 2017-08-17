@@ -184,6 +184,74 @@ export const instance = {
       return subList;
   },
 
+  async getClientsRevised() {
+    const dentistId = this.get('id');
+    const subscriptions = await db.Subscription.findAll({
+      where: {
+        dentistId
+      },
+      include:[{
+        model: db.Membership,
+        as: 'membership'
+      }]
+    }).map(s => s.toJSON());
+
+    let primaryUsers = await db.User.findAll({
+      attributes: {
+        exclude: userFieldsExcluded,
+      },
+      where: {
+        $and:[{
+          id: {
+            $in: subscriptions.map(s => s.clientId)
+          }
+        },{
+          addedBy: null
+        }]
+      },
+      include: [{
+        model: db.User,
+        as: 'members',
+        attributes: {
+          exclude: userFieldsExcluded,
+        },
+      }, {
+        model: db.Phone,
+        as: 'phoneNumbers',
+      }, {
+        model: db.Review,
+        as: 'clientReviews',
+        attributes: { exclude: ['clientId', 'dentistId'] },
+      }, {
+        model: db.Address,
+        as: 'addresses'
+      }]
+    }).map(m => m.toJSON());
+
+    primaryUsers = primaryUsers.map(user => {
+      let { members } = user;
+      if (members.length > 0) {
+        members = members.map(m => {
+          return {
+            ...m,
+            subscription: subscriptions.find(s => s.clientId == m.id)
+          };
+        });
+
+        user = {
+          ...user,
+          members
+        };
+      }  
+      return {
+        ...user,
+        subscription: subscriptions.find(s => s.clientId == user.id)
+      };
+    });
+
+    return primaryUsers;
+  },
+
   /**
    * Gets associated members of this primary account
    *
