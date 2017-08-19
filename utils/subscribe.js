@@ -246,13 +246,22 @@ export async function subscribeNewMember(primaryAccountHolderId, newMember, subs
       }
     });
 
-    performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
-      if (err) {
-        throw err;
-      } else {
-        return data;
-      }
-    });
+    let perform = () => {
+      return new Promise((resolve, reject) => {
+        performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
+          if (err) {
+            return reject(err);
+          } else {
+            return resolve(data);
+          }
+        });
+      });
+    };
+
+    let result = await perform();
+    return result;
+
+    
   } catch (e) {
     throw e;
   }

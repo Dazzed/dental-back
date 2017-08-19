@@ -57,6 +57,7 @@
     "multer": "^1.2.1",
     "multer-s3": "^2.5.0",
     "node-fetch": "^1.6.3",
+    "node-schedule": "^1.2.4",
     "nunjucks": "^2.4.2",
     "passport": "^0.3.2",
     "passport-jwt": "^2.1.0",

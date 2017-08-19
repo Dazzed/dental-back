@@ -120,7 +120,8 @@ export const SUBSCRIPTION_STATES = [
   'past_due',
   'canceled',
   'unpaid',
-  'expired'
+  'expired',
+  'cancellation_requested'
 ];
 
 export const SUBSCRIPTION_STATES_LOOKUP = _.keyBy(SUBSCRIPTION_STATES, state => state);

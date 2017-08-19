@@ -49,7 +49,10 @@ function getMembers(req, res, next) {
   }
 
   query
-  .then(data => res.json({ data }))
+  .then(data => {
+    const stripe_public_key = process.env.STRIPE_PUBLIC_KEY;
+    return res.json({ data, stripe_public_key });
+  })
   .catch(err => next(new BadRequestError(err)));
 }
 
