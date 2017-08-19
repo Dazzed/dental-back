@@ -11,7 +11,7 @@ import stripe from '../stripe';
 import { BadRequestError } from '../errors';
 import { reenrollMember } from '../../utils/reenroll';
 import { changePlanUtil } from '../../utils/change_plan';
-import { subscriptionCancellationNotification } from '../sendgrid_mailer';
+
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -222,111 +222,68 @@ function getSubscription(req, res, next) {
  * @param {Object} res - the express response
  * @param {Function} next - the next middleware function
  */
-function cancelSubscription(req, res, next) {
-  const userId = req.params.userId || req.user.get('id');
-  const currentUserId = req.user.get('id');
-  // let query = {};
-  let user = {};
-  let subscription = {};
-  let membership = {};
 
-  // Limit the query to allow fetching only related members
-  // of the primary user when providing a user id
-  // if (req.params.userId && req.user.get('type') !== 'dentist') {
-  //   // allow dentists to be excused
-  //   query = {
-  //     addedBy: currentUserId,
-  //   };
-  // }
+async function cancelSubscription(req, res) {
+  try {
+    const userId = req.params.userId || req.user.get('id');
+    const currentUserId = req.user.get('id');
 
-  // 1. Get the user requested
-  db.User.find({
-    where: { id: userId },
-  })
-    .then((userObj) => {
-      // 2. Get the user's subscription
-      if (!userObj) throw new Error('No user was found!');
-      user = userObj;
-      return db.Subscription.getCurrentSubscription(user.id);
-    })
-    .then((sub) => {
-      subscription = sub;
-      if (subscription.status === 'canceled') throw new Error('Subscription has already been cancelled!');
-      // 3. Check if the current user has the required access
-      if ((currentUserId === subscription.clientId ||
-        currentUserId === user.addedBy ||
-        currentUserId === subscription.dentistId)) {
-        return user.getMySubscription();
-      }
+    if (!userId || !currentUserId) {
+      throw 'Missing parameters';
+    }
+
+    // 1. Get the user requested.
+    const user = await db.User.find({ where: { id: userId } });
+
+
+    const subscription = await db.Subscription.getCurrentSubscription(user.id);
+
+
+    if ((currentUserId !== subscription.clientId &&
+      currentUserId !== user.addedBy &&
+      currentUserId !== subscription.dentistId)) {
       throw new Error('Current user is not allowed to see this persons subscription!');
-    })
-    .then((sub) => {
-      if (!sub) throw new Error('User has no related subscription!'); // this should not happen (unless a dentist)
-      // 4. Check if a cancellation fee should be applied and/or waived
-      if ((req.user.cancellationFee === true) &&
-        (req.user.cancellationFeeWaiver === true) &&
-        // Check if the user cancelled after the free cancellation period (i.e. 3 months from sign up)
-        (Moment().isBefore(Moment(subscription.createdAt).add(EARLY_CANCELLATION_TERM, 'month')))
-      ) {
-        // 5. Get Payment Profile
-        return db.PaymentProfile.findOne({
-          where: {
-            primaryAccountHolder: user.addedBy,
-          }
-        });
+    }
+
+    if (subscription.status === 'canceled' || subscription.status === 'cancellation_requested') {
+      throw `Subscription status is ${subscription.status}`;
+    }
+
+    const paymentProfile = await db.PaymentProfile.findOne({
+      where: {
+        primaryAccountHolder: user.addedBy || user.id,
       }
-      return Promise.resolve(null);
-    })
-    .then((payProfile) => {
-      if (payProfile !== null) {
-        // Charge the user for cancelling
-        return stripe.createInvoiceItem({
-          customer: payProfile.stripeCustomerId,
-          amount: EARLY_CANCELLATION_PENALTY,
-          currency: 'usd',
-          description: 'cancellation Fee'
-        });
-        // return stripe.issueCharge(EARLY_CANCELLATION_PENALTY, payProfile.stripeCustomerId, 'Early Cancellation Penalty Charge');
-      }
-      return Promise.resolve();
-    })
-    // 5. Cancel the user's subscription
-    .then(() => {
-      return db.Membership.findOne({ where: { id: subscription.membershipId } });
-      // return stripe.cancelSubscription(subscription.stripeSubscriptionId);
-    })
-    .then((mem) => {
-      membership = mem;
-      return stripe.getSubscription(subscription.stripeSubscriptionId);
-    })
-    .then((stripeSubscription) => {
-      console.log(stripeSubscription);
-      let quantity = stripeSubscription.items.data.reduce((acc, item) => acc += item.quantity, 0);
-      if (quantity == 1) {
-        return stripe.deleteSubscription(stripeSubscription.id);
-      } else {
-        const subscriptionItem = stripeSubscription.items.data.find(s => s.plan.id == membership.stripePlanId);
-        return stripe.updateSubscriptionItem(subscriptionItem.id, {
-          quantity: subscriptionItem.quantity - 1
-        });
-      }
-    })
-    .then(() => {
-      // 6. Upon success, update the subscription record
-      subscription.status = 'canceled';
-      subscription.stripeSubscriptionId = null;
-      subscription.stripeSubscriptionItemId = null;
-      if (user.addedBy) {
-        db.User.findOne({where: { id: user.addedBy }}).then(u => {
-          subscriptionCancellationNotification(u);
-        })
-      } else {
-        subscriptionCancellationNotification(user);
-      }
-      return subscription.save();
-    })
-    .then(() => res.send({ user }))
-    .catch(err => next(new BadRequestError(err)));
+    });
+
+    let primaryUser;
+    if (subscription.clientId === userId) {
+      primaryUser = user;
+    } else {
+      primaryUser = await db.User.findOne({ where: { id: user.addedBy } });
+    }
+
+    if ((primaryUser.cancellationFeeWaiver === true) &&
+      // Check if the user cancelled after the free cancellation period (i.e. 3 months from sign up)
+      (Moment().isBefore(Moment(subscription.createdAt).add(EARLY_CANCELLATION_TERM, 'month')))
+    ) {
+      console.log("Cancellation Penality charge Issued successfully for user -> "+primaryUser.firstName+" "+primaryUser.lastName);
+      const issueCharge = await stripe.issueCharge(EARLY_CANCELLATION_PENALTY, paymentProfile.stripeCustomerId, 'Early Cancellation Penalty Charge');
+    }
+
+    const stripeSubscription = await stripe.getSubscription(subscription.stripeSubscriptionId);
+
+    subscription.status = 'cancellation_requested';
+    subscription.cancelsAt = Moment.unix(stripeSubscription.current_period_end);
+
+    await subscription.save();
+
+    return res.status(200).send(subscription);
+
+  } catch (e) {
+    console.log("Error in cancelSubscription, ", e);
+    return res.status(400).send({ error: e });
+  }
+
 }
 
 /**
@@ -369,10 +326,10 @@ router
   .route('/plan/:membershipId/user/:userId')
   .put(changePlan);
 
-router
-  .route('/plan')
-  .get(getSubscription)
-  .delete(cancelSubscription);
+// router
+//   .route('/plan')
+//   .get(getSubscription)
+//   .delete(cancelSubscription);
 
 router
   .route('/plan/:userId/re-enroll')
