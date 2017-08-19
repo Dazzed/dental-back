@@ -249,7 +249,27 @@ export const instance = {
       };
     });
 
-    return primaryUsers;
+    let result = [];
+
+    for(let primaryUser of primaryUsers) {
+      const monthlyMembership = primaryUser.subscription.membership.type === 'month';
+      let isCancelled = primaryUser.subscription.status === 'canceled';
+      if (monthlyMembership && !isCancelled) {
+        const stripeSubscription = await stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId);
+        primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
+      } else {
+        const anyMonthlySubscription = primaryUser.members.find(m => m.subscription.membership.type === 'month' && m.subscription.status !== 'canceled');
+        if (anyMonthlySubscription) {
+          const stripeSubscription = await stripe.getSubscription(anyMonthlySubscription.subscription.stripeSubscriptionId);
+          primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
+        } else {
+          primaryUser.recurring_payment_date = null;
+        }
+      }
+      result.push(primaryUser);
+    }
+
+    return result;
   },
 
   /**

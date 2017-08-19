@@ -302,8 +302,12 @@ function addPaymentSource(req, res, next) {
     req.locals.paymentProfile.stripeCustomerId,
     req.params.token,
   ).then((card) => {
-    card = _(card).omit(CARD_EXCLUDE_FIELDS_LIST);
-    res.json(card);
+    stripe.setDefaultPaymentSource(
+      req.locals.paymentProfile.stripeCustomerId,
+      card.id
+    ).then(customer => {
+      return res.json(customer);
+    });
   }).catch(err => next(new BadRequestError(err)));
 }
 

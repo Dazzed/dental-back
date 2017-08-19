@@ -147,3 +147,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 module.exports = app;
+
+const jobs = require('./jobs/run');
+
+jobs();

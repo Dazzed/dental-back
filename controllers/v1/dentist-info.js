@@ -66,12 +66,13 @@ function getDentistInfo(req, res, next) {
 
     if (req.user.get('type') === 'dentist') {
       res.json({
-        data: dentistInfo
+        data: dentistInfo,
+        stripe_public_key: process.env.STRIPE_PUBLIC_KEY
       });
     } else {
       const data = req.user.toJSON();
       data.dentistInfo = dentistInfo;
-      res.json({ data });
+      res.json({ data, stripe_public_key: process.env.STRIPE_PUBLIC_KEY });
     }
   })
   .catch(err => next(new BadRequestError(err)));
