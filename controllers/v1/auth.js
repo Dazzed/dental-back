@@ -173,24 +173,38 @@ function normalUserSignup(req, res, next) {
       const queries = [];
 
       // Add subscription
-      queries.push(
-        db.Subscription.create({
-          clientId: userObj.id,
-          membershipId: req.body.membershipId || null,
-          dentistId: req.body.dentistId || null,
-          paymentProfile: {
+      //If primaryAccountHolder wants to subscribe
+      if (req.body.membershipId) {
+        queries.push(
+          db.Subscription.create({
+            clientId: userObj.id,
+            membershipId: Number(req.body.membershipId) || null,
+            dentistId: req.body.dentistId || null,
+            paymentProfile: {
+              stripeCustomerId: customer.id,
+              primaryAccountHolder: userObj.id,
+            }
+          }, {
+            transaction: t,
+            include: [{
+              model: db.PaymentProfile,
+              as: 'paymentProfile',
+              include: [{ all: true }]
+            }],
+          })
+        );
+      }
+      // If primaryAccountHolder Doesn't want to subscribe but his childrens do. 
+      else {
+        queries.push(
+          db.PaymentProfile.create({
             stripeCustomerId: customer.id,
             primaryAccountHolder: userObj.id,
-          }
-        }, {
-          transaction: t,
-          include: [{
-            model: db.PaymentProfile,
-            as: 'paymentProfile',
-            include: [{ all: true }]
-          }],
-        })
-      );
+          }, {
+            transaction: t,
+          })
+        );
+      }
 
       // Add phone number
       if (req.body.phone) {

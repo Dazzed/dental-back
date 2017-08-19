@@ -478,11 +478,19 @@ export function validatePaymentManager(userParamName = 'userId', localUserVarNam
       .then((sub) => {
         // Validate the user has an active subscription
         // or current session user is the dentist owner
-        if (!sub) throw new Error('User has no valid subscription');
-        if (sessionUserId === sub.dentistId) isDentist = true;
-        req.locals[localSubVarName] = sub;
+
+        //352 - If primary account holder is not a member I get an error
+        // if (!sub) throw new Error('User has no valid subscription');
+
+        req.locals[localSubVarName] = sub || null;
         // Get the users payment profile next
-        return db.PaymentProfile.find({ where: { id: sub.paymentProfileId } });
+        if (sub) {
+          if (sessionUserId === sub.dentistId) isDentist = true;
+          return db.PaymentProfile.find({ where: { id: sub.paymentProfileId } });
+        }
+        else {
+          return db.PaymentProfile.find({ where: { primaryAccountHolder: requestedUserId } });
+        }
       })
       .then((profile) => {
         // Validate the access (only primary account holder and user's dentist is allowed)

@@ -35,6 +35,11 @@ export default function (sequelize, DataTypes) {
       allowNull: true,
       defaultValue: null,
     },
+    cancelsAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null,
+    },
   }, {
     tableName: 'subscriptions',
 
