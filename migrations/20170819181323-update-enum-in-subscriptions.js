@@ -13,7 +13,6 @@ module.exports = {
         sequelize.query('UPDATE subscriptions SET status = _status::text::enum_subscriptions_status', { transaction: t }),
         sequelize.query('ALTER TABLE subscriptions DROP COLUMN _status', { transaction: t }),
         sequelize.query('DROP TYPE _enum_sub_status', { transaction: t }),
-        sequelize.query('ALTER TABLE subscriptions ADD COLUMN "cancelsAt" TIMESTAMP NULL DEFAULT NULL')
       ]);
     });
   },
@@ -30,7 +29,6 @@ module.exports = {
         sequelize.query('UPDATE subscriptions SET status = _status::text::enum_subscriptions_status', { transaction: t }),
         sequelize.query('ALTER TABLE subscriptions DROP COLUMN _status', { transaction: t }),
         sequelize.query('DROP TYPE _enum_sub_status', { transaction: t }),
-        sequelize.query('ALTER TABLE subscriptions DROP COLUMN cancelsAt')
       ]);
     });
   }
