@@ -254,7 +254,8 @@ export const instance = {
     for(let primaryUser of primaryUsers) {
       const monthlyMembership = primaryUser.subscription.membership.type === 'month';
       let isCancelled = primaryUser.subscription.status === 'canceled';
-      if (monthlyMembership && !isCancelled) {
+      let isInactive = primaryUser.subscription.status === 'inactive';
+      if (monthlyMembership && !isCancelled && !isInactive) {
         const stripeSubscription = await stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId);
         primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
       } else {
