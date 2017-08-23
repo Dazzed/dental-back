@@ -65,9 +65,11 @@ function getUser(req, res, next) {
   if (req.locals.user.get('type') === 'dentist') {
     // Get full dentist
     userReq = req.locals.user.getFullDentist();
-  } else if (req.locals.user.get('type' === 'client')) {
+  } else if (req.locals.user.get('type') === 'client') {
     // Get full user
     userReq = req.locals.user.getFullClient();
+  } else if (req.locals.user.get('type') === 'admin') {
+    userReq = req.locals.user.getFullAdmin();
   } else {
     return next(new BadRequestError('Requested user is not a valid user type for this call'));
   }
