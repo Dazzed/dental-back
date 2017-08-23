@@ -18,7 +18,7 @@ module.exports = () => {
 
   function run_membership_price_watcher_job() {
     let rule = new schedule.RecurrenceRule();
-    rule.second = 0;
+    rule.minute = 0;
     rule.hour = [12, 24];
     schedule.scheduleJob(rule, function () {
       membership_price_watcher_job();
@@ -27,7 +27,7 @@ module.exports = () => {
 
   function cancellation_watcher_job() {
     let rule = new schedule.RecurrenceRule();
-    rule.second = 0;
+    rule.minute = 0;
     rule.hour = [6, 12, 18, 24];
     schedule.scheduleJob(rule, () => {
       subscriptionCancellationJob().then(() => {

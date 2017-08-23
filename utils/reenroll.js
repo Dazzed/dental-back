@@ -127,13 +127,26 @@ export function reenrollMember(userId, currentUserId, membershipId) {
     })
   }
 
+  function getNewSubscription(updateSuccessFlag, callback) {
+    db.Subscription.findOne({
+      where: {
+        id: subscriptionId
+      },
+      include: [{
+        model: db.Membership,
+        as: 'membership',
+      }]
+    }).then(sub => callback(null, sub), e => callback(e));
+  }
+
 
   return new Promise((resolve, reject) => {
     waterfaller([
       getMembershipPlan,
       getUserSubscription,
       getPrimaryAccountHolderSubscriptions,
-      reenrollOperation
+      reenrollOperation,
+      getNewSubscription
     ]).then(data => resolve(data), err => reject(err));
   });
 }
@@ -149,7 +162,7 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
     }
 
     if (membershipPlan.type === 'month') {
-      if (sub.membershipId === membershipPlan.id) {
+      if (sub.membership.type === 'month') {
         stripeSubscriptionId = sub.stripeSubscriptionId;
       }
     } else if (moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0) {
@@ -174,8 +187,9 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
           userSubscription.status = 'active';
           userSubscription.membershipId = membershipPlan.id;
           userSubscription.stripeSubscriptionIdUpdatedAt = moment();
-          userSubscription.save();
-          return callback(null, true);
+          userSubscription.save().then(() => {
+            return callback(null, true);
+          });
         });
     }, err => callback(err));
   } else if (stripeSubscriptionId && membershipPlan.type !== 'year') {
@@ -189,8 +203,9 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
       userSubscription.status = 'active';
       userSubscription.membershipId = membershipPlan.id;
       userSubscription.stripeSubscriptionIdUpdatedAt = moment();
-      userSubscription.save();
-      return callback(null, true);
+      userSubscription.save().then(() => {
+        return callback(null, true);
+      });
     });
   } else {
     db.PaymentProfile.findOne({
@@ -204,8 +219,9 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
         userSubscription.status = 'active';
         userSubscription.membershipId = membershipPlan.id;
         userSubscription.stripeSubscriptionIdUpdatedAt = moment();
-        userSubscription.save();
-        return callback(null, true);
+        userSubscription.save().then(() => {
+          return callback(null, true);
+        });
       }, err => callback(err));
     }, err => callback(err));
   }
