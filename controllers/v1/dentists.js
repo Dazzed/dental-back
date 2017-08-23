@@ -197,7 +197,7 @@ function listDentists(req, res, next) {
   db.User.findAll({ where: { type: 'dentist' } })
   .then(dentists => Promise.all(dentists.map(d => d.getFullDentist())))
   .then((dentists) => {
-    dentists = dentists.map(d => _(d).omit(['email', 'priceCodes', 'activeMemberCount']));
+    // dentists = dentists.map(d => _(d).omit(['email', 'priceCodes', 'activeMemberCount']));
     res.json({ data: dentists });
   })
   .catch(err => next(new BadRequestError(err)));
@@ -280,11 +280,11 @@ router
     contactSupportNoAuth);
 
 router
-  .route('/details/all')
+  .route('/')
   .get(listDentists);
 
 router
-  .route('/details/:dentistId')
+  .route('/:dentistId')
   .get(getDentist)
   .put(
     userRequired,
