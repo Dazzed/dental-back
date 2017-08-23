@@ -326,11 +326,6 @@ router
   .route('/plan/:membershipId/user/:userId')
   .put(changePlan);
 
-// router
-//   .route('/plan')
-//   .get(getSubscription)
-//   .delete(cancelSubscription);
-
 router
   .route('/plan/:userId/re-enroll')
   .put(reEnroll);
