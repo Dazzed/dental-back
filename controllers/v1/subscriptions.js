@@ -141,8 +141,8 @@ function reEnroll(req, res) {
   const membershipId = req.query.membershipId;
   const currentUserId = req.user.get('id');
 
-  reenrollMember(memberId, currentUserId, membershipId).then(data => {
-    res.status(200).send({});
+  reenrollMember(memberId, currentUserId, membershipId).then(subscription => {
+    res.status(200).send({ data: subscription });
   }, err => {
     res.status(500).send(err);
   });
@@ -163,7 +163,7 @@ function changePlan(req, res, next) {
   const currentUserId = req.user.get('id');
 
   changePlanUtil(memberId, currentUserId, membershipId, subscriptionId)
-    .then(data => res.status(200).send({}), err => res.status(500).send(err));
+    .then(subscription => res.status(200).send({ data: subscription }), err => res.status(500).send(err));
 }
 
 /**
@@ -256,7 +256,7 @@ async function cancelSubscription(req, res) {
     });
 
     let primaryUser;
-    if (subscription.clientId === userId) {
+    if (subscription.clientId === Number(userId)) {
       primaryUser = user;
     } else {
       primaryUser = await db.User.findOne({ where: { id: user.addedBy } });

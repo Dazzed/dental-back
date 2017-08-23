@@ -593,6 +593,19 @@ export const instance = {
     .then(() => d)
   },
 
+  async getFullAdmin(id = this.get('id')) {
+    const admin = await db.User.find({
+      where: {
+        id
+      },
+      attributes: {
+        exclude: userFieldsExcluded
+      }
+    });
+
+    return admin;
+  },
+
   /**
    * Gets the related payment profile of the user
    *
