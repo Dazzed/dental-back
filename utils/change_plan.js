@@ -112,6 +112,18 @@ export function changePlanUtil(userId, dentistId, newPlanId, subscriptionId) {
     });
   }
 
+  function getNewSubscription(updateSuccessFlag, callback) {
+    db.Subscription.findOne({
+      where: {
+        id: subscriptionId
+      },
+      include: [{
+        model: db.Membership,
+        as: 'membership',
+      }]
+    }).then(sub => callback(null, sub), e => callback(e));
+  }
+
   return new Promise((resolve, reject) => {
     waterfaller([
       getUser,
@@ -120,7 +132,8 @@ export function changePlanUtil(userId, dentistId, newPlanId, subscriptionId) {
       updateLocalSubscription,
       getNewMembershipPlan,
       getPrimaryAccountHolderSubscriptions,
-      enrollUserToNewPlan
+      enrollUserToNewPlan,
+      getNewSubscription,
     ]).then(data => resolve(data), err => reject(err));
   });
 }
