@@ -82,6 +82,10 @@ export const USER_TYPES = {
   dentist: 'Dentist',
 };
 
+export const ADDITIONAL_USER_TYPES_1 = {
+  manager: 'Manager',
+};
+
 
 export const MEMBER_RELATIONSHIP_TYPES = {
   partner: 'Spouse',
