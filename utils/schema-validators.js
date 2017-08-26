@@ -404,12 +404,18 @@ export const CONTACT_SUPPORT = {
 };
 
 export const UPDATE_DENTIST = {
-  firstName: true,
-  middleName: true,
-  lastName: true,
-  email: true,
-  phoneNumber: {
-    optional: true
+  email: {
+    notEmpty: true,
+    isEmail: true,
+  },
+  firstName: {
+    notEmpty: true,
+  },
+  lastName: {
+    notEmpty: true,
+  },
+  phone: {
+    notEmpty: true,
   },
 };
 

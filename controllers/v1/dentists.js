@@ -41,6 +41,8 @@ import {
   NotFoundError
 } from '../errors';
 
+import { instance as UserInstance } from '../../orm-methods/users';
+
 // ────────────────────────────────────────────────────────────────────────────────
 // HELPERS
 
@@ -220,31 +222,82 @@ function getDentist(req, res, next) {
  * @param {Object} res - express response
  * @param {Function} next - next middleware function
  */
-function updateDentist(req, res, next) {
-  if (req.params.dentistId) {
-    // Update the dentist account but only with allowed fields
-    (new Promise((resolve, reject) => {
-      const body = _.pick(req.body, EDIT_USER_BY_ADMIN);
-      if (req.body.phoneNumber) {
-        // Update the users phone number as well
-        db.Phone.update({ number: req.body.phoneNumber }, {
-          where: { userId: req.params.dentistId },
-        })
-        .then(() => resolve(body))
-        .catch(reject);
-      } else {
-        resolve(body);
+async function updateDentist(req, res, next) {
+  try {
+    const id = req.params.dentistId;
+    const data = req.body;
+
+    console.log("I GOT DATA",data)
+    if (!id) {
+      return res.status(400).send({ errors: 'Invalid Dentist' });
+    }
+    const dentist = await db.User.findOne({
+      where: {
+        id
+      },
+      include: [
+        {
+          model: db.Phone,
+          as: 'phoneNumbers'
+        },
+        {
+          model: db.DentistInfo,
+          as: 'dentistInfo'
+        }
+      ]
+    });
+    if (!dentist) {
+      return res.status(400).send({ errors: 'Invalid Dentist' });
+    } else if (data.email !== dentist.email) {
+      const isEmailAlreadyInUse = await db.User.find({ where: { email: data.email } });
+      if (isEmailAlreadyInUse) {
+        return res.status(400).send({ errors: 'Email is Already in use.' });
       }
-    })).then((body = {}) => {
-      // Update the user account
-      db.User.update(body, {
-        where: { id: req.params.dentistId, type: 'dentist' },
-      })
-      .then(() => res.json({ data: { success: true } }))
-      .catch(err => next(new BadRequestError(err)));
-    }).catch(() => next(new BadRequestError('Failed to update the dentist')));
-  } else {
-    next(new BadRequestError('Requested dentist does not exist'));
+    }
+    if (data.firstName !== dentist.firstName ||
+        data.lastName !== dentist.lastName ||
+        data.email !== dentist.email ||
+        data.verified !== dentist.verified
+       ) {
+          await db.User.update({
+            ...data
+          },{
+            where: {
+              id
+            }
+          });
+    }
+
+    if (data.phone !== dentist.phoneNumbers[0].number) {
+      await db.Phone.update({
+        number: data.phone
+      },{
+        where: {
+          userId: id
+        }
+      });
+    }
+
+    if (
+      data.affordabilityScore !== dentist.dentistInfo.affordabilityScore ||
+      data.marketplaceOptIn !== dentist.dentistInfo.marketplaceOptIn ||
+      data.managerId !== dentist.dentistInfo.managerId
+    ) {
+      await db.DentistInfo.update({
+        ...data
+      }, {
+        where: {
+          id: dentist.dentistInfo.id
+        }
+      });
+    }
+
+    const updatedDentist = await UserInstance.getFullDentist(id);
+    return res.status(200).send(updatedDentist);
+    console.log(dentist);
+  } catch (e) {
+    console.log(e);
+    return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).send({});
   }
 }
 
@@ -286,7 +339,7 @@ router
 router
   .route('/:dentistId')
   .get(getDentist)
-  .put(
+  .patch(
     userRequired,
     adminRequired,
     validateBody(UPDATE_DENTIST),
