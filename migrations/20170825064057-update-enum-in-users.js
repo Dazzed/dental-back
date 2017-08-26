@@ -1,10 +1,18 @@
 'use strict';
-const constants = require('../config/constants');
+const USER_TYPES = {
+  admin: 'Admin',
+  client: 'Client',
+  dentist: 'Dentist',
+};
+
+const ADDITIONAL_USER_TYPES_1 = {
+  manager: 'Manager',
+};
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
     var sequelize = queryInterface.sequelize;
-    const new_types = Object.assign({}, constants.USER_TYPES, constants.ADDITIONAL_USER_TYPES_1);
+    const new_types = Object.assign({}, USER_TYPES, ADDITIONAL_USER_TYPES_1);
     let types = [];
     for(let key in new_types) {
       types.push(`'${new_types[key].toLowerCase()}'`);
@@ -25,7 +33,7 @@ module.exports = {
 
   down: function (queryInterface, Sequelize) {
     var sequelize = queryInterface.sequelize;
-    const old_types = Object.assign({}, constants.USER_TYPES);
+    const old_types = Object.assign({}, USER_TYPES);
     let types = [];
     for(let key in old_types) {
       types.push(`'${old_types[key].toLowerCase()}'`);
