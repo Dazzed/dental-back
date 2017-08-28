@@ -10,6 +10,7 @@ import {
   SEX_TYPES,
   PREFERRED_CONTACT_METHODS,
   USER_TYPES,
+  ADDITIONAL_USER_TYPES_1,
   MEMBER_RELATIONSHIP_TYPES,
   USER_ORIGIN_OPTIONS
 } from '../config/constants';
@@ -98,7 +99,7 @@ export default function (sequelize, DataTypes) {
       defaultValue: false,
     },
     type: {
-      type: new DataTypes.ENUM(Object.keys(USER_TYPES)),
+      type: new DataTypes.ENUM(Object.keys({...USER_TYPES,...ADDITIONAL_USER_TYPES_1})),
       allowNull: false,
       defaultValue: 'client',
     },
