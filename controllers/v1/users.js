@@ -241,7 +241,7 @@ function updatePatient(req, res, next) {
  */
 function updateAuth(req, res, next) {
   let validator = {};
-
+  
   if (req.body.newEmail) {
     validator = NEW_EMAIL_VALIDATOR;
 
@@ -264,7 +264,7 @@ function updateAuth(req, res, next) {
     req.checkBody('confirmNewPassword', 'Passwords do not match')
         .equals(req.body.newPassword);
   }
-
+  
   req
   .asyncValidationErrors(true)
   .then(() => {
@@ -274,11 +274,11 @@ function updateAuth(req, res, next) {
     .then((patient) => {
       if (!patient) return next(new UnauthorizedError());
       patient.set('email', req.body.newEmail);
-
+      
       return new Promise((resolve, reject) => {
         if (!req.body.newPassword) return resolve(patient);
 
-        return patient.setPassword(req.body.newPassword, (err, user) => {
+        patient.setPassword(req.body.newPassword, (err, user) => {
           if (err) return reject(err);
           return resolve(user);
         });
@@ -286,14 +286,19 @@ function updateAuth(req, res, next) {
     })
     .then(patient => patient.save())
     .then(() => res.json({}))
-    .catch(next);
+    .catch((errors) => {
+      console.log(errors);
+      return res.status(500).send({errors: "Internal Server error"});
+    });
   })
   .catch((errors) => {
-    if (isPlainObject(errors)) {
-      return next(new BadRequestError(errors));
-    }
+    console.log(errors);
+    return res.status(500).send({errors: "Internal Server error"});
+    // if (isPlainObject(errors)) {
+    //   return next(new BadRequestError(errors));
+    // }
 
-    return next(errors);
+    // return next(errors);
   });
 }
 
@@ -397,7 +402,7 @@ router
 router
   .route('/change-auth')
   .put(
-    verifyPasswordLocal,
+    verifyPasswordLocal('oldPassword'),
     updateAuth);
 
 router
