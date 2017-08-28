@@ -219,6 +219,7 @@ export function injectSimpleUser(paramName = 'userId', localVarName = 'membershi
  * @returns {Function} - the middleware function
  */
 export function injectUser(paramName = 'userId', localVarName = 'user') {
+  console.log("222 here")
   return (req, res, next) => {
     const userId = req.params[paramName];
 
@@ -237,7 +238,7 @@ export function injectUser(paramName = 'userId', localVarName = 'user') {
     if (req.user && req.user.get('type') === 'client') {
       accountOwner = req.user.get('id');
     }
-
+    console.log(241, "Here");
     return db.User.getActiveUser(userId, accountOwner).then((user) => {
       if (!user) next(new NotFoundError());
       else {
