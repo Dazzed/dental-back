@@ -24,7 +24,7 @@ import {
 } from '../../config/constants';
 
 import { mailer } from '../../services/mailer';
-
+import { dentistReviewNotification } from '../mailer';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -58,10 +58,10 @@ function getReviews(req, res, next) {
       }]
     }]
   })
-  .then((user) => {
-    res.json({ data: user.get('dentistReviews') });
-  })
-  .catch(err => next(new BadRequestError(err)));
+    .then((user) => {
+      res.json({ data: user.get('dentistReviews') });
+    })
+    .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -78,14 +78,14 @@ function deleteReview(req, res, next) {
       dentistId: req.params.dentistId
     }
   })
-  .then((review) => {
-    if (!review) {
-      throw new NotFoundError('The review was not found.');
-    }
+    .then((review) => {
+      if (!review) {
+        throw new NotFoundError('The review was not found.');
+      }
 
-    res.json({});
-  })
-  .catch(err => next(new BadRequestError(err)));
+      res.json({});
+    })
+    .catch(err => next(new BadRequestError(err)));
 }
 
 /**
@@ -96,39 +96,24 @@ function deleteReview(req, res, next) {
  * @param {Function} next - next middleware function
  */
 async function addReview(req, res) {
-  const added = await db.Review.create({
-    title: req.body.title || '',
-    message: req.body.message,
-    rating: req.body.rating,
-    isAnonymous: req.body.isAnonymous,
-    clientId: req.user.get('id'),
-    dentistId: req.params.dentistId,
-  });
+  try {
+    const added = await db.Review.create({
+      title: req.body.title || '',
+      message: req.body.message,
+      rating: req.body.rating,
+      isAnonymous: req.body.isAnonymous,
+      clientId: req.user.get('id'),
+      dentistId: req.params.dentistId,
+    });
 
-  // get the dentist user from the database.
-  await db.User.findById(req.params.dentistId).then((dentist) => {
-    // Disable email sending for now.
-    // TODO: Send email to dentist when a review is posted.
-
-    // if (dentist) {
-    //   // send new review email notification to dentist.
-    //   mailer.sendEmail(res.mailer, {
-    //     template: 'dentists/new_review',
-    //     subject: EMAIL_SUBJECTS.dentist.new_review,
-    //     user: dentist
-    //   }, {
-    //     emailBody: dentistMessages.new_review.body
-    //   });
-    //
-    //   // create a new notification for the dentist about new review.
-    //   dentist.createNotification({
-    //     title: dentistMessages.new_review.title,
-    //     body: dentistMessages.new_review.body
-    //   });
-    // }
-  });
-
-  res.json(added);
+    // get the dentist user from the database.
+    const dentist = await db.User.findById(req.params.dentistId);
+    dentistReviewNotification(res, dentist, req.user, req.body.message);
+    return res.status(200).send({});
+  } catch(e) {
+    console.log(e);
+    return res.status(500).send({errors: "Internal Server error. Please try again later."});
+  }
 }
 
 /**
@@ -145,21 +130,21 @@ function updateReview(req, res, next) {
       clientId: req.user.get('id')
     }
   })
-  .then((review) => {
-    if (!review) res.json(new NotFoundError());
+    .then((review) => {
+      if (!review) res.json(new NotFoundError());
 
-    else {
-      review.update({
-        title: req.body.title || '',
-        message: req.body.message,
-        rating: req.body.rating,
-        isAnonymous: req.body.isAnonymous
-      });
+      else {
+        review.update({
+          title: req.body.title || '',
+          message: req.body.message,
+          rating: req.body.rating,
+          isAnonymous: req.body.isAnonymous
+        });
 
-      return res.json({});
-    }
-  })
-  .catch(errs => next(new BadRequestError(errs)));
+        return res.json({});
+      }
+    })
+    .catch(errs => next(new BadRequestError(errs)));
 }
 
 
@@ -171,24 +156,24 @@ const router = new Router({ mergeParams: true });
 router
   .route('/')
   .get(
-    userRequired,
-    getReviews);
+  userRequired,
+  getReviews);
 
 router
   .route('/review')
   .post(
-    userRequired,
-    validateBody(REVIEW),
-    addReview);
+  userRequired,
+  validateBody(REVIEW),
+  addReview);
 
 router
   .route('/review/:reviewId')
   .put(
-    userRequired,
-    validateBody(REVIEW),
-    updateReview)
+  userRequired,
+  validateBody(REVIEW),
+  updateReview)
   .delete(
-    userRequired,
-    deleteReview);
+  userRequired,
+  deleteReview);
 
 export default router;
