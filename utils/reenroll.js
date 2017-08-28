@@ -120,17 +120,17 @@ export function reenrollMember(userId, currentUserId, membershipId) {
 
     performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
       if (!err) {
-        return callback(null, true);
+        return callback(null, true, userSubscription);
       } else {
         return callback(err);
       }
     })
   }
 
-  function getNewSubscription(updateSuccessFlag, callback) {
+  function getNewSubscription(updateSuccessFlag, userSubscription, callback) {
     db.Subscription.findOne({
       where: {
-        id: subscriptionId
+        id: userSubscription.id
       },
       include: [{
         model: db.Membership,

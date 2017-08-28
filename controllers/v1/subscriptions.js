@@ -142,6 +142,7 @@ function reEnroll(req, res) {
   const currentUserId = req.user.get('id');
 
   reenrollMember(memberId, currentUserId, membershipId).then(subscription => {
+    console.log(145,subscription);
     res.status(200).send({ data: subscription });
   }, err => {
     res.status(500).send(err);
