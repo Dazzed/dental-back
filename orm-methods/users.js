@@ -481,7 +481,7 @@ export const instance = {
           }],
         },
         attributes: {
-          exclude: userFieldsExcluded
+          exclude: userFieldsExcluded.filter(f => f!== 'verified')
         },
         include: [
           {

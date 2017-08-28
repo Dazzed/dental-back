@@ -72,6 +72,10 @@ export default function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: 0,
     },
+    managerId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    }
   }, {
     tableName: 'dentistInfos',
     instanceMethods: instance,

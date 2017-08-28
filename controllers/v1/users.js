@@ -75,8 +75,36 @@ function getUser(req, res, next) {
   }
 
   return userReq
-  .then(data => res.json({ data }))
-  .catch(err => next(new BadRequestError(err)));
+  .then(data => {
+    if (data.dentistInfo) {
+      if (data.dentistInfo.managerId) {
+        const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'updatedAt'];
+        db.User.find({
+          where: { id: data.dentistInfo.managerId },
+          attributes: {
+            exclude: userFieldsExcluded
+          },
+          include: [{
+            model: db.Phone,
+            as: 'phoneNumbers'
+          }],
+        })
+        .then(manager => {
+          data.dentistInfo.manager = manager;
+          return res.json({data});
+        });
+      }
+    } else {
+      if (req.locals.user.get('type') === 'dentist') {
+        data.dentistInfo.manager = null;
+      }
+      return res.json({ data });
+    }
+  })
+  .catch(err => {
+    console.log(err);
+    return next(new BadRequestError(err));
+  });
 }
 
 /**
