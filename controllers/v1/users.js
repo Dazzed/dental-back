@@ -60,7 +60,6 @@ function verifyPassword(req, res) {
  * @param {Function} next - the express next request handler
  */
 function getUser(req, res, next) {
-  console.log("IN 63");
   let userReq = null;
 
   if (req.locals.user.get('type') === 'dentist') {
@@ -94,6 +93,8 @@ function getUser(req, res, next) {
           data.dentistInfo.manager = manager;
           return res.json({data});
         });
+      } else {
+        return res.json({ data });
       }
     } else {
       if (req.locals.user.get('type') === 'dentist') {
