@@ -93,6 +93,8 @@ function getUser(req, res, next) {
           data.dentistInfo.manager = manager;
           return res.json({data});
         });
+      } else {
+        return res.json({ data });
       }
     } else {
       if (req.locals.user.get('type') === 'dentist') {
