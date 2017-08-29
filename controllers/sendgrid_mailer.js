@@ -6,7 +6,7 @@ import {
   EMAIL_SUBJECTS,
 } from '../config/constants';
 
-var from_email = new sendgrid.Email("donotreply@dental-marketplace.com");
+var from_email = new sendgrid.Email("donotreply@dentalhq.com");
 
 function sendMail(mail) {
   let sg = require('sendgrid')(process.env.SENDGRID_API_KEY);
