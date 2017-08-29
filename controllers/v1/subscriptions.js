@@ -273,6 +273,23 @@ async function cancelSubscription(req, res) {
 
     const stripeSubscription = await stripe.getSubscription(subscription.stripeSubscriptionId);
 
+    const membershipPlan = await db.Membership.findOne({
+      where: {
+        id: subscription.membershipId
+      }
+    });
+
+    const quantity = stripeSubscription.items.data.reduce((acc, item) => acc += item.quantity, 0);
+    let query;
+    if (quantity == 1) {
+      await stripe.deleteSubscription(stripeSubscription.id);
+    } else {
+      const subscriptionItem = stripeSubscription.items.data.find(s => s.plan.id == membershipPlan.stripePlanId);
+      await stripe.updateSubscriptionItem(subscriptionItem.id, {
+        quantity: subscriptionItem.quantity - 1
+      });
+    }
+
     subscription.status = 'cancellation_requested';
     subscription.cancelsAt = Moment.unix(stripeSubscription.current_period_end);
 
