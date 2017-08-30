@@ -285,9 +285,14 @@ async function cancelSubscription(req, res) {
       await stripe.deleteSubscription(stripeSubscription.id);
     } else {
       const subscriptionItem = stripeSubscription.items.data.find(s => s.plan.id == membershipPlan.stripePlanId);
-      await stripe.updateSubscriptionItem(subscriptionItem.id, {
-        quantity: subscriptionItem.quantity - 1
-      });
+      const subItemQuantity = subscriptionItem.quantity;
+      if (subItemQuantity > 1) {
+        await stripe.updateSubscriptionItem(subscriptionItem.id, {
+          quantity: subscriptionItem.quantity - 1
+        });
+      } else {
+        await stripe.deleteSubscriptionItem(subscriptionItem.id);
+      }
     }
 
     subscription.status = 'cancellation_requested';
