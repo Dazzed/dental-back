@@ -75,8 +75,38 @@ function getUser(req, res, next) {
   }
 
   return userReq
-  .then(data => res.json({ data }))
-  .catch(err => next(new BadRequestError(err)));
+  .then(data => {
+    if (data.dentistInfo) {
+      if (data.dentistInfo.managerId) {
+        const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'updatedAt'];
+        db.User.find({
+          where: { id: data.dentistInfo.managerId },
+          attributes: {
+            exclude: userFieldsExcluded
+          },
+          include: [{
+            model: db.Phone,
+            as: 'phoneNumbers'
+          }],
+        })
+        .then(manager => {
+          data.dentistInfo.manager = manager;
+          return res.json({data});
+        });
+      } else {
+        return res.json({ data });
+      }
+    } else {
+      if (req.locals.user.get('type') === 'dentist') {
+        data.dentistInfo.manager = null;
+      }
+      return res.json({ data });
+    }
+  })
+  .catch(err => {
+    console.log(err);
+    return next(new BadRequestError(err));
+  });
 }
 
 /**
@@ -213,7 +243,7 @@ function updatePatient(req, res, next) {
  */
 function updateAuth(req, res, next) {
   let validator = {};
-
+  
   if (req.body.newEmail) {
     validator = NEW_EMAIL_VALIDATOR;
 
@@ -236,7 +266,7 @@ function updateAuth(req, res, next) {
     req.checkBody('confirmNewPassword', 'Passwords do not match')
         .equals(req.body.newPassword);
   }
-
+  
   req
   .asyncValidationErrors(true)
   .then(() => {
@@ -246,11 +276,11 @@ function updateAuth(req, res, next) {
     .then((patient) => {
       if (!patient) return next(new UnauthorizedError());
       patient.set('email', req.body.newEmail);
-
+      
       return new Promise((resolve, reject) => {
         if (!req.body.newPassword) return resolve(patient);
 
-        return patient.setPassword(req.body.newPassword, (err, user) => {
+        patient.setPassword(req.body.newPassword, (err, user) => {
           if (err) return reject(err);
           return resolve(user);
         });
@@ -258,14 +288,19 @@ function updateAuth(req, res, next) {
     })
     .then(patient => patient.save())
     .then(() => res.json({}))
-    .catch(next);
+    .catch((errors) => {
+      console.log(errors);
+      return res.status(500).send({errors: "Internal Server error"});
+    });
   })
   .catch((errors) => {
-    if (isPlainObject(errors)) {
-      return next(new BadRequestError(errors));
-    }
+    console.log(errors);
+    return res.status(500).send({errors: "Internal Server error"});
+    // if (isPlainObject(errors)) {
+    //   return next(new BadRequestError(errors));
+    // }
 
-    return next(errors);
+    // return next(errors);
   });
 }
 
@@ -369,7 +404,7 @@ router
 router
   .route('/change-auth')
   .put(
-    verifyPasswordLocal,
+    verifyPasswordLocal('oldPassword'),
     updateAuth);
 
 router

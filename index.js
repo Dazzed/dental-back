@@ -78,7 +78,7 @@ let mailerOptions = { transportMethod: 'Stub' };
 // if (process.env.NODE_ENV === 'production') {
 mailerOptions = {
   transportMethod: 'SendGrid',
-  from: 'Dental Marketplace <donotreply@dental-marketplace.com>',
+  from: 'Dental Marketplace <donotreply@dentalhq.com>',
   auth: {
     user: process.env.SENDGRID_USERNAME,
     pass: process.env.SENDGRID_PASSWORD,

@@ -215,6 +215,45 @@ export const COMPLETE_NORMAL_USER_REGISTRATION = {
   },
 };
 
+export const MANAGER_REGISTRATION = {
+  email: {
+    notEmpty: true,
+    isEmail: true,
+    isDBUnique: {
+      options: ['User', 'email'],
+      errorMessage: 'This email is in use.'
+    }
+  },
+  firstName: {
+    notEmpty: true,
+  },
+  lastName: {
+    notEmpty: true,
+  },
+  phone: {
+    notEmpty: true,
+  },
+};
+
+export const MANAGER_UPDATE= {
+  email: {
+    notEmpty: true,
+    isEmail: true,
+  },
+  firstName: {
+    notEmpty: true,
+  },
+  lastName: {
+    notEmpty: true,
+  },
+  phone: {
+    notEmpty: true,
+  },
+  id: {
+    notEmpty: true
+  }
+};
+
 export const ADD_MEMBER = {
   'member.firstName': {
     notEmpty: true,
@@ -365,12 +404,18 @@ export const CONTACT_SUPPORT = {
 };
 
 export const UPDATE_DENTIST = {
-  firstName: true,
-  middleName: true,
-  lastName: true,
-  email: true,
-  phoneNumber: {
-    optional: true
+  email: {
+    notEmpty: true,
+    isEmail: true,
+  },
+  firstName: {
+    notEmpty: true,
+  },
+  lastName: {
+    notEmpty: true,
+  },
+  phone: {
+    notEmpty: true,
   },
 };
 
