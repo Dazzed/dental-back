@@ -1,6 +1,9 @@
 import db from '../models';
 import stripe from '../controllers/stripe';
-import { performEnrollment } from './reenroll';
+import { 
+  performEnrollment,
+  performEnrollmentWithoutProration,
+} from './reenroll';
 import Mailer from '../controllers/mailer';
 
 var async = require('async');
@@ -249,7 +252,7 @@ export async function subscribeNewMember(primaryAccountHolderId, newMember, subs
 
     let perform = () => {
       return new Promise((resolve, reject) => {
-        performEnrollment(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
+        performEnrollmentWithoutProration(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
           if (err) {
             return reject(err);
           } else {

@@ -525,6 +525,16 @@ export default {
         return resolve(data);
       });
     });
+  },
+  deleteSubscriptionItem(id) {
+    return new Promise((resolve, reject) => {
+      stripe.subscriptionItems.del(id, (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(data);
+      });
+    });
   }
 
 };
