@@ -77,9 +77,9 @@ export function reenrollMember(userId, currentUserId, membershipId) {
         }
       }]
     })
-    .then(subscriptions => {
-      return callback(null, subscriptions, membershipPlan, userSubscription);
-    }, err => callback(err));
+      .then(subscriptions => {
+        return callback(null, subscriptions, membershipPlan, userSubscription);
+      }, err => callback(err));
   }
 
   function reenrollOperation(accountHolderSubscriptions, membershipPlan, userSubscription, callback) {
@@ -111,7 +111,7 @@ export function reenrollMember(userId, currentUserId, membershipId) {
             description: 're-enrollment Fee'
           }).then(invoiceItem => {
             console.log("Invoice item for reenrollOperation success for user Id -> " + paymentProfile.primaryAccountHolder);
-          },err => {
+          }, err => {
             console.log("Error in creating invoiceItem on Re-enroll operation for user Id -> " + paymentProfile.primaryAccountHolder);
           });
         }
@@ -224,5 +224,99 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
         });
       }, err => callback(err));
     }, err => callback(err));
+  }
+}
+
+export async function performEnrollmentWithoutProration(accountHolderSubscriptions, membershipPlan, userSubscription, callback) {
+  try {
+    let stripeSubscriptionItemId;
+    let stripeSubscriptionId;
+    const clientId = userSubscription.clientId;
+
+    accountHolderSubscriptions.forEach(sub => {
+      if (sub.clientId === clientId) {
+        return;
+      }
+
+      if (membershipPlan.type === 'month') {
+        if (sub.membership.type === 'month') {
+          stripeSubscriptionId = sub.stripeSubscriptionId;
+        }
+      } else if (moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0) {
+        stripeSubscriptionId = sub.stripeSubscriptionId;
+      }
+      if (sub.membership.id === membershipPlan.id) {
+        if (membershipPlan.type === 'month' || (membershipPlan.type === 'year' && moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0)) {
+          stripeSubscriptionItemId = sub.stripeSubscriptionItemId;
+          stripeSubscriptionId = sub.stripeSubscriptionId;
+        }
+      }
+    });
+
+    // Logic to charge Prorated Charge immediately
+    if (membershipPlan.type === 'month' && stripeSubscriptionId) {
+      const stripeSubscription = await stripe.getSubscription(stripeSubscriptionId);
+      let difference = moment.unix(stripeSubscription.current_period_end).diff(moment(), 'days');
+      if (difference > 1) {
+        let membershipPlan = await db.Membership.findOne({
+          where: {
+            id: userSubscription.membershipId
+          }
+        });
+        let paymentProfile = await db.PaymentProfile.findOne({
+          where: {
+            id: userSubscription.paymentProfileId
+          }
+        });
+        let charge = parseFloat(membershipPlan.price * (difference / 30));
+        charge = Math.round(charge * 100, 2);
+        charge = Math.floor(charge);
+        await stripe.issueCharge(charge, paymentProfile.stripeCustomerId, 'ADDING NEW MEMBER PRORATION CHARGE');
+      }
+    }
+    // End Logic to charge Prorated Charge immediately
+
+    if (stripeSubscriptionItemId) {
+      const stripeSubscriptionItem = await stripe.getSubscriptionItem(stripeSubscriptionItemId);
+      await stripe.updateSubscriptionItem(stripeSubscriptionItemId, {
+        quantity: stripeSubscriptionItem.quantity + 1,
+        prorate: false
+      });
+      userSubscription.stripeSubscriptionId = stripeSubscriptionId;
+      userSubscription.stripeSubscriptionItemId = stripeSubscriptionItemId;
+      userSubscription.status = 'active';
+      userSubscription.membershipId = membershipPlan.id;
+      userSubscription.stripeSubscriptionIdUpdatedAt = moment();
+      await userSubscription.save();
+    } else if (stripeSubscriptionId && membershipPlan.type !== 'year') {
+      const stripeSubscriptionItem = await stripe.createSubscriptionItem({
+        subscription: stripeSubscriptionId,
+        plan: membershipPlan.stripePlanId,
+        quantity: 1,
+        prorate: false
+      });
+      userSubscription.stripeSubscriptionId = stripeSubscriptionId;
+      userSubscription.stripeSubscriptionItemId = stripeSubscriptionItem.id;
+      userSubscription.status = 'active';
+      userSubscription.membershipId = membershipPlan.id;
+      userSubscription.stripeSubscriptionIdUpdatedAt = moment();
+      await userSubscription.save();
+    } else {
+      let paymentProfile = await db.PaymentProfile.findOne({
+        where: {
+          id: userSubscription.paymentProfileId
+        }
+      });
+      const stripeSubsription = await stripe.createSubscription(membershipPlan.stripePlanId, paymentProfile.stripeCustomerId);
+      userSubscription.stripeSubscriptionId = stripeSubsription.id;
+      userSubscription.stripeSubscriptionItemId = stripeSubsription.items.data[0].id;
+      userSubscription.status = 'active';
+      userSubscription.membershipId = membershipPlan.id;
+      userSubscription.stripeSubscriptionIdUpdatedAt = moment();
+      await userSubscription.save();
+    }
+    return callback(null, true);
+  } catch (e) {
+    callback(e);
   }
 }
