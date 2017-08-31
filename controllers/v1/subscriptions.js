@@ -257,10 +257,10 @@ async function cancelSubscription(req, res) {
     });
 
     let primaryUser;
-    if (subscription.clientId === Number(userId)) {
-      primaryUser = user;
-    } else {
+    if (user.addedBy) {
       primaryUser = await db.User.findOne({ where: { id: user.addedBy } });
+    } else {
+      primaryUser = user;
     }
 
     if ((primaryUser.cancellationFeeWaiver === true) &&
