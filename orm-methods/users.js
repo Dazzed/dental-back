@@ -259,7 +259,7 @@ export const instance = {
         const stripeSubscription = await stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId);
         primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
       } else {
-        const anyMonthlySubscription = primaryUser.members.find(m => m.subscription.membership.type === 'month' && m.subscription.status !== 'canceled');
+        const anyMonthlySubscription = primaryUser.members.find(m => m.subscription.membership.type === 'month' && m.subscription.status !== 'canceled' && m.subscription.status !== 'inactive');
         if (anyMonthlySubscription) {
           const stripeSubscription = await stripe.getSubscription(anyMonthlySubscription.subscription.stripeSubscriptionId);
           primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
