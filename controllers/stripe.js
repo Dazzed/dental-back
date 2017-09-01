@@ -443,6 +443,10 @@ export default {
     });
   },
 
+  async getInvoices(customerId, limit = 10) {
+    return stripe.invoices.list({customer: customerId, limit})
+  },
+
   /**
    * The id of the subscription record to remove
    *
