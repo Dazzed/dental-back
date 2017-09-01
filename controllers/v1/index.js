@@ -13,6 +13,7 @@ import dentistMembers from './dentist-members';
 import dentistMemberships from './dentist-memberships';
 import dentistSpecialties from './dentist-specialties';
 import dentistInfo from './dentist-info';
+import finances from './finances';
 import members from './members';
 import memberships from './memberships';
 import messages from './messages';
@@ -45,6 +46,7 @@ router.use('/users/:userId/dentist-info', dentistInfo);
 router.use('/users/:userId/members', members);
 router.use('/users/:userId/messages', messages);
 router.use('/users/:userId/notifications', notifications);
+router.use('/users/:userId(\\d+)/finances', finances);
 
 // ────────────────────────────────────────────────────────────────────────────────
 // DENTIST ENDPOINTS
