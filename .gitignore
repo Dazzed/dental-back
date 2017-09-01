@@ -10,6 +10,7 @@ playbooks
 playbooks/playbook.retry
 .vagrant
 Vagrantfile
+.DS_Store
 
 npm-debug.log*
 webpack-assets.json
