@@ -252,22 +252,27 @@ export const instance = {
     let result = [];
 
     for(let primaryUser of primaryUsers) {
-      const monthlyMembership = primaryUser.subscription.membership.type === 'month';
-      let isCancelled = primaryUser.subscription.status === 'canceled';
-      let isInactive = primaryUser.subscription.status === 'inactive';
-      if (monthlyMembership && !isCancelled && !isInactive) {
-        const stripeSubscription = await stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId);
-        primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
-      } else {
-        const anyMonthlySubscription = primaryUser.members.find(m => m.subscription.membership.type === 'month' && m.subscription.status !== 'canceled' && m.subscription.status !== 'inactive');
-        if (anyMonthlySubscription) {
-          const stripeSubscription = await stripe.getSubscription(anyMonthlySubscription.subscription.stripeSubscriptionId);
+      try {
+        const monthlyMembership = primaryUser.subscription.membership.type === 'month';
+        let isCancelled = primaryUser.subscription.status === 'canceled';
+        let isInactive = primaryUser.subscription.status === 'inactive';
+        if (monthlyMembership && !isCancelled && !isInactive) {
+          const stripeSubscription = await stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId);
           primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
         } else {
-          primaryUser.recurring_payment_date = null;
+          const anyMonthlySubscription = primaryUser.members.find(m => m.subscription.membership.type === 'month' && m.subscription.status !== 'canceled' && m.subscription.status !== 'inactive');
+          if (anyMonthlySubscription) {
+            const stripeSubscription = await stripe.getSubscription(anyMonthlySubscription.subscription.stripeSubscriptionId);
+            primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
+          } else {
+            primaryUser.recurring_payment_date = null;
+          }
         }
+        result.push(primaryUser);
+      } catch (e) {
+        primaryUser.recurring_payment_date = null;
+        result.push(primaryUser);
       }
-      result.push(primaryUser);
     }
 
     return result;
