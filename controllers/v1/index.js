@@ -9,6 +9,7 @@ import { checkUserDentistPermission } from '../../utils/permissions';
 import auth from './auth';
 import dentists from './dentists';
 import myDentist from './my-dentist';
+import dentistFinances from './dentist-finances';
 import dentistMembers from './dentist-members';
 import dentistMemberships from './dentist-memberships';
 import dentistSpecialties from './dentist-specialties';
@@ -59,6 +60,7 @@ router.use('/dentists/:dentistId/members', userRequired, dentistRequired, dentis
 router.use('/dentists/:dentistId/memberships', userRequired, dentistRequired, dentistMemberships);
 router.use('/dentists/:dentistId/reviews', reviews);
 router.use('/dentists/:dentistId/subscription', userRequired, subscriptions);
+router.use('/dentists/:dentistId(\\d+)/finances', userRequired, dentistRequired, dentistFinances);
 
 // ────────────────────────────────────────────────────────────────────────────────
 // DENTIST SPECIALTIES

@@ -14,6 +14,7 @@ import {
 
 import {
   userRequired,
+  dentistRequired,
   injectMemberFromUser,
   validateBody,
 } from '../middlewares';
@@ -21,8 +22,16 @@ import {
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
+async function getStripeCustomerId(userId) {
+  return db.PaymentProfile.findOne({
+      where: {
+        primaryAccountHolder: userId,
+      }
+    });
+}
+
 /**
- * Gets a list of invoice line items for a user
+ * Gets a list of invoices for a dentist
  *
  * @param {Object} req - the express request
  * @param {Object} res - the express response
@@ -32,20 +41,32 @@ async function getInvoices(req, res, next) {
   console.log(`params userID: ${req.params.userId}, local userID: ${req.user.get('id')}`);
   console.log(`id ${req.user.id} addedBy ${req.user.addedBy}`);
 
-  if (parseInt(req.params.userId) !== req.user.id) {
+
+  if (parseInt(req.params.dentistId) !== req.user.id) {
     return await next(new UnauthorizedError());
   }
 
   try {
-    const paymentProfile = await db.PaymentProfile.findOne({
-      where: {
-        primaryAccountHolder: req.user.addedBy || req.user.id,
-      }
+    const subscriptions = await db.Subscription.findAll({
+      where: { dentistId: req.user.id },
+      include: [{
+        model: db.PaymentProfile,
+        as: 'paymentProfile',
+        attributes: ['stripeCustomerId'],
+      },
+      {
+        model: db.User,
+        as: 'client',
+        attributes: ['firstName', 'middleName', 'lastName'],
+      }]
     });
-    const stripeCustomerId = paymentProfile.stripeCustomerId;
-    const invoices = await stripe.getInvoices(stripeCustomerId);
 
-    return res.json(invoices);
+    const queries = subscriptions.map(async (sub) => {
+      const invoices = await stripe.getInvoices(sub.paymentProfile.stripeCustomerId);
+      return {client: sub.client, invoices}
+    });
+    const invoiceLists = await Promise.all(queries)
+    return res.json(invoiceLists);
   } catch (e) {
     return await next(new BadRequestError(e));
   }
@@ -56,6 +77,6 @@ async function getInvoices(req, res, next) {
 
 const router = new Router({ mergeParams: true });
 
-router.route('/').get(userRequired, getInvoices);
+router.route('/').get(userRequired, dentistRequired, getInvoices);
 
 export default router;

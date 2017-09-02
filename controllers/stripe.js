@@ -443,8 +443,24 @@ export default {
     });
   },
 
+  /**
+   * Gets list of invoices for a specific customer.
+   *
+   * @param {string} invoiceId - the stripe subscription id
+   * @returns {Promise<Invoice>}
+   */
   async getInvoices(customerId, limit = 10) {
     return stripe.invoices.list({customer: customerId, limit})
+  },
+
+  /**
+   * Gets list of all invoices in DentalHQ.
+   *
+   * @param {string} invoiceId - the stripe subscription id
+   * @returns {Promise<Invoice>}
+   */
+  async getAllInvoices(limit = 10) {
+    return stripe.invoices.list({limit})
   },
 
   /**
