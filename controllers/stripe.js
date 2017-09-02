@@ -3,6 +3,7 @@
 // MODULES
 
 import Stripe from 'stripe';
+import redis from './redis';
 import db from '../models';
 import uuid from 'uuid/v4';
 import _ from 'lodash';
@@ -450,7 +451,16 @@ export default {
    * @returns {Promise<Invoice>}
    */
   async getInvoices(customerId, limit = 10) {
-    return stripe.invoices.list({customer: customerId, limit})
+    const cacheKey = `getInvoices:${customerId}:${limit}`;
+    // TODO support pagination
+    const cached = await redis.get(cacheKey);
+    if (cached !== null) {
+      return JSON.parse(cached);
+    }
+    
+    const res = await stripe.invoices.list({customer: customerId, limit});
+    redis.set(cacheKey, JSON.stringify(res), 'ex', 3600);
+    return res;
   },
 
   /**
