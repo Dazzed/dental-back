@@ -35,12 +35,11 @@ async function getFinances(req, res, next) {
   }
 
   const year = (!isNaN(parseInt(req.params.year)) ? req.params.year : undefined) || moment().format('Y');
+  const primaryAccountHolder = req.user.addedBy || req.user.id;
 
   try {
     const paymentProfile = await db.PaymentProfile.findOne({
-      where: {
-        primaryAccountHolder: req.user.addedBy || req.user.id,
-      }
+      where: { primaryAccountHolder }
     });
     const stripeCustomerId = paymentProfile.stripeCustomerId;
     const [invoices, charges] = await Promise.all([
@@ -48,7 +47,7 @@ async function getFinances(req, res, next) {
       stripe.getCharges(stripeCustomerId, year)
     ]);
 
-    return res.json({invoices, charges});
+    return res.json({primaryAccountHolder, year, charges: charges.data, invoices: invoices.data});
   } catch (e) {
     return await next(new BadRequestError(e));
   }
