@@ -7,6 +7,7 @@ import HTTPStatus from 'http-status';
 import moment from 'moment';
 import stripe from '../stripe';
 import db from '../../models';
+import finances from '../finances';
 
 import {
   BadRequestError,
@@ -38,16 +39,7 @@ async function getFinances(req, res, next) {
   const primaryAccountHolder = req.user.addedBy || req.user.id;
 
   try {
-    const paymentProfile = await db.PaymentProfile.findOne({
-      where: { primaryAccountHolder }
-    });
-    const stripeCustomerId = paymentProfile.stripeCustomerId;
-    const [invoices, charges] = await Promise.all([
-      stripe.getInvoices(stripeCustomerId, year),
-      stripe.getCharges(stripeCustomerId, year)
-    ]);
-
-    return res.json({primaryAccountHolder, year, charges: charges.data, invoices: invoices.data});
+    return res.json(await finances.getUserFinances(primaryAccountHolder, year));
   } catch (e) {
     return await next(new BadRequestError(e));
   }
