@@ -85,7 +85,7 @@ function subscribe(req, res, next) {
           });
         })
         .then((pp) => {
-          if (!pp) throw new Error('Current user somehow somehow has no active payment profile'); // this should never happen
+          if (!pp) throw new Error('Current user somehow has no active payment profile'); // this should never happen
           payProfile = pp;
           // 5. Check if user should be charged for re-enrollment
           if ((req.user.reEnrollmentFee === true) && (req.user.reEnrollmentFeeWaiver === false)) {
