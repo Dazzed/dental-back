@@ -40,22 +40,26 @@ export default {
 
     const queries = subscriptions.map(async (sub) => {
       const clientFinances = await this.getUserFinances(sub.paymentProfile.primaryAccountHolder, year);
-      const monthCharges = clientFinances.charges.filter((charge) => {
+      const monthlyCharges = clientFinances.charges.filter((charge) => {
         const date = moment.unix(charge.created);
         return date.format('Y') === year.toString() && date.format('M') === month.toString();
       });
 
       // TODO check how this works with refunds, etc.
-      const summarizedCharges = monthCharges.reduce((acc, cur) => {
+      const totalCharged = monthlyCharges.reduce((acc, cur) => {
         if (acc.currency !== cur.currency) throw new Error("currency mismatches aren't supported");
-        
+
         return { amount: acc.amount + cur.amount, currency: "usd"};
       }, { amount: 0, currency: "usd" });
 
-      return { client: sub.client, totalCharged: summarizedCharges, monthlyCharges: monthCharges }
+      return {
+        client: sub.client,
+        totalCharged,
+        monthlyCharges,
+      }
     });
-    const invoiceLists = await Promise.all(queries)
+    const financesList = await Promise.all(queries)
 
-    return invoiceLists
+    return {year, month, finances: financesList}
   }
 }
