@@ -28,6 +28,23 @@ function waterfaller(functions) {
 function stripe_webhook(request, response) {
 
   var { body } = request;
+  console.log(`webhook event: ${body.type}`);
+
+  // update cached data on invoice changes
+  if (body.type.startsWith('invoice')) {
+    const stripeCustomerId = body.data.object.customer;
+    const invoiceYear = moment.unix(body.data.object.date).year().toString();
+    console.log(`updating cached invoice response for customer ${stripeCustomerId}, year ${invoiceYear}`);
+    stripe.getInvoices(stripeCustomerId, invoiceYear, true); // force cache update for affected cached year in invoices
+  } else if (body.type.startsWith('charge')) {
+    const stripeCustomerId = body.data.object.customer;
+    const chargeYear = moment.unix(body.data.object.created).year().toString();
+    console.log(`updating cached charge response for customer ${stripeCustomerId}, year ${chargeYear}`);
+
+    stripe.getCharges(stripeCustomerId, chargeYear, true); // force cache update for affected cached year in charges
+
+  }
+
   if (body.type === 'charge.succeeded') {
     function queryPaymentProfile(callback) {
       let stripeCustomerId = body.data.object.customer;

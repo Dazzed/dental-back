@@ -1,6 +1,7 @@
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
+import _ from 'lodash';
 import { Router } from 'express';
 import HTTPStatus from 'http-status';
 import moment from 'moment';
@@ -28,13 +29,12 @@ import {
  * @param {Object} res - the express response
  * @param {Function} next - the express next request handler
  */
-async function getInvoices(req, res, next) {
-  console.log(`params userID: ${req.params.userId}, local userID: ${req.user.get('id')}`);
-  console.log(`id ${req.user.id} addedBy ${req.user.addedBy}`);
-
+async function getFinances(req, res, next) {
   if (parseInt(req.params.userId) !== req.user.id) {
     return await next(new UnauthorizedError());
   }
+
+  const year = (!isNaN(parseInt(req.params.year)) ? req.params.year : undefined) || moment().format('Y');
 
   try {
     const paymentProfile = await db.PaymentProfile.findOne({
@@ -43,9 +43,12 @@ async function getInvoices(req, res, next) {
       }
     });
     const stripeCustomerId = paymentProfile.stripeCustomerId;
-    const invoices = await stripe.getInvoices(stripeCustomerId);
+    const [invoices, charges] = await Promise.all([
+      stripe.getInvoices(stripeCustomerId, year),
+      stripe.getCharges(stripeCustomerId, year)
+    ]);
 
-    return res.json(invoices);
+    return res.json({invoices, charges});
   } catch (e) {
     return await next(new BadRequestError(e));
   }
@@ -56,6 +59,6 @@ async function getInvoices(req, res, next) {
 
 const router = new Router({ mergeParams: true });
 
-router.route('/').get(userRequired, getInvoices);
+router.route('/:year?').get(userRequired, getFinances);
 
 export default router;

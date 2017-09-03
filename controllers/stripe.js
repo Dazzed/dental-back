@@ -6,6 +6,7 @@ import Stripe from 'stripe';
 import redis from './redis';
 import db from '../models';
 import uuid from 'uuid/v4';
+import moment from 'moment';
 import _ from 'lodash';
 
 import {notifyMembershipPriceUpdateAdvance} from '../jobs/member_ship_fee_notification';
@@ -450,16 +451,76 @@ export default {
    * @param {string} invoiceId - the stripe subscription id
    * @returns {Promise<Invoice>}
    */
-  async getInvoices(customerId, limit = 10) {
-    const cacheKey = `getInvoices:${customerId}:${limit}`;
-    // TODO support pagination
-    const cached = await redis.get(cacheKey);
-    if (cached !== null) {
-      return JSON.parse(cached);
+  async getInvoices(customerId, year = moment().format('Y'), forceCacheUpdate = false) {
+    if (isNaN(parseInt(year))) {
+      throw new Error("year must be an integer or parseable integer string");
     }
-    
-    const res = await stripe.invoices.list({customer: customerId, limit});
-    redis.set(cacheKey, JSON.stringify(res), 'ex', 3600);
+
+    const year_str = year.toString();
+    const cacheKey = `stripe:invoices:customer:${customerId}:${year_str}`;
+    // TODO support pagination
+    if (!forceCacheUpdate) {
+      const cached = await redis.get(cacheKey);
+      if (cached !== null) {
+        return JSON.parse(cached);
+      }
+    }
+
+    const res = await stripe.invoices.list({
+      customer: customerId,
+      limit: 100,
+      date: {
+        gte: moment(year_str, "YYYY").startOf('year').unix(),
+        lte: moment(year_str, "YYYY").endOf('year').unix(),
+      }
+    });
+
+    if (res.has_more) {
+      throw new Error("pagination not yet supported, data will be missing");
+    }
+
+    // TODO expire intelligently
+    redis.set(cacheKey, JSON.stringify(res)/*, 'ex', 3600*/);
+    return res;
+  },
+
+  /**
+   * Gets list of charges for a specific customer.
+   *
+   * @param {string} invoiceId - the stripe subscription id
+   * @returns {Promise<Invoice>}
+   */
+  async getCharges(customerId, year = moment().format('Y'), forceCacheUpdate = false) {
+    if (isNaN(parseInt(year))) {
+      throw new Error("year must be an integer or parseable integer string");
+    }
+
+    const year_str = year.toString();
+    const cacheKey = `stripe:charges:customer:${customerId}:${year_str}`;
+    console.log(`cacheKey ${cacheKey}`);
+    // TODO support pagination
+    if (!forceCacheUpdate) {
+      const cached = await redis.get(cacheKey);
+      if (cached !== null) {
+        return JSON.parse(cached);
+      }
+    }
+
+    const res = await stripe.charges.list({
+      customer: customerId,
+      limit: 100,
+      created: {
+        gte: moment(year_str, "YYYY").startOf('year').unix(),
+        lte: moment(year_str, "YYYY").endOf('year').unix(),
+      }
+    });
+
+    if (res.has_more) {
+      throw new Error("pagination not yet supported, data will be missing");
+    }
+
+    // TODO expire intelligently
+    redis.set(cacheKey, JSON.stringify(res)/*, 'ex', 3600*/);
     return res;
   },
 
