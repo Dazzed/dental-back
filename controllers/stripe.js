@@ -512,7 +512,8 @@ export default {
       created: {
         gte: moment(year_str, "YYYY").startOf('year').unix(),
         lte: moment(year_str, "YYYY").endOf('year').unix(),
-      }
+      },
+      expand: ["data.invoice"],
     });
 
     if (res.has_more) {

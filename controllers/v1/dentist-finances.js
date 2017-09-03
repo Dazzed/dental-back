@@ -35,30 +35,11 @@ async function getDentistFinances(req, res, next) {
     return await next(new UnauthorizedError());
   }
 
-  const year = (!isNaN(parseInt(req.params.year)) ? req.params.year : undefined) || moment().year();
-  const month = (!isNaN(parseInt(req.params.month)) ? req.params.month : undefined) || moment().month();
+  const year = (!isNaN(parseInt(req.params.year)) ? req.params.year : undefined) || moment().format('Y');
+  const month = (!isNaN(parseInt(req.params.month)) ? req.params.month : undefined) || moment().format('M');
 
   try {
-    const subscriptions = await db.Subscription.findAll({
-      where: { dentistId: req.user.id },
-      include: [{
-        model: db.PaymentProfile,
-        as: 'paymentProfile',
-        attributes: ['primaryAccountHolder', 'stripeCustomerId'],
-      },
-      {
-        model: db.User,
-        as: 'client',
-        attributes: ['id', 'firstName', 'middleName', 'lastName'],
-      }]
-    });
-
-    const queries = subscriptions.map(async (sub) => {
-      const clientFinances = await finances.getUserFinances(sub.paymentProfile.primaryAccountHolder, year);
-      return { client: sub.client, finances: clientFinances }
-    });
-    const invoiceLists = await Promise.all(queries)
-    return res.json(invoiceLists);
+    return res.json(await finances.getDentistFinances(req.user.id, year, month));
   } catch (e) {
     return await next(new BadRequestError(e));
   }
