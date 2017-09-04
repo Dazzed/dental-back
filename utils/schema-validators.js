@@ -433,3 +433,12 @@ export const STRIPE_TOKEN = {
     notEmpty: true,
   }
 };
+
+export const REFUND_POST_PARAMS = {
+  userId: {
+    notEmpty: true,
+  },
+  refundAmount: {
+    notEmpty: true,
+  },
+};

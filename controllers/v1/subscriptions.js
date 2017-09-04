@@ -142,7 +142,6 @@ function reEnroll(req, res) {
   const currentUserId = req.user.get('id');
 
   reenrollMember(memberId, currentUserId, membershipId).then(subscription => {
-    console.log(145,subscription);
     res.status(200).send({ data: subscription });
   }, err => {
     res.status(500).send(err);
@@ -269,6 +268,12 @@ async function cancelSubscription(req, res) {
     ) {
       console.log("Cancellation Penality charge Issued successfully for user -> "+primaryUser.firstName+" "+primaryUser.lastName);
       const issueCharge = await stripe.issueCharge(EARLY_CANCELLATION_PENALTY, paymentProfile.stripeCustomerId, 'Early Cancellation Penalty Charge');
+      await db.Penality.create({
+        clientId: subscription.clientId,
+        dentistId: subscription.dentistId,
+        type: 'cancellation',
+        amount: EARLY_CANCELLATION_PENALTY
+      });
     }
 
     const stripeSubscription = await stripe.getSubscription(subscription.stripeSubscriptionId);
