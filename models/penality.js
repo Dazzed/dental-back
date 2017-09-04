@@ -1,46 +1,25 @@
-// export default function (sequelize, DataTypes) {
-//   const Refunds = DataTypes.define('Refunds', {
-//     transId: {
-//       type: DataTypes.STRING,
-//       allowNull: false,
-//     },
-//     authorizeId: {
-//       type: DataTypes.STRING,
-//       allowNull: false,
-//     },
-//     amount: {
-//       type: DataTypes.FLOAT,
-//       defaultValue: 0,
-//       allowNull: false,
-//     },
-//   }, {
-//     tableName: 'refunds',
-//     timestamps: true,
-//   });
-
-//   return Refunds;
-// }
-
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MODEL
+const constants = require('../config/constants');
 
 export default function (Sequelize, DataTypes) {
-  const Refund = Sequelize.define('Refund', {
+  const Penality = Sequelize.define('Penality', {
     clientId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notEmpty: true },
     },
     dentistId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notEmpty: true },
+    },
+    type: {
+      type: new DataTypes.ENUM(constants.PENALITY_TYPES),
+      allowNull: false,
     },
     amount: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notEmpty: true },
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -53,9 +32,9 @@ export default function (Sequelize, DataTypes) {
       defaultValue: Sequelize.fn('NOW'),
     },
   }, {
-    tableName: 'refunds',
+    tableName: 'penalities',
     timestamps: false,
-});
+  });
 
-  return Refund;
+  return Penality;
 }
