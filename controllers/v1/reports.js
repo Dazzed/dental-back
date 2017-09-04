@@ -337,7 +337,7 @@ async function getReport(req,res) {
     const date = 'SEP 2017';
 
     const dentistSubscriptions = await db.Subscription.findAll({ where: { dentistId } })
-      .filter(s => [24,25,26,27,28].includes(s.clientId));
+
     const totalMembers = dentistSubscriptions.length;
     const totalExternal = 0;
     const totalInternal = totalMembers;
