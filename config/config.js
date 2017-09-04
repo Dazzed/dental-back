@@ -23,6 +23,9 @@ module.exports = {
     database: process.env.POSTGRESQL_DATABASE,
     host: process.env.POSTGRESQL_HOST,
     port: process.env.POSTGRESQL_PORT,
-    dialect: 'postgres'
+    dialect: 'postgres',
+    dialectOptions: {
+      ssl: true
+    }
   }
 };
