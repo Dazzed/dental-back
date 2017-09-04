@@ -25,6 +25,9 @@ module.exports = {
     port: process.env.POSTGRESQL_PORT,
     url: process.env.DATABASE_URL,
     dialect: 'postgres',
-    logging: false
+    logging: false,
+    dialectOptions: {
+      ssl: true
+    }
   }
 };
