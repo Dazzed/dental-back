@@ -58,7 +58,10 @@ async function processRefund(req, res) {
     let balance = amount;
     for (let charge of chargesList.data) {
       if (balance !== 0 && charge.amount_refunded < charge.amount) {
-        await stripe.createRefund(charge.id, charge.amount);
+        if (balance > charge.amount)
+          await stripe.createRefund(charge.id, charge.amount);
+        else
+          await stripe.createRefund(charge.id, balance);
         balance -= charge.amount;
       }
     }
