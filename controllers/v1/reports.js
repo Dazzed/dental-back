@@ -328,7 +328,132 @@ function getMasterReport(req, res, next) {
 // ────────────────────────────────────────────────────────────────────────────────
 // ENDPOINTS
 
+async function getReport(req,res) {
+  try {
+    const { dentistId } = req.params;
+    const dentist = await db.User.findOne({ where: { id: dentistId } });
+    const dentistInfo = await db.DentistInfo.findOne({ where: { userId: dentistId } });
+    const dentistSpecialityName = 'GENERAL DENTIST';
+    const date = 'SEP 2017';
+
+    const dentistSubscriptions = await db.Subscription.findAll({ where: { dentistId } })
+      .filter(s => [24,25,26,27,28].includes(s.clientId));
+    const totalMembers = dentistSubscriptions.length;
+    const totalExternal = 0;
+    const totalInternal = totalMembers;
+    const totalNewMembers = totalMembers;
+    const totalNewExternal = 0;
+    const totalNewInternal = totalMembers;
+
+    const payments = await db.Payment.findAll({ where: { dentistId } });
+    const grossRevenue = payments.reduce((acc,p) => acc += Math.round(p.amount / 100, 2), 0);
+
+    const refundsRecords = await db.Refund.findAll({ where: { dentistId } });
+    const refunds = refundsRecords.reduce((acc,p) => acc += Math.round(p.amount / 100, 2), 0);
+
+    const penaltiesRecords = await db.Penality.findAll({ where: { dentistId } });
+    const penalties = penaltiesRecords.reduce((acc,p) => acc += Math.round(p.amount / 100, 2), 0);
+    
+    const managementFee = Math.round(grossRevenue * (11 / 100), 2);
+    const netPayment = grossRevenue - managementFee;
+
+    const filteredPaymentProfileIds = dentistSubscriptions
+      .reduce((acc, s) => {
+        if (!acc.includes(s.paymentProfileId)) {
+          acc.push(s.paymentProfileId);
+        }
+        return acc;
+      },[]);
+    const paymentProfileRecords = await db.PaymentProfile.findAll({ where: { 
+      id: filteredPaymentProfileIds
+    }});
+
+    let parentMemberRecords = [];
+
+    for (let profile of paymentProfileRecords) {
+      let parentLocal = {};
+      let parent = await db.User.findOne({ where: { id: profile.primaryAccountHolder } });
+      parentLocal.parentId = parent.id;
+      let childMembers = await db.User.findAll({ where: { addedBy: parent.id } });
+      parentLocal.firstName = parent.firstName;
+      parentLocal.lastName = parent.lastName;
+      parentLocal.maturity = 'Adult';
+      parentLocal.fee = Math.round(payments.find(p => p.clientId == parent.id).amount / 100, 2);
+      parentLocal.penalties = penaltiesRecords.filter(p => p.clientId == parent.id)
+        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
+      parentLocal.refunds = refundsRecords.filter(p => p.clientId == parent.id)
+        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
+      parentLocal.net = Math.round(parentLocal.fee - parentLocal.fee * (11/100), 2);
+
+      parentLocal.family = [];
+      childMembers.forEach(child => {
+        let childLocal = {};
+        childLocal.firstName = child.firstName;
+        childLocal.lastName = child.lastName;
+        childLocal.maturity = Moment().subtract(Moment(child.birthDate,'YYYY-MM-DD'), 'years') >= 18 ? 'Adult' : 'Child';
+        childLocal.fee = Math.round(payments.find(p => p.clientId == child.id).amount / 100, 2);
+        childLocal.penalties = penaltiesRecords.filter(p => p.clientId == child.id)
+          .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
+        childLocal.refunds = refundsRecords.filter(p => p.clientId == child.id)
+          .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
+        childLocal.net = Math.round(childLocal.fee - childLocal.fee * (11/100), 2);
+        parentLocal.family.push(childLocal);
+      });
+      parentLocal.membershipFeeTotal = payments
+        .filter(p => p.clientId == parent.id || childMembers.map(c => c.id).includes(p.clientId))
+        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
+      parentLocal.penaltiesTotal = penaltiesRecords
+        .filter(p => p.clientId == parent.id || childMembers.map(c => c.id).includes(p.clientId))
+        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
+      parentLocal.refundsTotal = refundsRecords
+        .filter(p => p.clientId == parent.id || childMembers.map(c => c.id).includes(p.clientId))
+        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
+      parentLocal.netTotal = Math.round(parentLocal.membershipFeeTotal - parentLocal.membershipFeeTotal * (11/100), 2);
+      parentMemberRecords.push(parentLocal);
+    }
+    console.log(parentMemberRecords);
+    const reportData = {
+      title: `${dentistInfo.officeName} -- General Report`,
+      date: `${Moment.months(new Moment().month())} ${new Moment().format('YYYY')}`,
+      totalMembers: parentMemberRecords.length,
+      parentMemberRecords,
+      totalNewMembers,
+      totalExternal,
+      totalNewExternal,
+      totalInternal,
+      totalNewInternal,
+      grossRevenue,
+      refunds,
+      managementFee,
+      netPayment,
+    };
+
+    const generalTemplate = fs.readFileSync(
+      path.resolve(`${__dirname}/../../views/reports/general-report.1.html`),
+      'utf8'
+    );
+    const report = nunjucks.renderString(generalTemplate, reportData);
+    const downloadFilename = `${reportData.title.split(' ').join('-')}_${report.date}.pdf`;
+
+    pdf.create(report, { format: 'Letter' }).toBuffer((err, resp) => {
+      if (err) { res.json(new BadRequestError(err)); }
+      res.setHeader('Content-disposition', `attachment; filename=${downloadFilename}`);
+      res.writeHead(200, { 'Content-Type': 'application/pdf' });
+      res.write(resp);
+      res.end();
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ errors: "Internal Server error" });
+  }
+}
+
 const router = new Router({ mergeParams: true });
+
+router.route('/:dentistId')
+  .get(
+    getReport
+  );
 
 router.route('/dentists/:officeId/list')
   .get(
