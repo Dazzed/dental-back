@@ -245,3 +245,8 @@ export const AUTHORIZE_HOOK_EVENTS = {
   SUBSCRIPTION_TERMINATED: 'net.authorize.customer.subscription.terminated',
   SUBSCRIPTION_CANCELLED: 'net.authorize.customer.subscription.cancelled',
 };
+
+export const PENALITY_TYPES = [
+  'cancellation',
+  'reenrollment'
+];

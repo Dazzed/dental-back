@@ -111,6 +111,12 @@ export function reenrollMember(userId, currentUserId, membershipId) {
             description: 're-enrollment Fee'
           }).then(invoiceItem => {
             console.log("Invoice item for reenrollOperation success for user Id -> " + paymentProfile.primaryAccountHolder);
+            db.Penality.create({
+              clientId: userSubscription.clientId,
+              dentistId: userSubscription.dentistId,
+              type: 'reenrollment',
+              amount: 9900
+            });
           }, err => {
             console.log("Error in creating invoiceItem on Re-enroll operation for user Id -> " + paymentProfile.primaryAccountHolder);
           });

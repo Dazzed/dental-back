@@ -4,6 +4,7 @@ var moment = require('moment');
 import db from '../../models';
 
 import stripe from '../stripe';
+import invoicePaymentSucceeded from '../../utils/invoice_payment_succeeded_webhook';
 var async = require('async');
 
 const router = new Router({ mergeParams: true });
@@ -29,6 +30,7 @@ function stripe_webhook(request, response) {
 
   var { body } = request;
   if (body.type === 'charge.succeeded') {
+    return true;
     function queryPaymentProfile(callback) {
       let stripeCustomerId = body.data.object.customer;
       db.PaymentProfile.findOne({
@@ -326,6 +328,9 @@ function stripe_webhook(request, response) {
         updateObsoleteSubscriptionItems
       ]
     ).then(data => console.log("invoice.created hook executed successfully"), err => console.log(err));
+  }
+  else if (body.type == "invoice.payment_succeeded") {
+    invoicePaymentSucceeded(body);
   }
   response.status(200).send({});
 }
