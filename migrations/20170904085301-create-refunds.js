@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  up: function (queryInterface, Sequelize) {
+  up: async function (queryInterface, Sequelize) {
     const schema = {
       id: {
         type: Sequelize.INTEGER,
@@ -34,10 +34,8 @@ module.exports = {
         defaultValue: Sequelize.fn('NOW'),
       },
     };
-    return Promise.all([
-      queryInterface.dropTable('refunds'),
-      queryInterface.createTable('refunds', schema),
-    ]);
+    await queryInterface.dropTable('refunds');
+    return queryInterface.createTable('refunds', schema);
   },
 
   down: function (queryInterface, Sequelize) {
