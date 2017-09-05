@@ -157,7 +157,9 @@ export function subscribeUserAndMembers(req, res) {
       Mailer.clientWelcomeEmail(res, req.locals.user, usersSubscription, dentistPlans);
       callback(null, data, usersSubscription, dentistPlans);
     }, err => {
-      callback(err);
+      rollbackNewUser(usersSubscription, req.locals.paymentProfile).then(d => {
+        callback(err);
+      }, e => callback(e));
     });
   }
 
@@ -326,21 +328,27 @@ export function createNewAnnualSubscriptionLocal({ membership, paymentProfile })
 }
 
 // Helper to clear user subscriptions and user records if his charge fails initially when he is registered.
-async function rollbackNewUser(usersSubscription, primaryUserSubscription) {
+async function rollbackNewUser(subscriptions, paymentProfile) {
   try {
-    const primaryAccountHolderId = primaryUserSubscription.clientId;
+    const primaryAccountHolderId = paymentProfile.primaryAccountHolder;
 
-    const deleteAddresses = await db.Address.destroy({ where: { userId: primaryAccountHolderId } });
+    await db.Address.destroy({ where: { userId: primaryAccountHolderId } });
 
-    const deletePhones = await db.Phone.destroy({ where: { userId: primaryAccountHolderId } });
+    await db.Phone.destroy({ where: { userId: primaryAccountHolderId } });
 
-    let idsToDelete = usersSubscription.map(s => s.id);
-    const deleteSubscriptions = await db.Subscription.destroy({ where: { id: { $in: idsToDelete } } });
+    let idsToDelete = subscriptions.map(s => s.id);
+    await db.Subscription.destroy({ where: { id: { $in: idsToDelete } } });
 
-    const deletePaymentProfile = await db.PaymentProfile.destroy({ where: { primaryAccountHolder: primaryAccountHolderId } });
+    await db.PaymentProfile.destroy({ where: { primaryAccountHolder: primaryAccountHolderId } });
 
-    idsToDelete = usersSubscription.map(s => s.clientId);
-    const deleteUsers = await db.User.destroy({ where: { id: { $in: idsToDelete } } });
+    idsToDelete = subscriptions.map(s => s.clientId);
+
+    // Edge case 1 (If primary user is not subbed and record is still present in users table).
+    if (!idsToDelete.includes(primaryAccountHolderId)) {
+      idsToDelete.push(primaryAccountHolderId);
+    }
+
+    await db.User.destroy({ where: { id: { $in: idsToDelete } } });
 
     return true;
   } catch(e) {
