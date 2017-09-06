@@ -103,7 +103,10 @@ export function reenrollMember(userId, currentUserId, membershipId) {
           id: profile.primaryAccountHolder
         }
       }).then(userObj => {
-        if (userObj.reEnrollmentFeeWaiver == true) {
+        // Do not fire penality if user is enrolling for the first time.
+        // We identify this if the stripeSubscriptionIdUpdatedAt is null.
+        const isEnrollingFirstTime = userSubscription.stripeSubscriptionIdUpdatedAt ? false : true;
+        if (userObj.reEnrollmentFeeWaiver == true && !isEnrollingFirstTime) {
           stripe.createInvoiceItem({
             customer: paymentProfile.stripeCustomerId,
             amount: RE_ENROLLMENT_PENALTY,
