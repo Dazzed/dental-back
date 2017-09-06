@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+  <head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ title }}</title>
+    {# STYLES #}
+	<style type="text/css">
+      @media print {
+		* { font-size: 8pt; }
+
+		body { padding: 5px 20px; }
+		h1 { font-size: 18pt; }
+		h2 { font-size: 12pt; }
+
+		.block { margin-bottom: 20px; }
+		.megablock { margin-bottom: 40px; }
+
+		.row { display: block; }
+		.column { display: inline-block; }
+
+		.table-group { position: relative; }
+		.table-row { margin-bottom: 5px; }
+		.table-heading { font-weight: bold; text-decoration: underline; }
+		.table-group.table-headings { margin-bottom: 50px; }
+		.table-group.table-headings div { font-weight: bold; text-decoration: underline; }
+		.table-group .column { position: absolute; }
+		.table-group .column.first { top: 0; right: 50%; }
+		.table-group .column.second { top: 0; right: 20%; }
+		.table-group .column.third { top: 0; right: 0%; }
+
+		.summary { border-top: 1px solid rgba(0,0,0,0.25); }
+		.summary .column { margin-top: 5px; font-weight: bold; }
+
+		.member { margin-bottom: 50px; }
+
+		.half { position: absolute; right: 50%; text-align: center; }
+		.quarter { position: absolute; right: 25%; text-align: center; }
+
+		.pad { margin-bottom: 5px; }
+	  }
+    </style>
+	{# ENDSTYLES #}
+  </head>
+  {# BODY #}
+  <body class="page">
+	<div class="block" style="margin-bottom: 20px;">
+		<h1>{{ datePeriod }} Master Report</h1>
+	</div>
+	<div class="block table-group">
+		<h2 class="table-heading">DENTIST #:</h2>
+	</div>
+	<div class="block table-group table-headings">
+		<div class="column first">Gross</div>
+		<div class="column second">Management Fee</div>
+		<div class="column third">Net</div>
+	</div>
+	{# REGION DENTIST OFFICE #}
+	<div class="member table-group">
+		{% for dentist in records %}
+			<div class="table-group table-row">
+				<div>{{ loop.index }}) {{ dentist.officeName }}</div>
+				<div class="column first">${{ dentist.gross }}</div>
+				<div class="column second">${{ dentist.managementFee }}</div>
+				<div class="column third">${{ dentist.net }}</div>
+			</div>
+		{% endfor %}
+	</div>
+	<div class="megablock table-group summary">
+		<div>Totals:</div>
+		<div class="column first">${{ totals.gross }}</div>
+		<div class="column second">${{ totals.managementFee }}</div>
+		<div class="column third">${{ totals.net }}</div>
+	</div>
+	{# ENDREGION #}
+  </body>
+  {# ENDBODY #}
+</html>
