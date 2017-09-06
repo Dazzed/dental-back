@@ -39,24 +39,25 @@ nunjucks.configure('../../views');
  */
 function getListOfReportURLs(req, res) {
   // 1. Reports start when dentistOffice was established
-  const left = new Moment(req.locals.office.dentistInfo.createdAt);
-  const timeBlocks = [];
-
+  const left = new Moment(req.locals.office.createdAt).set('date', '1');
+  const dates = {};
   while (left.diff(Moment.now()) <= 0) {
     const month = Moment.months()[left.month()];
     const monthShort = Moment.monthsShort()[left.month()];
     const year = left.year();
 
-    timeBlocks.push({
+    if (!dates[year]) {
+      dates[year] = [];
+    }
+    dates[year].push({
       month,
       year,
       url: `/reports/dentist/${req.locals.office.id}/${year}/${monthShort}/general`
     });
-
     left.add(1, 'month');
   }
 
-  res.json({ data: timeBlocks });
+  res.json({ data: dates });
 }
 
 /**
@@ -325,6 +326,10 @@ function getMasterReport(req, res, next) {
   }).catch(err => next(new BadRequestError(err)));
 }
 
+async function getMasterReportCleaned(req, res) {
+  
+}
+
 // ────────────────────────────────────────────────────────────────────────────────
 // ENDPOINTS
 
@@ -448,19 +453,55 @@ async function getReport(req,res) {
   }
 }
 
+function getMasterDates(req, res) {
+  // we start calculating dates from Jan 1st 2017
+  const initialDate = Moment('2017-01-01', 'YYYY-MM-DD');
+  const dates = {};
+  while (initialDate.diff(Moment.now()) <= 0) {
+    const month = Moment.months()[initialDate.month()];
+    const monthShort = Moment.monthsShort()[initialDate.month()];
+    const year = initialDate.year();
+
+    if (!dates[year]) {
+      dates[year] = [];
+    }
+    dates[year].push({
+      month,
+      year,
+      url: `/reports/master/${year}/${monthShort}`
+    });
+
+    initialDate.add('1', 'month');
+  }
+  return res.status(200).send({ data: dates });
+}
+
 const router = new Router({ mergeParams: true });
 
-router.route('/:dentistId')
+// router.route('/:dentistId')
+//   .get(
+//     getReport
+//   );
+
+router.route('/master_dates')
   .get(
-    getReport
+    userRequired,
+    adminRequired,
+    getMasterDates
   );
 
-router.route('/dentists/:officeId/list')
+router.route('/dentist/dates/:officeId/list')
   .get(
     userRequired,
     dentistRequired,
     injectDentistOffice('officeId', 'office'),
     getListOfReportURLs);
+
+router.route('master_report/:year/:month')
+  .get(
+    userRequired,
+    getMasterReportCleaned
+  );
 
 router.route('/dentist/:officeId/:year/:month/general')
   .get(
