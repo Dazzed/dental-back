@@ -42,6 +42,12 @@ function getListOfReportURLs(req, res) {
   const left = new Moment(req.locals.office.createdAt).set('date', '1');
   const dates = {};
   while (left.diff(Moment.now()) <= 0) {
+
+    if (left.month() === Moment().month()) {
+      if (left.year() === Moment().year()) {
+        break;
+      }
+    }
     const month = Moment.months()[left.month()];
     const monthShort = Moment.monthsShort()[left.month()];
     const year = left.year();
@@ -63,9 +69,15 @@ function getListOfReportURLs(req, res) {
 
 function getMasterDates(req, res) {
   // we start calculating dates from Jan 1st 2017
-  const initialDate = Moment('2017-01-01', 'YYYY-MM-DD');
+  const initialDate = Moment('2016-01-01', 'YYYY-MM-DD');
   const dates = {};
   while (initialDate.diff(Moment.now()) <= 0) {
+
+    if (initialDate.month() === Moment().month()) {
+      if (initialDate.year() === Moment().year()) {
+        break;
+      }
+    }
     const month = Moment.months()[initialDate.month()];
     const monthShort = Moment.monthsShort()[initialDate.month()];
     const year = initialDate.year();
