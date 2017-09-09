@@ -20,6 +20,7 @@ import notifications from './notifications';
 import offices from './offices';
 import patients from './patients';
 import pricing from './pricing';
+import refunds from './refunds';
 import reports from './reports';
 import reviews from './reviews';
 import services from './services';
@@ -85,6 +86,7 @@ router.use('/admin/dentists/reports', reports);
 router.use('/admin/dentists/offices', offices);
 
 router.use('/admin/managers', managers);
+router.use('/admin/refunds', adminRequired, refunds);
 
 router.use('/webhooks', webhooks);
 router.use('/reports', reports);

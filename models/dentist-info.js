@@ -107,6 +107,11 @@ export default function (sequelize, DataTypes) {
           as: 'memberships'
         });
 
+        // DentistInfo.hasMany(models.Membership, {
+        //   foreignKey: 'dentistInfoId',
+        //   as: 'childMembership'
+        // });
+
         DentistInfo.belongsTo(models.User, {
           foreignKey: 'userId',
           as: 'user'

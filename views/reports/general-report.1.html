@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+  <head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ title }}</title>
+    {# STYLES #}
+	<style type="text/css">
+      @media print {
+		* { font-size: 8pt; }
+
+		body { padding: 5px 20px; }
+		h1 { font-size: 18pt; }
+		h2 { font-size: 12pt; }
+
+		.block { margin-bottom: 20px; }
+		.megablock { margin-bottom: 40px; }
+
+		.row { display: block; }
+		.column { display: inline-block; }
+
+		.table-group { position: relative; }
+		.table-row { margin-bottom: 5px; }
+		.table-heading { font-weight: bold; text-decoration: underline; }
+		.table-group.table-headings { margin-bottom: 50px; }
+		.table-group.table-headings div { font-weight: bold; text-decoration: underline; }
+		.table-group .column { position: absolute; }
+		.table-group .column.first { top: 0; right: 70%; }
+		.table-group .column.second { top: 0; right: 50%; }
+		.table-group .column.third { top: 0; right: 40%; }
+		.table-group .column.fourth { top: 0; right: 30%; }
+		.table-group .column.fifth { top: 0; right: 10%; }
+		.table-group .child { margin-left: 5%; }
+
+		.summary { border-top: 1px solid rgba(0,0,0,0.25); }
+		.summary .column { margin-top: 5px; }
+		.summary .fifth { font-weight: bold; }
+
+		.member { margin-bottom: 50px; }
+
+		.half { position: absolute; right: 50%; text-align: center; }
+		.quarter { position: absolute; right: 25%; text-align: center; }
+
+		.pad { margin-bottom: 5px; }
+	  }
+    </style>
+	{# ENDSTYLES #}
+  </head>
+  <body class="page">
+    {# BODY #}
+	<div class="block" style="margin-bottom: 20px;">
+		<h1>{{ dentistSpecialityName }}</h1>
+		<span>{{ date }} Report</span>
+	</div>
+	<div class="pad table-group">
+		<span>Total Members: {{ totalMembers }}</span>
+		<span class="half">({{ totalExternal }} external)</span>
+		<span class="quarter">({{ totalInternal }} internal)</span>
+	</div>
+	<div class="megablock table-group">
+		<span>Total New Members: {{ totalNewMembers }}</span>
+		<span class="half">({{ totalNewExternal }} external)</span>
+		<span class="quarter">({{ totalNewInternal }} internal)</span>
+	</div>
+	<div class="megablock table-group" style="margin-top: 20px;">
+		<div class="pad">Total Gross Revenue:&nbsp; ${{ grossRevenue }}</div>
+		<div class="pad">Refunds:&nbsp; ${{ refunds }}</div>
+		<div class="pad">DentalHQ Management Fee (11%):&nbsp; ${{ managementFee }}</div>
+		<div class="pad">Net Payment:&nbsp; <b>${{ netPayment }}</b></div>
+	</div>
+	<div class="block table-group">
+		<h2 class="table-heading">MEMBERS</h2>
+	</div>
+	<div class="block table-group table-headings">
+		<div class="column first">Type</div>
+		<div class="column second">Membership Fee</div>
+		<div class="column third">Penalties</div>
+		<div class="column fourth">Refunds</div>
+		<div class="column fifth">Net (minus 11%)</div>
+	</div>
+	{# REGION MEMBER #}
+	<div class="member table-group">
+		{% for m in parentMemberRecords %}
+			<div class="table-group table-row">
+				<div>{{ loop.index }}) {{ m.firstName }} {{ m.lastName }}</div>
+				<div class="column first">{{ m.maturity }}</div>
+				<div class="column second">${{ m.fee }}</div>
+				<div class="column third">${{ m.penalties }}</div>
+				<div class="column fourth">${{ m.refunds }}</div>
+				<div class="column fifth">${{ m.net }}</div>
+			</div>
+			{% for c in m.family %}
+				<div class="table-group table-row">
+					<div class="child">{{ c.firstName }} {{ c.lastName }}</div>
+					<div class="column first">{{ c.maturity }}</div>
+					<div class="column second">${{ c.fee }}</div>
+					<div class="column third">${{ c.penalties }}</div>
+					<div class="column fourth">${{ c.refunds }}</div>
+					<div class="column fifth">${{ c.net }}</div>
+				</div>
+			{% endfor %}
+			<div class="megablock table-group summary">
+				<div class="column first">Total:</div>
+				<div class="column second">${{ m.membershipFeeTotal }}</div>
+				<div class="column third">${{ m.penaltiesTotal }}</div>
+				<div class="column fourth">${{ m.refundsTotal }}</div>
+				<div class="column fifth">${{ m.netTotal }}</div>
+			</div>
+		{% endfor %}
+	</div>
+	{# ENDREGION #}
+  </body>
+  {# ENDBODY #}
+</html>
