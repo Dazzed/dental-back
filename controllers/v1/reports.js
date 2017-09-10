@@ -69,7 +69,7 @@ function getListOfReportURLs(req, res) {
 
 function getMasterDates(req, res) {
   // we start calculating dates from Jan 1st 2017
-  const initialDate = Moment('2016-01-01', 'YYYY-MM-DD');
+  const initialDate = Moment('2017-01-01', 'YYYY-MM-DD');
   const dates = {};
   while (initialDate.diff(Moment.now()) <= 0) {
 

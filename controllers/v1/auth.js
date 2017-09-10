@@ -46,15 +46,16 @@ import Mailer from '../mailer';
  * @param {Object} transaction - the sequelize transaction object
  */
 function createDentistInfo(user, body, transaction) {
-  const dentistInfo = body.officeInfo;
+  let dentistInfo = body.officeInfo;
   const pricing = body.pricing || {};
   const workingHours = body.workingHours || [];
   const services = body.services || [];
   const officeImages = dentistInfo.officeImages || [];
-
+  const officeSlug = `${dentistInfo.officeName.replace(/ /g, '-')}-${user.id}`;
+  dentistInfo = { ...dentistInfo, officeSlug };
   return user.createDentistInfo(dentistInfo, { transaction })
   .then((info) => {
-    let promises = [];
+    const promises = [];
 
     promises.push(user.createMembership({
       name: 'default monthly membership',
@@ -290,7 +291,9 @@ function dentistUserSignup(req, res, next) {
         });
       })
       .then(userObj => {
+        userObj.linkedWith = userObj.id;
         return Promise.all([
+          userObj.save(),
           createDentistInfo(userObj, req.body, t),
           Mailer.activationRequestEmail(res, userObj),
           userObj.createPhoneNumber({ number: req.body.user.phone }, { transaction: t }),
