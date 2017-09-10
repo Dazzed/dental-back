@@ -30,7 +30,7 @@ function stripe_webhook(request, response) {
 
   var { body } = request;
   if (body.type === 'charge.succeeded') {
-    return true;
+    return response.status(200).send({});
     function queryPaymentProfile(callback) {
       let stripeCustomerId = body.data.object.customer;
       db.PaymentProfile.findOne({
