@@ -9,7 +9,7 @@ import Moment from 'moment';
 import db from '../../models';
 import stripe from '../stripe';
 import { BadRequestError } from '../errors';
-import { reenrollMember } from '../../utils/reenroll';
+import { reenrollMember, performEnrollmentWithoutProration } from '../../utils/reenroll';
 import { changePlanUtil } from '../../utils/change_plan';
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -136,16 +136,74 @@ function subscribe(req, res, next) {
  * @param {Object} res - the express response
  * @param {Function} next - the next middleware function
  */
-function reEnroll(req, res) {
-  const memberId = req.params.userId;
-  const membershipId = req.query.membershipId;
-  const currentUserId = req.user.get('id');
+async function reEnroll(req, res) {
+  try {
+    const memberId = req.params.userId;
+    const membershipId = req.query.membershipId;
+    const currentUserId = req.user.get('id');
 
-  reenrollMember(memberId, currentUserId, membershipId).then(subscription => {
-    res.status(200).send({ data: subscription });
-  }, err => {
-    res.status(500).send(err);
-  });
+    let user = await db.User.findOne({ where: { id: memberId } });
+    if (user.addedBy) {
+      user = await db.User.findOne({ where: { id: user.addedBy } });
+    }
+    const paymentProfile = await db.PaymentProfile.findOne({ where: { primaryAccountHolder: user.id } });
+    const accountHolderSubscriptions = await db.Subscription.findAll({
+      where: {
+        paymentProfileId: paymentProfile.id
+      },
+      include: [{
+        model: db.Membership,
+        as: 'membership',
+      }]
+    });
+    const membershipPlan = await db.Membership.findOne({ where: { id: membershipId } });
+    const userSubscription = await db.Subscription.findOne({ 
+      where: {
+        clientId: memberId,
+        dentistId: membershipPlan.userId
+      },
+      include: [{
+        model: db.Membership,
+        as: 'membership',
+      }]
+    });
+    const {
+      stripeSubscriptionId,
+      stripeSubscriptionItemId,
+      status
+    } = userSubscription;
+
+    // throw an error if the subscription is active
+    if (stripeSubscriptionId || stripeSubscriptionItemId || status === 'active') {
+      return res.status(400).send({ errors: "User already has an active subscription" });
+    }
+
+    const perform = () => {
+      return new Promise((resolve, reject) => {
+        performEnrollmentWithoutProration(accountHolderSubscriptions, membershipPlan, userSubscription, (err, data) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(data);
+        });
+      });
+    };
+
+    await perform();
+    const subscription = await db.Subscription.findOne({
+      where: {
+        id: userSubscription.id
+      },
+      include: [{
+        model: db.Membership,
+        as: 'membership',
+      }]
+     });
+    return res.status(200).send({ data: subscription });
+  } catch(e) {
+    console.log(e);
+    return res.status(500).send({ message: "Internal Server Error" });
+  }
 }
 
 /**
