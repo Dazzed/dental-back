@@ -107,6 +107,9 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
       }, {
         model: db.Membership,
         as: 'memberships',
+        where: {
+          active: true
+        },
         attributes: {
           exclude: ['userId', 'dentistInfoId', 'stripePlanId'],
         },
@@ -142,7 +145,7 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
     };
 
     if (req.params.dentistInfoId) {
-      query.where.id = req.params[dentistInfoParamName];
+      query.where.id = parseInt(req.params[dentistInfoParamName]);
     }
 
     // if not admin limit query to related data userId

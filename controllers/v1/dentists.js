@@ -43,6 +43,7 @@ import {
 
 import { instance as UserInstance } from '../../orm-methods/users';
 
+import { processDiff } from '../../utils/compareUtils';
 // ────────────────────────────────────────────────────────────────────────────────
 // HELPERS
 
@@ -195,14 +196,34 @@ function getDentistNoAuth(req, res, next) {
  * @param {Object} res - express response
  * @param {Function} next - the express next request handler
  */
-function listDentists(req, res, next) {
-  db.User.findAll({ where: { type: 'dentist' } })
-  .then(dentists => Promise.all(dentists.map(d => d.getFullDentist())))
-  .then((dentists) => {
-    // dentists = dentists.map(d => _(d).omit(['email', 'priceCodes', 'activeMemberCount']));
-    res.json({ data: dentists });
-  })
-  .catch(err => next(new BadRequestError(err)));
+async function listDentists(req, res, next) {
+  try {
+    const dentists = await db.User.findAll({ where: { type: 'dentist' } });
+    let fullDentists = await Promise.all(dentists.map(d => d.getFullDentist()));
+    for (const [i,dentist] of fullDentists.entries()) {
+      fullDentists[i].links = await db.User.findAll({
+        attributes: ['id'],
+        where: {
+          type: 'dentist',
+          linkedWith: dentist.linkedWith,
+          id: {
+            $ne: dentist.id
+          }
+        }
+      }).map(d => {
+        return { 
+          id: d.id,
+          officeName: fullDentists.find(f => f.id === d.id).dentistInfo.officeName,
+        };
+      });
+    }
+    // fullDentists = fullDentists.map(d => _(d).omit(['email', 'priceCodes', 'activeMemberCount']));
+    return res.json({ data: fullDentists });
+  } catch(e) {
+    console.log("Error in listDentists");
+    console.log(e);
+    return res.status(500).send({ errors: "Internal Server Error" });
+  }
 }
 
 function getDentist(req, res, next) {
@@ -227,7 +248,6 @@ async function updateDentist(req, res, next) {
     const id = req.params.dentistId;
     const data = req.body;
 
-    console.log("I GOT DATA",data)
     if (!id) {
       return res.status(400).send({ errors: 'Invalid Dentist' });
     }
@@ -292,12 +312,97 @@ async function updateDentist(req, res, next) {
       });
     }
 
-    const updatedDentist = await UserInstance.getFullDentist(id);
-    return res.status(200).send(updatedDentist);
-    console.log(dentist);
+    const links = data.links.map(l => l.id);
+    const alteredLinks = data.alteredLinks.map(l => l.id);
+    const linkingDiff = processDiff(links, alteredLinks);
+    if (!linkingDiff.isSame) {
+      const { addedItems, removedItems } = linkingDiff;
+
+      if (addedItems.length > 0) {
+        for (const item of addedItems) {
+          const addedDentist = await db.User.findOne({ where: { id: parseInt(item) } });
+          addedDentist.linkedWith = dentist.id;
+          await addedDentist.save();
+          const addedDentistLinks = await db.User.findAll({ where: { linkedWith: addedDentist.id } });
+          for (const adl of addedDentistLinks) {
+            adl.linkedWith = adl.id;
+            await adl.save();
+          }
+        }
+      }
+
+      if (removedItems.length > 0) {
+        for (const item of removedItems) {
+          const removedDentist = await db.User.findOne({ where: { id: parseInt(item) } });
+          removedDentist.linkedWith = removedDentist.id;
+          await removedDentist.save();
+        }
+      }
+    }
+
+    let updatedDentist = await UserInstance.getFullDentist(id);
+    updatedDentist.links = await db.User.findAll({
+      attributes: ['id'],
+      where: {
+        type: 'dentist',
+        linkedWith: {
+          $or: [updatedDentist.id, updatedDentist.linkedWith]
+        },
+        id: {
+          $ne: updatedDentist.id
+        }
+      },
+      include: [{
+        model: db.DentistInfo,
+        as: 'dentistInfo'
+      }]
+    }).map(d => {
+      return { 
+        id: d.id,
+        officeName: d.dentistInfo.officeName,
+      };
+    });
+    return res.status(200).send({ updatedDentist, refresh: !linkingDiff.isSame });
   } catch (e) {
     console.log(e);
     return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).send({});
+  }
+}
+
+async function getLinkedOffices(req, res) {
+  try {
+    const { officeSlug } = req.params;
+    if (!officeSlug) {
+      return res.status(400).send({ errors: "Invalid office name" });
+    }
+    console.log(officeSlug)
+    const dentistInfo = await db.DentistInfo.findOne({
+      where: {
+        officeSlug
+      },
+      include: [{
+        model: db.User,
+        as: 'user'
+      }]
+    });
+    if (!dentistInfo) {
+      console.log("Error in getLinkedOffices, No matching slugs found for " + officeSlug);
+      return res.status(400).send({ errors: "Invalid office name" });
+    }
+    
+    const users = await db.User.findAll({
+      where: {
+        linkedWith: dentistInfo.user.linkedWith,
+      }
+    }).map(u => u.toJSON());
+
+    const offices = await db.DentistInfo.findAll({ where: { userId: users.map(u => u.id) } })
+      .map(d => d.toJSON());
+    return res.status(200).send({ offices });
+  } catch (e) {
+    console.log("Error in getLinkedOffices");
+    console.log(e);
+    return res.status(500).send({ errors: "Internal Server Error" });
   }
 }
 
@@ -331,6 +436,10 @@ router
   .post(
     validateBody(CONTACT_SUPPORT_NO_AUTH),
     contactSupportNoAuth);
+
+router
+    .route('/get_linked_offices/:officeSlug')
+    .get(getLinkedOffices);
 
 router
   .route('/')

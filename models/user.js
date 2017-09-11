@@ -150,7 +150,11 @@ export default function (sequelize, DataTypes) {
     addedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    }
+    },
+    linkedWith: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
   }, {
     tableName: 'users',
 

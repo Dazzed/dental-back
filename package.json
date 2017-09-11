@@ -18,7 +18,7 @@
     "delete-stripe-data": "node scripts/stripe-delete-all"
   },
   "engines": {
-    "node": "7.5.0"
+    "node": "7.7.4"
   },
   "author": "",
   "license": "ISC",
