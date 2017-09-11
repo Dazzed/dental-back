@@ -107,9 +107,6 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
       }, {
         model: db.Membership,
         as: 'memberships',
-        where: {
-          active: true
-        },
         attributes: {
           exclude: ['userId', 'dentistInfoId', 'stripePlanId'],
         },
