@@ -293,10 +293,11 @@ async function cancelSubscription(req, res) {
       const subItemQuantity = subscriptionItem.quantity;
       if (subItemQuantity > 1) {
         await stripe.updateSubscriptionItem(subscriptionItem.id, {
-          quantity: subscriptionItem.quantity - 1
+          quantity: subscriptionItem.quantity - 1,
+          prorate: false
         });
       } else {
-        await stripe.deleteSubscriptionItem(subscriptionItem.id);
+        await stripe.deleteSubscriptionItem(subscriptionItem.id, { prorate: false });
       }
     }
 
