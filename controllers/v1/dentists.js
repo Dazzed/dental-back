@@ -330,10 +330,7 @@ async function updateDentist(req, res, next) {
           }
         }
       }
-      if (dentist.linkedWith !== dentist.id) {
-        dentist.linkedWith = dentist.id;
-        await dentist.save();
-      }
+
       if (removedItems.length > 0) {
         for (const item of removedItems) {
           const removedDentist = await db.User.findOne({ where: { id: parseInt(item) } });
