@@ -269,7 +269,7 @@ async function updateDentist(req, res, next) {
     if (!dentist) {
       return res.status(400).send({ errors: 'Invalid Dentist' });
     } else if (data.email !== dentist.email) {
-      const isEmailAlreprocessDiffadyInUse = await db.User.find({ where: { email: data.email } });
+      const isEmailAlreadyInUse = await db.User.find({ where: { email: data.email } });
       if (isEmailAlreadyInUse) {
         return res.status(400).send({ errors: 'Email is Already in use.' });
       }
