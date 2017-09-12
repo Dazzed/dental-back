@@ -75,6 +75,9 @@ export default function (sequelize, DataTypes) {
     managerId: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    officeSlug: {
+      type: DataTypes.STRING
     }
   }, {
     tableName: 'dentistInfos',

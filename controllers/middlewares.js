@@ -142,7 +142,7 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
     };
 
     if (req.params.dentistInfoId) {
-      query.where.id = req.params[dentistInfoParamName];
+      query.where.id = parseInt(req.params[dentistInfoParamName]);
     }
 
     // if not admin limit query to related data userId

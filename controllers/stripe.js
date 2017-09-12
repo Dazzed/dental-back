@@ -526,9 +526,9 @@ export default {
       });
     });
   },
-  deleteSubscriptionItem(id) {
+  deleteSubscriptionItem(id, config) {
     return new Promise((resolve, reject) => {
-      stripe.subscriptionItems.del(id, (err, data) => {
+      stripe.subscriptionItems.del(id, config, (err, data) => {
         if (err) {
           return reject(err);
         }
