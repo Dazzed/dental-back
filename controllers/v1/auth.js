@@ -34,6 +34,7 @@ import {
 } from '../../utils/schema-validators';
 
 import Mailer from '../mailer';
+import googleMapsClient from '../../services/google_map_api';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -133,6 +134,38 @@ function createDentistInfo(user, body, transaction) {
     return Promise.all(promises);
 
   });
+}
+
+async function geocodeOffice(user, body) {
+  try {
+    const dentistInfo = await db.DentistInfo.findOne({ where: { userId: user.id } });
+    if (!dentistInfo) {
+      return;
+    }
+    const {
+      address,
+      city,
+      state,
+      zipCode
+    } = dentistInfo;
+    const addressQuery = `${address}, ${city}, ${state}, ${zipCode}`;
+    let point = await googleMapsClient.geocode({ address: addressQuery }).asPromise();
+    if (point.json.results.length > 0) {
+      point = point.json.results[0].geometry.location;
+      dentistInfo.location = {
+        type: 'Point',
+        coordinates: [point.lat, point.lng]
+      };
+      await dentistInfo.save();
+      return true;
+    }
+    console.log(`geocodeOffice -> Not able to calculate lat,long for dentist id${user.id} ${user.firstName} ${user.lastName}`);
+    return true;
+  } catch(e) {
+    console.log("Error in geocoding dentist Office");
+    return false;
+  }
+  
 }
 
 /**
@@ -271,7 +304,7 @@ function normalUserSignup(req, res, next) {
 function dentistUserSignup(req, res, next) {
   req.checkBody('user.confirmPassword', 'Password does not match').equals(req.body.user.password);
   req.checkBody('user.confirmEmail', 'Email does not match').equals(req.body.user.email);
-
+  let createdDentist;
   req
   .asyncValidationErrors(true)
   .then(() => {
@@ -291,6 +324,7 @@ function dentistUserSignup(req, res, next) {
         });
       })
       .then(userObj => {
+        createdDentist = userObj;
         userObj.linkedWith = userObj.id;
         return Promise.all([
           userObj.save(),
@@ -301,6 +335,9 @@ function dentistUserSignup(req, res, next) {
           userObj.createAddress({ value: '' }, { transaction: t }),
         ])
       });
+    })
+    .then(() => {
+      return geocodeOffice(createdDentist, req.body);
     })
     .then(() => {
       res

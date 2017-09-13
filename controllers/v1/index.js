@@ -29,6 +29,7 @@ import subscriptions from './subscriptions';
 import users from './users';
 import webhooks from './webhooks';
 import managers from './managers';
+import search from './search';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
@@ -91,8 +92,8 @@ router.use('/admin/refunds', adminRequired, refunds);
 router.use('/webhooks', webhooks);
 router.use('/reports', reports);
 
-
 // fees waiving endpoints
 router.use('/dentists/:dentistId/patients', userRequired, dentistRequired, patients);
 
+router.use('/search', search);
 export default router;
