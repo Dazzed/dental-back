@@ -9,6 +9,7 @@ const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey',
 async function search(req, res) {
   try {
     const { filters } = req.body;
+    const { specialtiesRequired } = req.body;
     const {
       searchQuery,
       distance,
@@ -85,7 +86,11 @@ async function search(req, res) {
           planStartingCost
         };
       });
-    return res.status(200).send({ dentists });
+    let specialtiesList = null;
+    if (specialtiesRequired) {
+      specialtiesList = await db.DentistSpecialty.findAll().map(s => s.toJSON());
+    }
+    return res.status(200).send({ dentists, specialtiesList });
   } catch (e) {
     console.log(e);
     return res.status(500).send({ errors: 'Internal Server Error' });
