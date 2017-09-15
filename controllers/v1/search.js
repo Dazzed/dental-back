@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import _ from 'lodash';
-
+import sequelize from 'sequelize';
 import db from '../../models';
 import googleMapsClient from '../../services/google_map_api';
-const sequelize = require('sequelize');
+
 const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'updatedAt'];
 
 async function search(req, res) {
@@ -51,7 +51,7 @@ async function search(req, res) {
     }
     dentists = await db.DentistInfo.findAll({
       order: sequelizeDistance,
-      where: sequelize.where(sequelizeDistance, { $lte: distance * 1000 }),
+      where: sequelize.where(sequelizeDistance, { $lte: Number(distance) * 1000 }),
       include: [{
         model: db.User,
         as: 'user',
@@ -86,6 +86,9 @@ async function search(req, res) {
           planStartingCost
         };
       });
+    if (sort == 'price') {
+      dentists = dentists.sort((d1, d2) => d1.planStartingCost > d2.planStartingCost);
+    }
     let specialtiesList = null;
     if (specialtiesRequired) {
       specialtiesList = await db.DentistSpecialty.findAll().map(s => s.toJSON());
