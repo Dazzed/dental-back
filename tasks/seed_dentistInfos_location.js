@@ -16,12 +16,16 @@ async function seed_dentistInfos_location() {
       } = dentistInfo;
       const addressQuery = `${address}, ${city}, ${state}, ${zipCode}`;
       let point = await googleMapsClient.geocode({ address: addressQuery }).asPromise();
-      point = point.json.results[0].geometry.location;
-      dentistInfo.location = {
-        type: 'Point',
-        coordinates: [point.lat, point.lng]
-      };
-      await dentistInfo.save();
+      if (point.json.results.length > 0) {
+        point = point.json.results[0].geometry.location;
+        dentistInfo.location = {
+          type: 'Point',
+          coordinates: [point.lat, point.lng]
+        };
+        await dentistInfo.save();
+      }
+      console.log(`geocodeOffice -> Not able to calculate lat,long for dentist id ${dentistInfo.id}`);
+      return true;
     }
   } catch (e) {
     throw e;
