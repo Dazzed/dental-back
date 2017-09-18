@@ -78,6 +78,10 @@ export default function (sequelize, DataTypes) {
     },
     officeSlug: {
       type: DataTypes.STRING
+    },
+    location: {
+      type: DataTypes.GEOMETRY('POINT'),
+      allowNull: true
     }
   }, {
     tableName: 'dentistInfos',
