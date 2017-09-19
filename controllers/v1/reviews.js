@@ -97,11 +97,14 @@ function deleteReview(req, res, next) {
  */
 async function addReview(req, res) {
   try {
-    const added = await db.Review.create({
+    if (req.body.rating < 0 || req.body.rating > 10) {
+      return res.status(400).send({ errors: { rating: "Rating must be value between 0-10" } });
+    }
+    const addedReview = await db.Review.create({
       title: req.body.title || '',
       message: req.body.message,
       rating: req.body.rating,
-      isAnonymous: req.body.isAnonymous,
+      isAnonymous: req.body.isAnonymous || false,
       clientId: req.user.get('id'),
       dentistId: req.params.dentistId,
     });
@@ -109,8 +112,8 @@ async function addReview(req, res) {
     // get the dentist user from the database.
     const dentist = await db.User.findById(req.params.dentistId);
     dentistReviewNotification(res, dentist, req.user, req.body.message);
-    return res.status(200).send({});
-  } catch(e) {
+    return res.status(200).send({ review: addedReview });
+  } catch (e) {
     console.log(e);
     return res.status(500).send({errors: "Internal Server error. Please try again later."});
   }
@@ -123,28 +126,28 @@ async function addReview(req, res) {
  * @param {Object} res - express response
  * @param {Function} next - the express next request handler
  */
-function updateReview(req, res, next) {
-  db.Review.find({
-    where: {
-      id: req.params.reviewId,
-      clientId: req.user.get('id')
-    }
-  })
-    .then((review) => {
-      if (!review) res.json(new NotFoundError());
-
-      else {
-        review.update({
-          title: req.body.title || '',
-          message: req.body.message,
-          rating: req.body.rating,
-          isAnonymous: req.body.isAnonymous
-        });
-
-        return res.json({});
+async function updateReview(req, res) {
+  try {
+    const targetReview = await db.Review.find({
+      where: {
+        id: req.params.reviewId,
+        clientId: req.user.get('id')
       }
-    })
-    .catch(errs => next(new BadRequestError(errs)));
+    });
+    if (!targetReview) {
+      return res.json(new NotFoundError());
+    }
+    const updatedReview = await targetReview.update({
+      title: req.body.title || '',
+      message: req.body.message,
+      rating: req.body.rating,
+      isAnonymous: req.body.isAnonymous || false
+    });
+    return res.status(200).send({ review: updatedReview });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({errors: "Internal Server error. Please try again later."});
+  }
 }
 
 
