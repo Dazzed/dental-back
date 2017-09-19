@@ -389,6 +389,9 @@ export const REVIEW = {
   message: {
     notEmpty: true,
   },
+  rating: {
+    notEmpty: true
+  }
 };
 
 export const INVITE_PATIENT = {
