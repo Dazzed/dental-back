@@ -490,6 +490,10 @@ export const instance = {
         },
         include: [
           {
+            model: db.DentistSpecialty,
+            as: 'dentistSpecialty'
+          },
+          {
             model: db.Membership,
             as: 'memberships',
             attributes: {
@@ -535,14 +539,12 @@ export const instance = {
             model: db.Review,
             as: 'dentistReviews',
             attributes: {
-              exclude: ['createdAt', 'updatedAt', 'dentistId'],
+              exclude: ['updatedAt', 'dentistId'],
             },
             include: [{
               model: db.User,
               as: 'client',
-              attributes: {
-                exclude: userFieldsExcluded
-              },
+              attributes: ['firstName', 'lastName']
             }],
           }
         ]
@@ -551,6 +553,13 @@ export const instance = {
     .then((dentist) => {
       if (dentist == null) throw new Error('No dentist found');
       d = dentist.toJSON();
+      const planStartingCost = d.memberships.reduce((acc, m) => {
+        if (m.price < acc) {
+          acc = m.price;
+        }
+        return acc;
+      }, d.memberships[0].price);
+      d.planStartingCost = `$${Number(planStartingCost)}`;
       const dentistInfoId = d.dentistInfo ? d.dentistInfo.id : 0;
       // Retrieve Price Codes
       return db.MembershipItem.findAll({
