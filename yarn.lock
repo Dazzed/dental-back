@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@google/maps@^0.4.3":
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/@google/maps/-/maps-0.4.3.tgz#b468961114d6e0749c15802e0da149dcea2283a5"
+
 "@types/geojson@^1.0.0":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-1.0.2.tgz#b02d10ab028e2928ac592a051aaa4981a1941d03"
@@ -1827,7 +1831,7 @@ expand-tilde@^1.2.1, expand-tilde@^1.2.2:
     os-homedir "^1.0.1"
 
 express-cors@0.0.3:
-  version v0.0.3
+  version "0.0.3"
   resolved "https://registry.yarnpkg.com/express-cors/-/express-cors-0.0.3.tgz#5c25a78d7be69a4fcb08412cb27c8dfc758896bd"
 
 express-mailer@^0.3.1:

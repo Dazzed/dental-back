@@ -101,7 +101,7 @@ export default {
   dentistReviewNotification(res, user, patient, review) {
     return mail(res.mailer, 'dentists/new_review', {
       to: user.email,
-      subs: EMAIL_SUBJECTS.dentist.new_review,
+      subject: EMAIL_SUBJECTS.dentist.new_review,
       site,
       patient,
       review
