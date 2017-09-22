@@ -553,7 +553,7 @@ export const instance = {
     .then((dentist) => {
       if (dentist == null) throw new Error('No dentist found');
       d = dentist.toJSON();
-      const initialPrice = d.memberships.length > 0 ? d.memberships[0].price || 0;
+      const initialPrice = d.memberships.length > 0 ? d.memberships[0].price : 0;
       const planStartingCost = d.memberships.reduce((acc, m) => {
         if (m.price < acc) {
           acc = m.price;
