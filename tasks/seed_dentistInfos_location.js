@@ -23,9 +23,10 @@ async function seed_dentistInfos_location() {
           coordinates: [point.lat, point.lng]
         };
         await dentistInfo.save();
+        console.log(`geocodeOffice -> Dentist info id -> ${dentistInfo.id}`);
       }
-      console.log(`geocodeOffice -> Not able to calculate lat,long for dentist id ${dentistInfo.id}`);
-      return true;
+      // console.log(`geocodeOffice -> Not able to calculate lat,long for dentist id ${dentistInfo.id}`);
+      // return true;
     }
   } catch (e) {
     throw e;
