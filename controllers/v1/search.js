@@ -19,6 +19,7 @@ async function search(req, res) {
     } = filters;
     let sequelizeDistance;
     let dentists = [];
+    let whereClause;
 
     if (searchQuery && searchQuery !== '') {
       let point = await googleMapsClient.geocode({ address: searchQuery }).asPromise();
@@ -30,9 +31,12 @@ async function search(req, res) {
         } = point;
         const location = sequelize.literal(`ST_GeomFromText('POINT(${lat} ${lng})')`);
         sequelizeDistance = sequelize.fn('ST_Distance_Sphere', sequelize.col('location'), location);
+        whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance) * 1000 });
       } else {
         return res.status(400).send({ errors: 'Please Enter a valid search query' });
       }
+    } else if (!searchQuery && !distance) {
+      whereClause = {};
     } else {
       // Exception
       if (!coordinates) {
@@ -48,10 +52,11 @@ async function search(req, res) {
       // End Exception
       const location = sequelize.literal(`ST_GeomFromText('POINT(${lat} ${lng})')`);
       sequelizeDistance = sequelize.fn('ST_Distance_Sphere', sequelize.col('location'), location);
+      whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance) * 1000 });
     }
     dentists = await db.DentistInfo.findAll({
       order: sequelizeDistance,
-      where: sequelize.where(sequelizeDistance, { $lte: Number(distance) * 1000 }),
+      where: whereClause,
       include: [{
         model: db.User,
         as: 'user',
