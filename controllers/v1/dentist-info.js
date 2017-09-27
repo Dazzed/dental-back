@@ -217,34 +217,34 @@ async function updateDentistInfo(req, res, next) {
     });
   }
 
-  if (officeInfo.services) {
-    const previousServices = dentistInfo.get('services');
-    // Go through the services to add.
-    for (const service of officeInfo.services) {
-      const serviceAlreadyExists =
-          previousServices.find(s => s.dataValues.serviceId === service.id);
-      if (!serviceAlreadyExists) {
-        queries.push(db.DentistInfoService.upsert({
-          serviceId: service.id,
-          dentistInfoId: dentistInfo.get('id')
-        }));
-      }
-    }
+  // if (officeInfo.services) {
+  //   const previousServices = dentistInfo.get('services');
+  //   // Go through the services to add.
+  //   for (const service of officeInfo.services) {
+  //     const serviceAlreadyExists =
+  //         previousServices.find(s => s.dataValues.serviceId === service.id);
+  //     if (!serviceAlreadyExists) {
+  //       queries.push(db.DentistInfoService.upsert({
+  //         serviceId: service.id,
+  //         dentistInfoId: dentistInfo.get('id')
+  //       }));
+  //     }
+  //   }
 
-    // Go through the services to destroy.
-    for (const service of previousServices) {
-      const serviceShouldExist =
-          officeInfo.services.find(s => s.id === service.dataValues.serviceId);
-      if (!serviceShouldExist) {
-        queries.push(db.DentistInfoService.destroy({
-          where: {
-            serviceId: service.dataValues.serviceId,
-            dentistInfoId: dentistInfo.get('id'),
-          }
-        }));
-      }
-    }
-  }
+  //   // Go through the services to destroy.
+  //   for (const service of previousServices) {
+  //     const serviceShouldExist =
+  //         officeInfo.services.find(s => s.id === service.dataValues.serviceId);
+  //     if (!serviceShouldExist) {
+  //       queries.push(db.DentistInfoService.destroy({
+  //         where: {
+  //           serviceId: service.dataValues.serviceId,
+  //           dentistInfoId: dentistInfo.get('id'),
+  //         }
+  //       }));
+  //     }
+  //   }
+  // }
 
   if (officeInfo.officeImages) {
     // update office images.
