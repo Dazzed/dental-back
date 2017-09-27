@@ -250,22 +250,20 @@ export const instance = {
     });
 
     let result = [];
-
-    for(let primaryUser of primaryUsers) {
+    let promises = [];
+    for(let [index, primaryUser] of primaryUsers.entries()) {
       try {
         const monthlyMembership = primaryUser.subscription.membership.type === 'month';
         let isCancelled = primaryUser.subscription.status === 'canceled';
         let isInactive = primaryUser.subscription.status === 'inactive';
         if (monthlyMembership && !isCancelled && !isInactive) {
-          const stripeSubscription = await stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId);
-          primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
+          promises.push(stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId));
         } else {
           const anyMonthlySubscription = primaryUser.members.find(m => m.subscription.membership.type === 'month' && m.subscription.status !== 'canceled' && m.subscription.status !== 'inactive');
           if (anyMonthlySubscription) {
-            const stripeSubscription = await stripe.getSubscription(anyMonthlySubscription.subscription.stripeSubscriptionId);
-            primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
+            promises.push(stripe.getSubscription(anyMonthlySubscription.subscription.stripeSubscriptionId));
           } else {
-            primaryUser.recurring_payment_date = null;
+            promises.push(Promise.resolve({ current_period_end: null }));
           }
         }
         result.push(primaryUser);
@@ -274,6 +272,12 @@ export const instance = {
         result.push(primaryUser);
       }
     }
+
+    const stripeSubscriptions = await Promise.all(promises);
+
+    result.forEach((r, i) => {
+      r.recurring_payment_date = stripeSubscriptions[i].current_period_end;
+    });
 
     return result;
   },
