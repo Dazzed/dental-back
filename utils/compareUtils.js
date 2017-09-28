@@ -1,3 +1,7 @@
+/*
+Name: processDiff
+Description: compares two arrays and returns the diff info.
+*/
 function processDiff (original, altered) {
   let isSame = () => {
     if (original.length === altered.length) {
@@ -35,7 +39,7 @@ function processDiff (original, altered) {
     addedItems: addedItems(),
     removedItems: removedItems()
   };
-};
+}
 
 export {
   processDiff
