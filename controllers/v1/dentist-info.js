@@ -17,6 +17,7 @@ import {
   BadRequestError,
 } from '../errors';
 
+import { processDiff } from '../../utils/compareUtils';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -99,6 +100,8 @@ async function updateDentistInfo(req, res, next) {
   const workingHours = req.body.workingHours;
   const services = req.body.services;
 
+  let shouldRefresh = false;
+
   if (user) {
     queries.push(
       req.user.update({
@@ -158,6 +161,7 @@ async function updateDentistInfo(req, res, next) {
       const alteredMembership = alteredMemberships.find(am => am.id === cm.id);
       if (alteredMembership) {
         if (cm.price !== alteredMembership.value) {
+          shouldRefresh = true;
           // Disable old membership
           queries.push(
             db.Membership.update({
@@ -185,6 +189,23 @@ async function updateDentistInfo(req, res, next) {
         }
       }
     });
+    // Is discount percentage changed?
+    const anyActiveMembership = currentMemberships.find(cm => cm.active);
+    if (parseInt(pricing.treatmentDiscount) !== anyActiveMembership.discount) {
+      shouldRefresh = true;
+      const membershipIdsToUpdate = currentMemberships
+        .filter(cm => cm.active)
+        .map(cm => cm.id);
+      queries.push(
+        db.Membership.update({
+          discount: parseInt(pricing.treatmentDiscount)
+        }, {
+          where: {
+            id: membershipIdsToUpdate
+          }
+        })
+      );
+    }
   }
 
   if (user.phone) {
@@ -217,34 +238,40 @@ async function updateDentistInfo(req, res, next) {
     });
   }
 
-  // if (officeInfo.services) {
-  //   const previousServices = dentistInfo.get('services');
-  //   // Go through the services to add.
-  //   for (const service of officeInfo.services) {
-  //     const serviceAlreadyExists =
-  //         previousServices.find(s => s.dataValues.serviceId === service.id);
-  //     if (!serviceAlreadyExists) {
-  //       queries.push(db.DentistInfoService.upsert({
-  //         serviceId: service.id,
-  //         dentistInfoId: dentistInfo.get('id')
-  //       }));
-  //     }
-  //   }
+  // Logic to Add / Delete Services offered by the Dentist.
+  if (officeInfo.services) {
+    const originalServices = dentistInfo.get('services').map(s => s.service.id);
+    const alteredServices = officeInfo.services.map(s => s.id);
 
-  //   // Go through the services to destroy.
-  //   for (const service of previousServices) {
-  //     const serviceShouldExist =
-  //         officeInfo.services.find(s => s.id === service.dataValues.serviceId);
-  //     if (!serviceShouldExist) {
-  //       queries.push(db.DentistInfoService.destroy({
-  //         where: {
-  //           serviceId: service.dataValues.serviceId,
-  //           dentistInfoId: dentistInfo.get('id'),
-  //         }
-  //       }));
-  //     }
-  //   }
-  // }
+    const servicesDiff = processDiff(originalServices, alteredServices);
+    if (!servicesDiff.isSame) {
+      // Add services check
+      if (servicesDiff.addedItems.length) {
+        servicesDiff.addedItems.forEach(serviceId => {
+          queries.push(
+            db.DentistInfoService.create({
+              dentistInfoId: dentistInfo.get('id'),
+              serviceId
+            })
+          );
+        });
+      }
+
+      // Delete services check
+      if (servicesDiff.removedItems.length) {
+        servicesDiff.removedItems.forEach(serviceId => {
+          queries.push(
+            db.DentistInfoService.destroy({
+              where: {
+                dentistInfoId: dentistInfo.get('id'),
+                serviceId
+              }
+            })
+          );
+        });
+      }
+    }
+  }
 
   if (officeInfo.officeImages) {
     // update office images.
@@ -279,7 +306,7 @@ async function updateDentistInfo(req, res, next) {
     }
   }
   Promise.all(queries).then(data => {
-    return res.status(200).send({});
+    return res.status(200).send({ shouldRefresh });
   },err => {
     console.log("Error in dentist update");
     console.log(err);
