@@ -512,7 +512,7 @@ export const instance = {
             model: db.DentistInfo,
             as: 'dentistInfo',
             attributes: {
-              exclude: ['userId', 'createdAt', 'updatedAt'],
+              exclude: ['createdAt', 'updatedAt'],
             },
             include: [
               {
