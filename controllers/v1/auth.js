@@ -444,13 +444,12 @@ function forgotPassword(req, res, next) {
   if (!req.body.email) return next(new BadRequestError('Missing email'));
 
   return db.User.find({
-    where: {
-      email: db.sequelize.fn('lower', req.body.email)
-    }
+    where: db.sequelize.where(
+      db.sequelize.fn('lower', db.sequelize.col('email')),
+      db.sequelize.fn('lower', req.body.email)
+    )
   })
     .then(user => {
-      console.log(user.get('email'));
-
       if (!user) return Promise.reject(new NotFoundError());
 
       const token = user.getPasswordResetToken();
