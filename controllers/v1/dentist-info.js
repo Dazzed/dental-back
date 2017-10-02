@@ -18,6 +18,7 @@ import {
 } from '../errors';
 
 import { processDiff } from '../../utils/compareUtils';
+import { notifyPlanUpdate } from '../../helpers/membership';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -66,17 +67,47 @@ function getDentistInfo(req, res, next) {
     dentistInfo.activeMemberCount = activeMemberCount;
 
     if (req.user.get('type') === 'dentist') {
-      res.json({
+      req.dentistInfoResult = {
         data: dentistInfo,
         stripe_public_key: process.env.STRIPE_PUBLIC_KEY
-      });
+      };
+      next();
     } else {
       const data = req.user.toJSON();
       data.dentistInfo = dentistInfo;
-      res.json({ data, stripe_public_key: process.env.STRIPE_PUBLIC_KEY });
+      req.dentistInfoResult = {
+        data,
+        stripe_public_key: process.env.STRIPE_PUBLIC_KEY
+      };
+      next();
     }
   })
   .catch(err => next(new BadRequestError(err)));
+}
+
+async function getCustomMembership (req, res) {
+  const dentistInfo = req.dentistInfoResult.data;
+  if (req.query.custom_plans) {
+    const custom_memberships = await db.Membership.findAll({
+      where: {
+        dentistInfoId: dentistInfo.id,
+        active: true,
+        type: 'custom'
+      },
+      include: [{
+        model: db.CustomMembershipItem,
+        as: 'custom_items'
+      }]
+    }).map(m => m.toJSON());
+    custom_memberships.forEach(cm => {
+      cm.custom_items.forEach(ci => {
+        ci.price_code = dentistInfo.priceCodes.find(pc => pc.id === ci.priceCodeId);
+      });
+    });
+    req.dentistInfoResult.data.custom_memberships = custom_memberships;
+  }
+  
+  return res.status(200).send({ ...req.dentistInfoResult });
 }
 
 /**
@@ -186,6 +217,7 @@ async function updateDentistInfo(req, res, next) {
               active: true
             })
           );
+          notifyPlanUpdate(cm.id, membership.name, membership.price);
         }
       }
     });
@@ -358,7 +390,8 @@ router
   .get(
     userRequired,
     injectDentistInfo(),
-    getDentistInfo);
+    getDentistInfo,
+    getCustomMembership);
 
 router
   .route('/:dentistInfoId/photos/:dentistInfoPhotoId')
