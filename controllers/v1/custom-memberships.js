@@ -7,7 +7,8 @@ import {
   translateEditCustomMembershipValues,
   isSame,
   getMembership,
-  getAllMemberships
+  getAllMemberships,
+  isValidDeleteCustomMembershipObject
 } from '../../helpers/custom-memberships';
 
 
@@ -67,7 +68,8 @@ async function updateCustomMembership(req, res) {
       price,
       codes
     } = req.body;
-    const { oldMembership } = req;
+
+    const oldMembership = await getMembership(membershipId);
     await db.Membership.update({ active: false }, { where: { id: membershipId } });
     const dentistInfo = await db.DentistInfo.findOne({ where: { userId: dentistId } });
     const membership = await db.Membership.create({
@@ -98,6 +100,21 @@ async function updateCustomMembership(req, res) {
   }
 }
 
+async function deleteCustomMembership(req, res) {
+  try {
+    const { id: dentistId } = req.user;
+    const { deletingMembership } = req;
+    await deletingMembership.update({
+      active: false
+    });
+    const memberships = await getAllMemberships(dentistId, true).map(m => m.toJSON());
+    return res.status(200).send({ memberships });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ errors: 'Internal Server Error' });
+  }
+}
+
 const router = new Router({ mergeParams: true });
 
 router
@@ -110,8 +127,11 @@ router
   .patch(
     translateEditCustomMembershipValues,
     isValidEditCustomMembershipObject,
-    isSame,
     updateCustomMembership
+  )
+  .delete(
+    isValidDeleteCustomMembershipObject,
+    deleteCustomMembership
   );
 
 export default router;
