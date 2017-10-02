@@ -7,6 +7,7 @@ import { checkUserDentistPermission } from '../../utils/permissions';
 // ROUTER COMPONENTS
 
 import auth from './auth';
+import customMemberships from './custom-memberships';
 import dentists from './dentists';
 import myDentist from './my-dentist';
 import dentistMembers from './dentist-members';
@@ -59,6 +60,7 @@ router.use('/dentists/:dentistId/members', userRequired, dentistRequired, dentis
 router.use('/dentists/:dentistId/memberships', userRequired, dentistRequired, dentistMemberships);
 router.use('/dentists/:dentistId/reviews', reviews);
 router.use('/dentists/:dentistId/subscription', userRequired, subscriptions);
+router.use('/dentists/:dentistId/custom-memberships', userRequired, dentistRequired, customMemberships);
 
 // ────────────────────────────────────────────────────────────────────────────────
 // DENTIST SPECIALTIES
