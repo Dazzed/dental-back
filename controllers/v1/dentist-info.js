@@ -18,6 +18,7 @@ import {
 } from '../errors';
 
 import { processDiff } from '../../utils/compareUtils';
+import { notifyPlanUpdate } from '../../helpers/membership';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -216,6 +217,7 @@ async function updateDentistInfo(req, res, next) {
               active: true
             })
           );
+          notifyPlanUpdate(cm.id, membership.name, membership.price);
         }
       }
     });

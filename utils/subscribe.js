@@ -125,7 +125,7 @@ export function subscribeUserAndMembers(req, res) {
     });
 
     const monthlyItems = items
-      .filter(item => item.type === 'month' && item.quantity !== 0)
+      .filter(item => (item.type === 'month' || item.type === 'custom') && item.quantity !== 0)
       .map(item => {
         return { plan: item.plan, quantity: item.quantity };
       });
