@@ -16,14 +16,10 @@ export default function (sequelize, DataTypes) {
           key: 'id'
         }
       },
-      priceCodeId: {
-        type: DataTypes.INTEGER,
+      priceCodeName: {
+        type: DataTypes.STRING,
         allowNull: false,
         validate: { notEmpty: true },
-        references: {
-          model: 'priceCodes',
-          key: 'id'
-        }
       },
       price: {
         type: new DataTypes.DECIMAL(6, 2),

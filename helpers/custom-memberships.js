@@ -3,6 +3,11 @@ import _ from 'lodash';
 import db from '../models';
 import { processDiff } from '../utils/compareUtils';
 
+// Converts given string to lower case and trims it.
+function lcTrim(string) {
+  return string.toLowerCase().trim();
+}
+
 function getMembership(id) {
   return db.Membership.findOne({
     where: {
@@ -46,13 +51,24 @@ function isValidCustomMembershipObject(req, res, next) {
     return res.status(400).json({ errors: 'codes must not be empty.' });
   }
 
-  if (codes.some(({ priceCodeId, price, frequency }) => !priceCodeId || !price || !frequency)) {
+  if (codes.some(({ priceCodeName, price, frequency }) => !priceCodeName || !price || !frequency)) {
     return res.status(400).json({ errors: 'codes are not valid. Missing params.' });
   }
+  // Check if there are any duplicate Code names.
   const originalLength = codes.length;
-  const alteredLength = _.uniq(codes.map(c => c.priceCodeId)).length;
+  const alteredLength = _.uniq(codes.map(c => lcTrim(c.priceCodeName))).length;
   if (originalLength !== alteredLength) {
-    return res.status(400).json({ errors: 'You seem to have selected Price and Frequency for The same code multiple times.' });
+    // Convey FE about which code name is duplicate.
+    let duplicateCode = '';
+    codes.reduce((acc, { priceCodeName }) => {
+      if (acc.includes(lcTrim(priceCodeName))) {
+        duplicateCode = priceCodeName;
+        return acc;
+      }
+      acc.push(lcTrim(priceCodeName));
+      return acc;
+    }, []);
+    return res.status(400).json({ errors: `You seem to have entered Price and Frequency for ${duplicateCode} multiple times.` });
   }
   return next();
 }
@@ -75,13 +91,24 @@ function isValidEditCustomMembershipObject(req, res, next) {
     return res.status(400).json({ errors: 'codes must not be empty.' });
   }
 
-  if (codes.some(({ priceCodeId, price, frequency }) => !priceCodeId || !price || !frequency)) {
+  if (codes.some(({ priceCodeName, price, frequency }) => !priceCodeName || !price || !frequency)) {
     return res.status(400).json({ errors: 'codes are not valid. Missing params.' });
   }
+  // Check if there are any duplicate Code names.
   const originalLength = codes.length;
-  const alteredLength = _.uniq(codes.map(c => c.priceCodeId)).length;
+  const alteredLength = _.uniq(codes.map(c => lcTrim(c.priceCodeName))).length;
   if (originalLength !== alteredLength) {
-    return res.status(400).json({ errors: 'You seem to have selected Price and Frequency for The same code multiple times.' });
+    // Convey FE about which code name is duplicate.
+    let duplicateCode = '';
+    codes.reduce((acc, { priceCodeName }) => {
+      if (acc.includes(lcTrim(priceCodeName))) {
+        duplicateCode = priceCodeName;
+        return acc;
+      }
+      acc.push(lcTrim(priceCodeName));
+      return acc;
+    }, []);
+    return res.status(400).json({ errors: `You seem to have entered Price and Frequency for ${duplicateCode} multiple times.` });
   }
   return next();
 }
@@ -107,7 +134,7 @@ async function isValidDeleteCustomMembershipObject(req, res, next) {
   }
 }
 
-// When Patching, we will get records with priceCodeId and frequency and price type as string.
+// When Patching, we will get records with frequency and price type as string.
 // convert String type to Number
 function translateEditCustomMembershipValues(req, res, next) {
   const {
@@ -116,8 +143,7 @@ function translateEditCustomMembershipValues(req, res, next) {
   if (codes) {
     if (codes.length) {
       req.body.codes.forEach((c, i) => {
-        c.priceCodeId = Number(c.priceCodeId);
-        c.frequency = Number(c.frequency);
+        c.frequency = parseInt(c.frequency, 10);
         c.price = parseFloat(c.price);
         if (c.price_code) {
           delete c.price_code;

@@ -99,11 +99,6 @@ async function getCustomMembership (req, res) {
         as: 'custom_items'
       }]
     }).map(m => m.toJSON());
-    custom_memberships.forEach(cm => {
-      cm.custom_items.forEach(ci => {
-        ci.price_code = dentistInfo.priceCodes.find(pc => pc.id === ci.priceCodeId);
-      });
-    });
     req.dentistInfoResult.data.custom_memberships = custom_memberships;
   }
   

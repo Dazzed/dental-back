@@ -5,7 +5,6 @@ import {
   isValidCustomMembershipObject,
   isValidEditCustomMembershipObject,
   translateEditCustomMembershipValues,
-  isSame,
   getMembership,
   getAllMemberships,
   isValidDeleteCustomMembershipObject
@@ -46,9 +45,9 @@ async function createCustomMembership(req, res) {
     for (const code of codes) {
       await db.CustomMembershipItem.create({
         dentistInfoId: dentistInfo.id,
-        priceCodeId: Number(code.priceCodeId),
-        price: Number(code.price),
-        frequency: Number(code.frequency),
+        priceCodeName: code.priceCodeName,
+        price: parseFloat(code.price),
+        frequency: parseInt(code.frequency, 10),
         membershipId: membership.id
       });
     }
@@ -86,9 +85,9 @@ async function updateCustomMembership(req, res) {
     for (const code of codes) {
       await db.CustomMembershipItem.create({
         dentistInfoId: dentistInfo.id,
-        priceCodeId: Number(code.priceCodeId),
-        price: Number(code.price),
-        frequency: Number(code.frequency),
+        priceCodeName: code.priceCodeName,
+        price: parseFloat(code.price),
+        frequency: parseInt(code.frequency, 10),
         membershipId: membership.id
       });
     }
