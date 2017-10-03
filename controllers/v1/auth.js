@@ -357,9 +357,9 @@ function dentistUserSignup(req, res, next) {
     .then(() => {
       return geocodeOffice(createdDentist, req.body);
     })
-    .then(() => {
-      return seedCustomPlans(createdDentist);
-    })
+    // .then(() => {
+    //   return seedCustomPlans(createdDentist);
+    // })
     .then(() => {
       res
       .status(HTTPStatus.CREATED)
