@@ -7,7 +7,7 @@ module.exports = {
     await queryInterface.addColumn('customMembershipItems', 'priceCodeName', {
       type: Sequelize.STRING,
       allowNull: false,
-      default: ''
+      defaultValue: ''
     });
   },
 
