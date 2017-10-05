@@ -51,7 +51,11 @@ function getMembers(req, res, next) {
   query
   .then(data => {
     const stripe_public_key = process.env.STRIPE_PUBLIC_KEY;
-    return res.json({ data, stripe_public_key });
+    return res.json({
+      data: data.users,
+      recurring_payment_date: data.recurring_payment_date,
+      stripe_public_key
+    });
   })
   .catch(err => next(new BadRequestError(err)));
 }
