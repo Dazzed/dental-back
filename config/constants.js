@@ -99,7 +99,7 @@ export const CONTACT_SUPPORT_EMAIL = 'info@dentalhq.com';
 
 export const EMAIL_SUBJECTS = {
   client: {
-    welcome: 'Welcome to the Dental Marketplace!',
+    welcome: 'Dental Membership',
     membershipPriceUpdate: 'Membership price update',
     subscriptionChargeFailed: 'Recurring Payment Failure',
     subscriptionCancellation: 'Subscription Cancellation'
@@ -133,7 +133,8 @@ export const SUBSCRIPTION_STATES_LOOKUP = _.keyBy(SUBSCRIPTION_STATES, state => 
 
 export const SUBSCRIPTION_TYPES = [
   'month',
-  'year'
+  'year',
+  'custom'
 ];
 
 
@@ -245,3 +246,8 @@ export const AUTHORIZE_HOOK_EVENTS = {
   SUBSCRIPTION_TERMINATED: 'net.authorize.customer.subscription.terminated',
   SUBSCRIPTION_CANCELLED: 'net.authorize.customer.subscription.cancelled',
 };
+
+export const PENALITY_TYPES = [
+  'cancellation',
+  'reenrollment'
+];

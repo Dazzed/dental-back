@@ -250,22 +250,20 @@ export const instance = {
     });
 
     let result = [];
-
-    for(let primaryUser of primaryUsers) {
+    let promises = [];
+    for(let [index, primaryUser] of primaryUsers.entries()) {
       try {
         const monthlyMembership = primaryUser.subscription.membership.type === 'month';
         let isCancelled = primaryUser.subscription.status === 'canceled';
         let isInactive = primaryUser.subscription.status === 'inactive';
         if (monthlyMembership && !isCancelled && !isInactive) {
-          const stripeSubscription = await stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId);
-          primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
+          promises.push(stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId));
         } else {
           const anyMonthlySubscription = primaryUser.members.find(m => m.subscription.membership.type === 'month' && m.subscription.status !== 'canceled' && m.subscription.status !== 'inactive');
           if (anyMonthlySubscription) {
-            const stripeSubscription = await stripe.getSubscription(anyMonthlySubscription.subscription.stripeSubscriptionId);
-            primaryUser.recurring_payment_date = stripeSubscription.current_period_end;
+            promises.push(stripe.getSubscription(anyMonthlySubscription.subscription.stripeSubscriptionId));
           } else {
-            primaryUser.recurring_payment_date = null;
+            promises.push(Promise.resolve({ current_period_end: null }));
           }
         }
         result.push(primaryUser);
@@ -274,6 +272,12 @@ export const instance = {
         result.push(primaryUser);
       }
     }
+
+    const stripeSubscriptions = await Promise.all(promises);
+
+    result.forEach((r, i) => {
+      r.recurring_payment_date = stripeSubscriptions[i].current_period_end;
+    });
 
     return result;
   },
@@ -490,6 +494,10 @@ export const instance = {
         },
         include: [
           {
+            model: db.DentistSpecialty,
+            as: 'dentistSpecialty'
+          },
+          {
             model: db.Membership,
             as: 'memberships',
             attributes: {
@@ -504,7 +512,7 @@ export const instance = {
             model: db.DentistInfo,
             as: 'dentistInfo',
             attributes: {
-              exclude: ['userId', 'createdAt', 'updatedAt'],
+              exclude: ['createdAt', 'updatedAt'],
             },
             include: [
               {
@@ -535,14 +543,12 @@ export const instance = {
             model: db.Review,
             as: 'dentistReviews',
             attributes: {
-              exclude: ['createdAt', 'updatedAt', 'dentistId'],
+              exclude: ['updatedAt', 'dentistId'],
             },
             include: [{
               model: db.User,
               as: 'client',
-              attributes: {
-                exclude: userFieldsExcluded
-              },
+              attributes: ['firstName', 'lastName']
             }],
           }
         ]
@@ -551,6 +557,14 @@ export const instance = {
     .then((dentist) => {
       if (dentist == null) throw new Error('No dentist found');
       d = dentist.toJSON();
+      const initialPrice = d.memberships.length > 0 ? d.memberships[0].price : 0;
+      const planStartingCost = d.memberships.reduce((acc, m) => {
+        if (m.price < acc) {
+          acc = m.price;
+        }
+        return acc;
+      }, initialPrice);
+      d.planStartingCost = `$${Number(planStartingCost)}`;
       const dentistInfoId = d.dentistInfo ? d.dentistInfo.id : 0;
       // Retrieve Price Codes
       return db.MembershipItem.findAll({

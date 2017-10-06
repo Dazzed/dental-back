@@ -618,9 +618,33 @@ export default {
       });
     });
   },
-  deleteSubscriptionItem(id) {
+  deleteSubscriptionItem(id, config) {
     return new Promise((resolve, reject) => {
-      stripe.subscriptionItems.del(id, (err, data) => {
+      stripe.subscriptionItems.del(id, config, (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(data);
+      });
+    });
+  },
+  listCharges(customerId) {
+    return new Promise((resolve, reject) => {
+      stripe.charges.list({ customer: customerId }, (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(data);
+      });
+    });
+  },
+
+  createRefund(chargeId, amount) {
+    return new Promise((resolve, reject) => {
+      stripe.refunds.create({
+        charge: chargeId,
+        amount
+      }, (err, data) => {
         if (err) {
           return reject(err);
         }

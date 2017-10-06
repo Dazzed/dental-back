@@ -389,6 +389,9 @@ export const REVIEW = {
   message: {
     notEmpty: true,
   },
+  rating: {
+    notEmpty: true
+  }
 };
 
 export const INVITE_PATIENT = {
@@ -432,4 +435,13 @@ export const STRIPE_TOKEN = {
   token: {
     notEmpty: true,
   }
+};
+
+export const REFUND_POST_PARAMS = {
+  userId: {
+    notEmpty: true,
+  },
+  refundAmount: {
+    notEmpty: true,
+  },
 };

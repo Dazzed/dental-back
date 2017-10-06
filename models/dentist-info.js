@@ -75,6 +75,13 @@ export default function (sequelize, DataTypes) {
     managerId: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    officeSlug: {
+      type: DataTypes.STRING
+    },
+    location: {
+      type: DataTypes.GEOMETRY('POINT'),
+      allowNull: true
     }
   }, {
     tableName: 'dentistInfos',
@@ -106,6 +113,11 @@ export default function (sequelize, DataTypes) {
           foreignKey: 'dentistInfoId',
           as: 'memberships'
         });
+
+        // DentistInfo.hasMany(models.Membership, {
+        //   foreignKey: 'dentistInfoId',
+        //   as: 'childMembership'
+        // });
 
         DentistInfo.belongsTo(models.User, {
           foreignKey: 'userId',

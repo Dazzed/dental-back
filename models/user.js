@@ -150,7 +150,11 @@ export default function (sequelize, DataTypes) {
     addedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    }
+    },
+    linkedWith: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
   }, {
     tableName: 'users',
 
@@ -220,11 +224,11 @@ export default function (sequelize, DataTypes) {
         });
 
         // refunds relationship
-        User.hasMany(models.Refunds, {
-          foreignKey: 'userId',
-          as: 'refunds',
-          allowNull: true,
-        });
+        // User.hasMany(models.Refunds, {
+        //   foreignKey: 'userId',
+        //   as: 'refunds',
+        //   allowNull: true,
+        // });
 
         User.hasOne(models.PaymentProfile, {
           foreignKey: 'primaryAccountHolder',

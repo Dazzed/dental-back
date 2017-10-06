@@ -7,6 +7,7 @@ import { checkUserDentistPermission } from '../../utils/permissions';
 // ROUTER COMPONENTS
 
 import auth from './auth';
+import customMemberships from './custom-memberships';
 import dentists from './dentists';
 import myDentist from './my-dentist';
 import dentistFinances from './dentist-finances';
@@ -22,6 +23,7 @@ import notifications from './notifications';
 import offices from './offices';
 import patients from './patients';
 import pricing from './pricing';
+import refunds from './refunds';
 import reports from './reports';
 import reviews from './reviews';
 import services from './services';
@@ -30,6 +32,8 @@ import subscriptions from './subscriptions';
 import users from './users';
 import webhooks from './webhooks';
 import managers from './managers';
+import search from './search';
+import jobs from './jobs';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
@@ -55,12 +59,13 @@ router.use('/users/:userId(\\d+)/finances', finances);
 // FIXME: Need to break apart the `/dentists` routes a bit
 // more so as to not interfere with other dentist endpoints
 router.use('/dentists', dentists);
-router.use('/dentists/edit', dentistInfo);
+router.use('/dentist-info', dentistInfo);
 router.use('/dentists/:dentistId/members', userRequired, dentistRequired, dentistMembers);
 router.use('/dentists/:dentistId/memberships', userRequired, dentistRequired, dentistMemberships);
 router.use('/dentists/:dentistId/reviews', reviews);
 router.use('/dentists/:dentistId/subscription', userRequired, subscriptions);
 router.use('/dentists/:dentistId(\\d+)/finances', userRequired, dentistRequired, dentistFinances);
+router.use('/dentists/:dentistId/custom-memberships', userRequired, dentistRequired, customMemberships);
 
 // ────────────────────────────────────────────────────────────────────────────────
 // DENTIST SPECIALTIES
@@ -89,12 +94,14 @@ router.use('/admin/dentists/reports', reports);
 router.use('/admin/dentists/offices', offices);
 
 router.use('/admin/managers', managers);
+router.use('/admin/refunds', adminRequired, refunds);
 
 router.use('/webhooks', webhooks);
 router.use('/reports', reports);
 
-
 // fees waiving endpoints
 router.use('/dentists/:dentistId/patients', userRequired, dentistRequired, patients);
 
+router.use('/search', search);
+// router.use('/jobs', jobs);
 export default router;

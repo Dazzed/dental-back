@@ -103,7 +103,10 @@ export function reenrollMember(userId, currentUserId, membershipId) {
           id: profile.primaryAccountHolder
         }
       }).then(userObj => {
-        if (userObj.reEnrollmentFeeWaiver == true) {
+        // Do not fire penality if user is enrolling for the first time.
+        // We identify this if the stripeSubscriptionIdUpdatedAt is null.
+        const isEnrollingFirstTime = userSubscription.stripeSubscriptionIdUpdatedAt ? false : true;
+        if (userObj.reEnrollmentFeeWaiver == true && !isEnrollingFirstTime) {
           stripe.createInvoiceItem({
             customer: paymentProfile.stripeCustomerId,
             amount: RE_ENROLLMENT_PENALTY,
@@ -111,6 +114,12 @@ export function reenrollMember(userId, currentUserId, membershipId) {
             description: 're-enrollment Fee'
           }).then(invoiceItem => {
             console.log("Invoice item for reenrollOperation success for user Id -> " + paymentProfile.primaryAccountHolder);
+            db.Penality.create({
+              clientId: userSubscription.clientId,
+              dentistId: userSubscription.dentistId,
+              type: 'reenrollment',
+              amount: 9900
+            });
           }, err => {
             console.log("Error in creating invoiceItem on Re-enroll operation for user Id -> " + paymentProfile.primaryAccountHolder);
           });
@@ -161,15 +170,15 @@ export function performEnrollment(accountHolderSubscriptions, membershipPlan, us
       return;
     }
 
-    if (membershipPlan.type === 'month') {
-      if (sub.membership.type === 'month') {
+    if (membershipPlan.type === 'month' || membershipPlan.type === 'custom') {
+      if (sub.membership.type === 'month' || sub.membership.type === 'custom') {
         stripeSubscriptionId = sub.stripeSubscriptionId;
       }
     } else if (moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0) {
       stripeSubscriptionId = sub.stripeSubscriptionId;
     }
     if (sub.membership.id === membershipPlan.id) {
-      if (membershipPlan.type === 'month' || (membershipPlan.type === 'year' && moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0)) {
+      if (membershipPlan.type === 'month' || membershipPlan.type === 'custom' || (membershipPlan.type === 'year' && moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0)) {
         stripeSubscriptionItemId = sub.stripeSubscriptionItemId;
         stripeSubscriptionId = sub.stripeSubscriptionId;
       }
@@ -238,15 +247,15 @@ export async function performEnrollmentWithoutProration(accountHolderSubscriptio
         return;
       }
 
-      if (membershipPlan.type === 'month') {
-        if (sub.membership.type === 'month') {
+      if (membershipPlan.type === 'month' || membershipPlan.type === 'custom') {
+        if (sub.membership.type === 'month' || sub.membership.type === 'custom') {
           stripeSubscriptionId = sub.stripeSubscriptionId;
         }
       } else if (moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0) {
         stripeSubscriptionId = sub.stripeSubscriptionId;
       }
       if (sub.membership.id === membershipPlan.id) {
-        if (membershipPlan.type === 'month' || (membershipPlan.type === 'year' && moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0)) {
+        if ((membershipPlan.type === 'month' || membershipPlan.type === 'custom') || (membershipPlan.type === 'year' && moment().diff(moment(sub.stripeSubscriptionIdUpdatedAt), 'days') === 0)) {
           stripeSubscriptionItemId = sub.stripeSubscriptionItemId;
           stripeSubscriptionId = sub.stripeSubscriptionId;
         }
@@ -254,7 +263,7 @@ export async function performEnrollmentWithoutProration(accountHolderSubscriptio
     });
 
     // Logic to charge Prorated Charge immediately
-    if (membershipPlan.type === 'month' && stripeSubscriptionId) {
+    if ((membershipPlan.type === 'month' || membershipPlan.type === 'custom') && stripeSubscriptionId) {
       const stripeSubscription = await stripe.getSubscription(stripeSubscriptionId);
       let difference = moment.unix(stripeSubscription.current_period_end).diff(moment(), 'days');
       if (difference > 1) {

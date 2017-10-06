@@ -18,11 +18,12 @@
     "delete-stripe-data": "node scripts/stripe-delete-all"
   },
   "engines": {
-    "node": "7.5.0"
+    "node": "7.7.4"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/maps": "^0.4.3",
     "async": "^2.1.4",
     "authorizenet": "^1.0.2",
     "aws-sdk": "^2.7.13",

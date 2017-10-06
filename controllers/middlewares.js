@@ -38,7 +38,6 @@ export function adminRequired(req, res, next) {
  * @param {Object} res - the next middleware function
  */
 export function dentistRequired(req, res, next) {
-  console.log(req.user.type);
   if (req.user && (req.user.type === 'dentist' || req.user.type === 'admin')) {
     next();
   } else {
@@ -143,7 +142,7 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
     };
 
     if (req.params.dentistInfoId) {
-      query.where.id = req.params[dentistInfoParamName];
+      query.where.id = parseInt(req.params[dentistInfoParamName]);
     }
 
     // if not admin limit query to related data userId

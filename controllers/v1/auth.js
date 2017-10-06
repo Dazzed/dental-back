@@ -34,6 +34,8 @@ import {
 } from '../../utils/schema-validators';
 
 import Mailer from '../mailer';
+import googleMapsClient from '../../services/google_map_api';
+import seed_custom_plans_single_dentist from '../../tasks/seed_custom_plan_single_dentist';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -46,15 +48,16 @@ import Mailer from '../mailer';
  * @param {Object} transaction - the sequelize transaction object
  */
 function createDentistInfo(user, body, transaction) {
-  const dentistInfo = body.officeInfo;
+  let dentistInfo = body.officeInfo;
   const pricing = body.pricing || {};
   const workingHours = body.workingHours || [];
   const services = body.services || [];
   const officeImages = dentistInfo.officeImages || [];
-
+  const officeSlug = `${dentistInfo.officeName.replace(/ /g, '-')}-${user.id}`;
+  dentistInfo = { ...dentistInfo, officeSlug };
   return user.createDentistInfo(dentistInfo, { transaction })
   .then((info) => {
-    let promises = [];
+    const promises = [];
 
     promises.push(user.createMembership({
       name: 'default monthly membership',
@@ -132,6 +135,55 @@ function createDentistInfo(user, body, transaction) {
     return Promise.all(promises);
 
   });
+}
+
+async function geocodeOffice(user, body) {
+  try {
+    const dentistInfo = await db.DentistInfo.findOne({ where: { userId: user.id } });
+    if (!dentistInfo) {
+      return;
+    }
+    const {
+      address,
+      city,
+      state,
+      zipCode
+    } = dentistInfo;
+    const addressQuery = `${address}, ${city}, ${state}, ${zipCode}`;
+    let point = await googleMapsClient.geocode({ address: addressQuery }).asPromise();
+    if (point.json.results.length > 0) {
+      point = point.json.results[0].geometry.location;
+      dentistInfo.location = {
+        type: 'Point',
+        coordinates: [point.lat, point.lng]
+      };
+      await dentistInfo.save();
+      return true;
+    }
+    console.log(`geocodeOffice -> Not able to calculate lat,long for dentist id${user.id} ${user.firstName} ${user.lastName}`);
+    return true;
+  } catch(e) {
+    console.log("Error in geocoding dentist Office");
+    return false;
+  }
+  
+}
+
+async function seedCustomPlans (user) {
+  try {
+    const dentistInfo = await db.DentistInfo.findOne({
+      attributes: ['id'],
+      where: {
+        userId: user.id
+      }
+    });
+    console.log(`Custom plans seed success for dentist id ${user.id}`);
+    await seed_custom_plans_single_dentist(user.id, dentistInfo.id);
+    return;
+  } catch (e) {
+    console.log('Error in seeding dentist with Custom membership plans');
+    return false;
+  }
 }
 
 /**
@@ -270,7 +322,7 @@ function normalUserSignup(req, res, next) {
 function dentistUserSignup(req, res, next) {
   req.checkBody('user.confirmPassword', 'Password does not match').equals(req.body.user.password);
   req.checkBody('user.confirmEmail', 'Email does not match').equals(req.body.user.email);
-
+  let createdDentist;
   req
   .asyncValidationErrors(true)
   .then(() => {
@@ -290,7 +342,10 @@ function dentistUserSignup(req, res, next) {
         });
       })
       .then(userObj => {
+        createdDentist = userObj;
+        userObj.linkedWith = userObj.id;
         return Promise.all([
+          userObj.save(),
           createDentistInfo(userObj, req.body, t),
           Mailer.activationRequestEmail(res, userObj),
           userObj.createPhoneNumber({ number: req.body.user.phone }, { transaction: t }),
@@ -299,6 +354,12 @@ function dentistUserSignup(req, res, next) {
         ])
       });
     })
+    .then(() => {
+      return geocodeOffice(createdDentist, req.body);
+    })
+    // .then(() => {
+    //   return seedCustomPlans(createdDentist);
+    // })
     .then(() => {
       res
       .status(HTTPStatus.CREATED)
@@ -404,13 +465,12 @@ function forgotPassword(req, res, next) {
   if (!req.body.email) return next(new BadRequestError('Missing email'));
 
   return db.User.find({
-    where: {
-      email: db.sequelize.fn('lower', req.body.email)
-    }
+    where: db.sequelize.where(
+      db.sequelize.fn('lower', db.sequelize.col('email')),
+      db.sequelize.fn('lower', req.body.email)
+    )
   })
     .then(user => {
-      console.log(user.get('email'));
-
       if (!user) return Promise.reject(new NotFoundError());
 
       const token = user.getPasswordResetToken();

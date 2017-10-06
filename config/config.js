@@ -18,7 +18,16 @@ module.exports = {
     logging: false
   },
   production: {
+    username: process.env.POSTGRESQL_USERNAME,
+    password: process.env.POSTGRESQL_PASSWORD,
+    database: process.env.POSTGRESQL_DATABASE,
+    host: process.env.POSTGRESQL_HOST,
+    port: process.env.POSTGRESQL_PORT,
     url: process.env.DATABASE_URL,
-    dialect: 'postgres'
+    dialect: 'postgres',
+    logging: false,
+    dialectOptions: {
+      ssl: true
+    }
   }
 };
