@@ -124,7 +124,7 @@ export function injectDentistInfo(userParamName = 'userId', dentistInfoParamName
       }, {
         model: db.DentistInfoPhotos,
         as: 'officeImages',
-        attributes: ['url']
+        attributes: ['url', 'id']
       }],
       // Confused as to what the ordering should be here.
       // Should the orderign be based on the id of the memberships?
