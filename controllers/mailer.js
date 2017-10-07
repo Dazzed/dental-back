@@ -30,7 +30,22 @@ export default {
   activationRequestEmail(res, user) {
     return mail(res.mailer, 'auth/dentist/activation_required', {
       to: user.email,
-      subject: EMAIL_SUBJECTS.client.activation_required,
+      subject: EMAIL_SUBJECTS.dentist.activation_required,
+      site,
+      user,
+    });
+  },
+  /**
+   * Sends an email to the user about account manager activating their account
+   *
+   * @param {object} res - the express response
+   * @param {object} user - the user object
+   * @return {Promise<Info>}
+   */
+  thanksForSignupEmail(res, user) {
+    return mail(res.mailer, 'auth/dentist/thanks_for_signup', {
+      to: user.email,
+      subject: EMAIL_SUBJECTS.dentist.welcome,
       site,
       user,
     });

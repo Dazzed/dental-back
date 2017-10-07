@@ -18,6 +18,7 @@ import db from '../../models';
 import stripe from '../stripe';
 
 import { mailer } from '../../services/mailer';
+import Mailer from '../mailer';
 
 import {
   dentistMessages
@@ -286,6 +287,10 @@ async function updateDentist(req, res, next) {
               id
             }
           });
+    }
+
+    if (data.verified !== dentist.verified && data.verified === true) {
+      Mailer.activationCompleteEmail(res, dentist);
     }
 
     if (data.phone !== dentist.phoneNumbers[0].number) {
