@@ -217,6 +217,14 @@ async function listDentists(req, res, next) {
           officeName: fullDentists.find(f => f.id === d.id).dentistInfo.officeName,
         };
       });
+
+      const { managerId } = dentist.dentistInfo;
+      fullDentists[i].dentistInfo.manager = await db.User.findOne({
+        where: {
+          id: managerId
+        },
+        attributes: ['firstName', 'lastName', 'email']
+      });
     }
     // fullDentists = fullDentists.map(d => _(d).omit(['email', 'priceCodes', 'activeMemberCount']));
     return res.json({ data: fullDentists });
