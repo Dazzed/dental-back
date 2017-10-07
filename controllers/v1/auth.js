@@ -347,7 +347,7 @@ function dentistUserSignup(req, res, next) {
         return Promise.all([
           userObj.save(),
           createDentistInfo(userObj, req.body, t),
-          Mailer.activationRequestEmail(res, userObj),
+          Mailer.thanksForSignupEmail(res, userObj),
           userObj.createPhoneNumber({ number: req.body.user.phone }, { transaction: t }),
           // This should be created so we can edit values
           userObj.createAddress({ value: '' }, { transaction: t }),
