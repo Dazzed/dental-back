@@ -319,15 +319,33 @@ export const instance = {
       });
 
     const parsed = [];
+    let stripeSubscription = null;
     for (const user of users) {
       const subscription = await user.getMySubscriptionLocal();
       const userParsed = user.toJSON();
+      const localSubscription = userParsed.clientSubscription;
       userParsed.subscription = subscription;
       userParsed.membershipId = userParsed.clientSubscription.membership.id;
       userParsed.phone = userParsed.phoneNumbers[0] ? userParsed.phoneNumbers[0].number : undefined;
+      // get the recurring date from stripe.
+      if (!stripeSubscription) {
+        try {
+          const monthlyMembership = localSubscription.membership.type === 'month';
+          const isCancelled = localSubscription.status === 'canceled';
+          const isInactive = localSubscription.status === 'inactive';
+          if (monthlyMembership && !isCancelled && !isInactive) {
+            stripeSubscription = await stripe.getSubscription(localSubscription.stripeSubscriptionId);
+          }
+        } catch (e) {
+          console.log(`Error in calculation recurring_payment_date for subscription id ${localSubscription.id}`);
+        }
+      }
       parsed.push(userParsed);
     }
-    return parsed;
+    return {
+      users: parsed,
+      recurring_payment_date: stripeSubscription ? stripeSubscription.current_period_end : null
+    };
   },
 
   /**
@@ -543,7 +561,7 @@ export const instance = {
             model: db.Review,
             as: 'dentistReviews',
             attributes: {
-              exclude: ['updatedAt', 'dentistId'],
+              exclude: ['dentistId'],
             },
             include: [{
               model: db.User,

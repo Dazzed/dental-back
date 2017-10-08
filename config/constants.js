@@ -133,7 +133,8 @@ export const SUBSCRIPTION_STATES_LOOKUP = _.keyBy(SUBSCRIPTION_STATES, state => 
 
 export const SUBSCRIPTION_TYPES = [
   'month',
-  'year'
+  'year',
+  'custom'
 ];
 
 

@@ -7,6 +7,7 @@ import { checkUserDentistPermission } from '../../utils/permissions';
 // ROUTER COMPONENTS
 
 import auth from './auth';
+import customMemberships from './custom-memberships';
 import dentists from './dentists';
 import myDentist from './my-dentist';
 import dentistMembers from './dentist-members';
@@ -30,6 +31,7 @@ import users from './users';
 import webhooks from './webhooks';
 import managers from './managers';
 import search from './search';
+import jobs from './jobs';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
@@ -59,6 +61,7 @@ router.use('/dentists/:dentistId/members', userRequired, dentistRequired, dentis
 router.use('/dentists/:dentistId/memberships', userRequired, dentistRequired, dentistMemberships);
 router.use('/dentists/:dentistId/reviews', reviews);
 router.use('/dentists/:dentistId/subscription', userRequired, subscriptions);
+router.use('/dentists/:dentistId/custom-memberships', userRequired, dentistRequired, customMemberships);
 
 // ────────────────────────────────────────────────────────────────────────────────
 // DENTIST SPECIALTIES
@@ -96,4 +99,5 @@ router.use('/reports', reports);
 router.use('/dentists/:dentistId/patients', userRequired, dentistRequired, patients);
 
 router.use('/search', search);
+// router.use('/jobs', jobs);
 export default router;
