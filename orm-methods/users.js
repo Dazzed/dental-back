@@ -561,7 +561,7 @@ export const instance = {
             model: db.Review,
             as: 'dentistReviews',
             attributes: {
-              exclude: ['updatedAt', 'dentistId'],
+              exclude: ['dentistId'],
             },
             include: [{
               model: db.User,
