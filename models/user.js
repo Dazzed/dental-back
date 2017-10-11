@@ -112,17 +112,7 @@ export default function (sequelize, DataTypes) {
       allowNull: true,
       validate: { notEmpty: true }
     },
-    cancellationFee: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true
-    },
     reEnrollmentFee: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true
-    },
-    cancellationFeeWaiver: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true
