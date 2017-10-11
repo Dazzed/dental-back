@@ -83,17 +83,25 @@ async function search(req, res) {
     dentists = dentists
       .filter(d => d.user.verified)
       .map(d => {
-        const planStartingCost = d.memberships.reduce((acc, m) => {
-          if (parseFloat(m.price) < parseFloat(acc)) {
-            acc = parseFloat(m.price);
-          }
-          return acc;
-        }, parseFloat(d.memberships[0].price));
-        delete d.memberships;
-        return {
-          ...d,
-          planStartingCost
-        };
+        if (d.memberships.length) {
+          const planStartingCost = d.memberships.reduce((acc, m) => {
+            if (parseFloat(m.price) < parseFloat(acc)) {
+              acc = parseFloat(m.price);
+            }
+            return acc;
+          }, parseFloat(d.memberships[0].price));
+          delete d.memberships;
+          return {
+            ...d,
+            planStartingCost
+          };
+        } else {
+          delete d.memberships;
+          return {
+            ...d,
+            planStartingCost: 0
+          };
+        }
       });
     if (sort == 'price') {
       dentists = dentists.sort((d1, d2) => d1.planStartingCost > d2.planStartingCost);
