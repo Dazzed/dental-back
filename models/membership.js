@@ -73,6 +73,11 @@ export default function (sequelize, DataTypes) {
           as: 'ownerInfo'
         });
 
+        Membership.hasMany(models.CustomMembershipItem, {
+          foreignKey: 'membershipId',
+          as: 'custom_items',
+          allowNull: true,
+        });
       }
     },
 
@@ -84,7 +89,7 @@ export default function (sequelize, DataTypes) {
             stripe.createUniqueID(membership.userId, membership.name),
             membership.name,
             membership.price,
-            membership.type,
+            membership.type === 'custom' ? 'month' : membership.type,
           ).then((plan) => {
             membership.stripePlanId = plan.id;
             resolve();

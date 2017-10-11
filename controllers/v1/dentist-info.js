@@ -8,7 +8,7 @@ import _ from 'lodash';
 import async from 'async';
 import db from '../../models';
 
-import { userRequired, injectDentistInfo } from '../middlewares';
+import { userRequired, injectDentistInfo, dentistRequired } from '../middlewares';
 import { MembershipMethods } from '../../orm-methods/memberships';
 import { SUBSCRIPTION_STATES_LOOKUP } from '../../config/constants';
 
@@ -18,6 +18,8 @@ import {
 } from '../errors';
 
 import { processDiff } from '../../utils/compareUtils';
+import { notifyPlanUpdate } from '../../helpers/membership';
+import { deleteObjectInS3 } from '../../helpers/dentist-info';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -66,17 +68,42 @@ function getDentistInfo(req, res, next) {
     dentistInfo.activeMemberCount = activeMemberCount;
 
     if (req.user.get('type') === 'dentist') {
-      res.json({
+      req.dentistInfoResult = {
         data: dentistInfo,
         stripe_public_key: process.env.STRIPE_PUBLIC_KEY
-      });
+      };
+      next();
     } else {
       const data = req.user.toJSON();
       data.dentistInfo = dentistInfo;
-      res.json({ data, stripe_public_key: process.env.STRIPE_PUBLIC_KEY });
+      req.dentistInfoResult = {
+        data,
+        stripe_public_key: process.env.STRIPE_PUBLIC_KEY
+      };
+      next();
     }
   })
   .catch(err => next(new BadRequestError(err)));
+}
+
+async function getCustomMembership (req, res) {
+  const dentistInfo = req.dentistInfoResult.data;
+  if (req.query.custom_plans) {
+    const custom_memberships = await db.Membership.findAll({
+      where: {
+        dentistInfoId: dentistInfo.id,
+        active: true,
+        type: 'custom'
+      },
+      include: [{
+        model: db.CustomMembershipItem,
+        as: 'custom_items'
+      }]
+    }).map(m => m.toJSON());
+    req.dentistInfoResult.data.custom_memberships = custom_memberships;
+  }
+  
+  return res.status(200).send({ ...req.dentistInfoResult });
 }
 
 /**
@@ -186,6 +213,7 @@ async function updateDentistInfo(req, res, next) {
               active: true
             })
           );
+          notifyPlanUpdate(cm.id, membership.name, membership.price);
         }
       }
     });
@@ -274,13 +302,16 @@ async function updateDentistInfo(req, res, next) {
   }
 
   if (officeInfo.officeImages) {
+    
     // update office images.
     const previousImages = dentistInfo.get('officeImages');
-
+    console.log(officeInfo.officeImages);
+    console.log("------------------")
+    console.log(previousImages);
     // Go through the images to add.
     officeInfo.officeImages.forEach((imageUrl) => {
       const imageAlreadyExists =
-          previousImages.find(s => s.dataValues.url === imageUrl);
+          previousImages.find(s => s.url === imageUrl);
       if (!imageAlreadyExists) {
         queries.push(
           db.DentistInfoPhotos.upsert({
@@ -290,21 +321,8 @@ async function updateDentistInfo(req, res, next) {
         );
       }
     });
-
-    // Go through the office images to destroy.
-    for (const instance of previousImages) {
-      const imageShouldExist =
-          officeInfo.officeImages.find(s => s.url === instance.dataValues.url);
-      if (!imageShouldExist) {
-        queries.push(db.DentistInfoPhotos.destroy({
-          where: {
-            url: instance.dataValues.url,
-            dentistInfoId: dentistInfo.get('id'),
-          }
-        }));
-      }
-    }
   }
+
   Promise.all(queries).then(data => {
     return res.status(200).send({ shouldRefresh });
   },err => {
@@ -317,28 +335,58 @@ async function updateDentistInfo(req, res, next) {
 /**
  * Delete a dentist image.
  */
-function deleteDentistInfoPhoto (req, res, next) {
-  return db.DentistInfo.find({ id: req.params.dentistInfoId })
-    .then((dentistInfo) => {
-      if (!dentistInfo) {
-        return false;
-      }
+async function deleteDentistInfoPhoto(req, res) {
+  try {
+    const { dentistInfoId, dentistInfoPhotoId } = req.params;
+    const dentistInfo = await db.DentistInfo.findOne({ where: { id: dentistInfoId } });
+    if (!dentistInfo) {
+      throw ForbiddenError('Invalid dentistInfoId');
+    }
+    if (dentistInfo.get('userId') !== req.user.get('id') && req.user.type !== 'admin') {
+      throw ForbiddenError('Not the dentist owner');
+    }
 
-      return dentistInfo.get('userId') === req.user.get('id');
-    })
-    .then((isDentistOwner) => {
-      if (!isDentistOwner) {
-        return Promise.reject(new ForbiddenError('Not the dentist owner'));
-      }
+    const dentistInfoPhoto = await db.DentistInfoPhotos.findOne({ where: { id: dentistInfoPhotoId } });
+    if (!dentistInfoPhoto) {
+      throw ForbiddenError('Invalid dentistInfoPhotoId');
+    }
+    await deleteObjectInS3(dentistInfoPhoto.url);
+    await dentistInfoPhoto.destroy();
+    return res.status(200).json({ message: 'Delete OK' });
+  } catch (e) {
+    if (e.errors) {
+      return res.status(400).send(e);
+    }
+    console.log('Error in deleteDentistInfoPhoto');
+    console.log(e);
+    return res.status(500).json({ errors: 'Internal Server Error' });
+  }
+}
 
-      return db.DentistInfoPhotos.destroy({
-        where: {
-          id: req.params.dentistInfoPhotoId,
-          dentistInfoId: req.params.dentistInfoId,
-        }
-      }).then((result) => res.json({ result }));
-    })
-    .catch(next);
+async function deleteDentistInfoLogo(req, res) {
+  try {
+    const { dentistInfoId } = req.params;
+    const dentistInfo = await db.DentistInfo.findOne({ where: { id: dentistInfoId } });
+    if (!dentistInfo) {
+      throw ForbiddenError('Invalid dentistInfoId');
+    }
+    if (dentistInfo.get('userId') !== req.user.get('id') && req.user.type !== 'admin') {
+      throw ForbiddenError('Not the dentist owner');
+    }
+
+    await deleteObjectInS3(dentistInfo.logo);
+    dentistInfo.logo = null;
+    await dentistInfo.save();
+    return res.status(200).json({ message: 'Delete OK' });
+  } catch (e) {
+    if (e.errors) {
+      console.log(e);
+      return res.status(400).send(e);
+    }
+    console.log('Error in deleteDentistInfoLogo');
+    console.log(e);
+    return res.status(500).json({ errors: 'Internal Server Error' });
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -351,19 +399,32 @@ router
   .post(
     userRequired,
     injectDentistInfo('dentistId'),
-    updateDentistInfo);
+    updateDentistInfo
+  );
 
 router
   .route('/')
   .get(
     userRequired,
     injectDentistInfo(),
-    getDentistInfo);
+    getDentistInfo,
+    getCustomMembership
+  );
 
 router
   .route('/:dentistInfoId/photos/:dentistInfoPhotoId')
   .delete(
     userRequired,
-    deleteDentistInfoPhoto);
+    dentistRequired,
+    deleteDentistInfoPhoto
+  );
+
+router
+  .route('/:dentistInfoId/logo/')
+  .delete(
+    userRequired,
+    dentistRequired,
+    deleteDentistInfoLogo
+  );
 
 export default router;
