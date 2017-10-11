@@ -84,8 +84,8 @@ async function search(req, res) {
       .filter(d => d.user.verified)
       .map(d => {
         const planStartingCost = d.memberships.reduce((acc, m) => {
-          if (parseFloat(m.price) < acc) {
-            acc = m.price;
+          if (parseFloat(m.price) < parseFloat(acc)) {
+            acc = parseFloat(m.price);
           }
           return acc;
         }, parseFloat(d.memberships[0].price));
