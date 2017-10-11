@@ -577,11 +577,11 @@ export const instance = {
       d = dentist.toJSON();
       const initialPrice = d.memberships.length > 0 ? d.memberships[0].price : 0;
       const planStartingCost = d.memberships.reduce((acc, m) => {
-        if (m.price < acc) {
-          acc = m.price;
+        if (parseFloat(m.price) < acc) {
+          acc = parseFloat(m.price);
         }
         return acc;
-      }, initialPrice);
+      }, parseFloat(initialPrice));
       d.planStartingCost = `$${Number(planStartingCost)}`;
       const dentistInfoId = d.dentistInfo ? d.dentistInfo.id : 0;
       // Retrieve Price Codes
