@@ -4,7 +4,7 @@ import sequelize from 'sequelize';
 import db from '../../models';
 import googleMapsClient from '../../services/google_map_api';
 
-const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'updatedAt'];
+const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'updatedAt'];
 
 async function search(req, res) {
   try {
@@ -69,7 +69,7 @@ async function search(req, res) {
         }, {
           model: db.Review,
           as: 'dentistReviews'
-        }]
+        }],
       }, {
         model: db.Membership,
         as: 'memberships'
@@ -81,6 +81,7 @@ async function search(req, res) {
     }
     // construct starting price for every dentist..
     dentists = dentists
+      .filter(d => d.user.verified)
       .map(d => {
         const planStartingCost = d.memberships.reduce((acc, m) => {
           if (parseFloat(m.price) < acc) {

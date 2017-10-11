@@ -311,13 +311,15 @@ async function updateDentist(req, res, next) {
       });
     }
 
+    // marketplaceOptIn is inverted logic in the FE.
     if (
       data.affordabilityScore !== dentist.dentistInfo.affordabilityScore ||
-      data.marketplaceOptIn !== dentist.dentistInfo.marketplaceOptIn ||
+      !data.marketplaceOptIn !== dentist.dentistInfo.marketplaceOptIn ||
       data.managerId !== dentist.dentistInfo.managerId
     ) {
       await db.DentistInfo.update({
-        ...data
+        ...data,
+        marketplaceOptIn: !data.marketplaceOptIn
       }, {
         where: {
           id: dentist.dentistInfo.id
