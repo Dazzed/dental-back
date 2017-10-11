@@ -31,7 +31,7 @@ async function search(req, res) {
         } = point;
         const location = sequelize.literal(`ST_GeomFromText('POINT(${lat} ${lng})')`);
         sequelizeDistance = sequelize.fn('ST_Distance_Sphere', sequelize.col('location'), location);
-        whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance) * 1000 });
+        whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance || 25) * 1000 });
       } else {
         return res.status(400).send({ errors: 'Please Enter a valid search query' });
       }
@@ -66,6 +66,9 @@ async function search(req, res) {
         include: [{
           model: db.User.sequelize.models.DentistSpecialty,
           as: 'dentistSpecialty',
+        }, {
+          model: db.Review,
+          as: 'dentistReviews'
         }]
       }, {
         model: db.Membership,
@@ -80,11 +83,11 @@ async function search(req, res) {
     dentists = dentists
       .map(d => {
         const planStartingCost = d.memberships.reduce((acc, m) => {
-          if (m.price < acc) {
+          if (parseFloat(m.price) < acc) {
             acc = m.price;
           }
           return acc;
-        }, d.memberships[0].price);
+        }, parseFloat(d.memberships[0].price));
         delete d.memberships;
         return {
           ...d,
