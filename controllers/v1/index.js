@@ -32,6 +32,7 @@ import webhooks from './webhooks';
 import managers from './managers';
 import search from './search';
 import jobs from './jobs';
+import marketingMaterials from './marketingMaterials';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
@@ -86,11 +87,10 @@ router.use('/admin/stats', stats);
 router.use('/admin/dentists/patients', patients);
 router.use('/admin/dentists/memberships', memberships);
 router.use('/admin/dentists/reports', reports);
-
 router.use('/admin/dentists/offices', offices);
-
 router.use('/admin/managers', managers);
 router.use('/admin/refunds', adminRequired, refunds);
+router.use('/admin/marketingMaterials', adminRequired, marketingMaterials);
 
 router.use('/webhooks', webhooks);
 router.use('/reports', reports);
