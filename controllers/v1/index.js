@@ -90,7 +90,7 @@ router.use('/admin/dentists/reports', reports);
 router.use('/admin/dentists/offices', offices);
 router.use('/admin/managers', managers);
 router.use('/admin/refunds', adminRequired, refunds);
-router.use('/admin/marketingMaterials', adminRequired, marketingMaterials);
+router.use('/admin/marketing_materials', marketingMaterials);
 
 router.use('/webhooks', webhooks);
 router.use('/reports', reports);
