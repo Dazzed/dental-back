@@ -89,7 +89,6 @@ router.use('/admin/dentists/reports', reports);
 router.use('/admin/dentists/offices', offices);
 router.use('/admin/managers', managers);
 router.use('/admin/refunds', adminRequired, refunds);
-router.use('/admin/marketing_materials', marketingMaterials);
 
 router.use('/webhooks', webhooks);
 router.use('/reports', reports);
@@ -98,5 +97,6 @@ router.use('/reports', reports);
 router.use('/dentists/:dentistId/patients', userRequired, dentistRequired, patients);
 
 router.use('/search', search);
+router.use('/marketing_materials', userRequired, marketingMaterials);
 
 export default router;

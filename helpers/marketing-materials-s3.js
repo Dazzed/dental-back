@@ -1,7 +1,7 @@
 import S3 from './S3Client';
 
 const params = {
-  Bucket: 'dentalman_uploads',
+  Bucket: 'market_materials',
 };
 
 function deleteObject(parameters) {
