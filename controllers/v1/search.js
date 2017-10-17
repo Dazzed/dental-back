@@ -86,14 +86,33 @@ async function search(req, res) {
           };
         }
       });
-    if (sort == 'price') {
+    if (sort === 'price') {
       dentists = dentists.sort((d1, d2) => {
         if (d1.planStartingCost > d2.planStartingCost) {
           return 1;
         }
         return -1;
       });
+    } else if (sort === 'score') {
+      dentists = dentists
+        .map((d) => {
+          const ratingScore = d.user.dentistReviews.reduce((acc, r) => acc + r.rating, 0);
+          const totalReviews = d.user.dentistReviews.length;
+          const averageRating = ratingScore / totalReviews;
+          const rating = isNaN(averageRating) ? 0 : averageRating;
+          return {
+            ...d,
+            rating
+          };
+        })
+        .sort((d1, d2) => {
+          if (d1.rating < d2.rating) {
+            return 1;
+          }
+          return -1;
+        });
     }
+
     let specialtiesList = null;
     let totalDentistCount = 0;
     if (specialtiesRequired) {
