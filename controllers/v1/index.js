@@ -31,7 +31,6 @@ import users from './users';
 import webhooks from './webhooks';
 import managers from './managers';
 import search from './search';
-import jobs from './jobs';
 import marketingMaterials from './marketingMaterials';
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -99,5 +98,5 @@ router.use('/reports', reports);
 router.use('/dentists/:dentistId/patients', userRequired, dentistRequired, patients);
 
 router.use('/search', search);
-// router.use('/jobs', jobs);
+
 export default router;
