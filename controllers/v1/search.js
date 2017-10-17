@@ -9,13 +9,12 @@ const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey',
 async function search(req, res) {
   try {
     const { filters } = req.body;
-    const { specialtiesRequired } = req.body;
+    const { specialtiesRequired, countRequired } = req.body;
     const {
       searchQuery,
       distance,
       sort,
       specialties,
-      coordinates,
     } = filters;
     let sequelizeDistance;
     let dentists = [];
@@ -35,24 +34,8 @@ async function search(req, res) {
       } else {
         return res.status(400).send({ errors: 'Please Enter a valid search query' });
       }
-    } else if (!searchQuery && !distance) {
-      whereClause = {};
     } else {
-      // Exception
-      if (!coordinates) {
-        return res.status(200).send({ dentists });
-      }
-      const {
-        lat,
-        lng
-      } = coordinates;
-      if (!lat || !lng) {
-        return res.status(200).send({ dentists });
-      }
-      // End Exception
-      const location = sequelize.literal(`ST_GeomFromText('POINT(${lat} ${lng})')`);
-      sequelizeDistance = sequelize.fn('ST_Distance_Sphere', sequelize.col('location'), location);
-      whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance) * 1000 });
+      whereClause = {};
     }
     dentists = await db.DentistInfo.findAll({
       order: sequelizeDistance,
@@ -76,8 +59,8 @@ async function search(req, res) {
       }]
     }).map(d => d.toJSON());
     // Specialties filter
-    if (specialties.length > 0) {
-      dentists = dentists.filter(d => specialties.includes(d.user.dentistSpecialtyId));
+    if (specialties) {
+      dentists = dentists.filter(d => specialties == (d.user.dentistSpecialtyId));
     }
     // construct starting price for every dentist..
     dentists = dentists
@@ -104,13 +87,28 @@ async function search(req, res) {
         }
       });
     if (sort == 'price') {
-      dentists = dentists.sort((d1, d2) => d1.planStartingCost > d2.planStartingCost);
+      dentists = dentists.sort((d1, d2) => {
+        if (d1.planStartingCost > d2.planStartingCost) {
+          return 1;
+        }
+        return -1;
+      });
     }
     let specialtiesList = null;
+    let totalDentistCount = 0;
     if (specialtiesRequired) {
       specialtiesList = await db.DentistSpecialty.findAll().map(s => s.toJSON());
     }
-    return res.status(200).send({ dentists, specialtiesList });
+
+    if (countRequired) {
+      totalDentistCount = await db.User.count({
+        where: {
+          type: 'dentist',
+          verified: true
+        }
+      });
+    }
+    return res.status(200).send({ dentists, specialtiesList, totalDentistCount });
   } catch (e) {
     console.log(e);
     return res.status(500).send({ errors: 'Internal Server Error' });
