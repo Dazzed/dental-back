@@ -9,13 +9,16 @@ module.exports = {
     logging: false,
   },
   test: {
-    username: process.env.POSTGRESQL_USERNAME,
-    password: process.env.POSTGRESQL_PASSWORD,
-    database: process.env.POSTGRESQL_DATABASE || 'dental_test',
-    host: process.env.POSTGRESQL_HOST,
-    port: process.env.POSTGRESQL_PORT,
+    username: process.env.STAGING_POSTGRESQL_USERNAME,
+    password: process.env.STAGING_POSTGRESQL_PASSWORD,
+    database: process.env.STAGING_POSTGRESQL_DATABASE || 'dental_test',
+    host: process.env.STAGING_POSTGRESQL_HOST,
+    port: process.env.STAGING_POSTGRESQL_PORT,
     dialect: 'postgres',
-    logging: false
+    logging: false,
+    dialectOptions: {
+      ssl: true
+    }
   },
   production: {
     username: process.env.POSTGRESQL_USERNAME,
