@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { dentistRequired, adminRequired } from '../middlewares';
 import db from '../../models';
 import {
   isValidAddCateogyObject,
@@ -62,7 +63,7 @@ async function addMaterial(req, res) {
     const { categoryId } = req.params;
     const { fileKey } = req.body;
     await db.MarketingMaterial.create({
-      url: `https://dentalman_uploads.s3.amazonaws.com/${fileKey}`,
+      url: `https://market_materials.s3.amazonaws.com/${fileKey}`,
       marketingCategoryId: categoryId
     });
 
@@ -91,12 +92,15 @@ const router = new Router({ mergeParams: true });
 
 router
   .route('/')
-  .get(getMarketingMaterials)
+  .get(
+    dentistRequired,
+    getMarketingMaterials
+  )
   .delete();
 
 router
-  .use('/s3', require('react-s3-uploader/s3router')({
-    bucket: process.env.S3_BUCKET,
+  .use('/s3', adminRequired, require('react-s3-uploader/s3router')({
+    bucket: process.env.S3_MARKET_MATERIALS_BUCKET,
     region: process.env.S3_REGION,
     signatureVersion: 'v4',
     headers: { 'Access-Control-Allow-Origin': '*' },
@@ -107,6 +111,7 @@ router
 router
   .route('/category')
   .post(
+    adminRequired,
     isValidAddCateogyObject,
     categoryNameUniqueCheck,
     addCategory
@@ -114,6 +119,7 @@ router
 router
   .route('/category/:categoryId')
   .delete(
+    adminRequired,
     isValidDeleteCategoryObject,
     deleteCategory
   );
@@ -121,6 +127,7 @@ router
 router
   .route('/material/:categoryId')
   .post(
+    adminRequired,
     isValidAddMaterialObject,
     addMaterial
   );
@@ -128,6 +135,7 @@ router
 router
   .route('/material/:id')
   .delete(
+    adminRequired,
     isValidDeleteMaterialObject,
     deleteMaterial
   );
