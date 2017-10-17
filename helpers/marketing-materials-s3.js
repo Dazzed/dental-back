@@ -1,7 +1,7 @@
 import S3 from './S3Client';
 
 const params = {
-  Bucket: 'dentalman_uploads',
+  Bucket: 'market_materials',
 };
 
 function deleteObject(parameters) {
@@ -15,9 +15,9 @@ function deleteObject(parameters) {
   });
 }
 
-async function deleteObjectInS3(imageUrl) {
+async function deleteObjectInS3(url) {
   try {
-    const Key = imageUrl.split('amazonaws.com/')[1];
+    const Key = url.split('amazonaws.com/')[1];
     await deleteObject({ ...params, Key });
     return true;
   } catch (e) {

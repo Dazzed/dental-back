@@ -9,7 +9,6 @@ import {
 
 export const PATIENT_CARD_UPDATE = {
   periodontalDiseaseWaiver: { notEmpty: true },
-  cancellationFeeWaiver: { notEmpty: true },
   reEnrollmentFeeWaiver: { notEmpty: true },
   termsAndConditions: { notEmpty: true },
   stripeToken: { notEmpty: true }
@@ -45,19 +44,6 @@ export const NEW_PASSWORD_VALIDATOR = {
     notEmpty: true
   }
 };
-
-
-export const WAIVE_CANCELLATION = {
-  cancellationFee: {
-    notEmpty: true,
-    errorMessage: 'You must set whether you want to charge cancellation fee for this patient.'
-  },
-  reEnrollmentFee: {
-    notEmpty: true,
-    errorMessage: 'You must set whether you want to charge re-enrollment fee for this patient.'
-  }
-};
-
 
 export const NORMAL_USER_EDIT = {
   newEmail: {

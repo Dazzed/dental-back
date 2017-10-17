@@ -26,7 +26,7 @@ module.exports = {
 
   down: function (queryInterface, Sequelize) {
     const queries = fieldNames.map(field => {
-      queries.queryInterface.removeColumn('users', field);
+      queryInterface.removeColumn('users', field);
     });
     queries.push(queryInterface.removeColumn('users', 'waiverCreatedAt'));
     return Promise.all(queries);

@@ -141,7 +141,6 @@ function updatePatientCard(req, res) {
     .then(() => {
       let patientUpdate = _.pick(req.body, [
         'periodontalDiseaseWaiver',
-        'cancellationFeeWaiver',
         'reEnrollmentFeeWaiver',
         'termsAndConditions'
       ]);

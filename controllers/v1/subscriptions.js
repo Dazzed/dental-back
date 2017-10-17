@@ -15,10 +15,7 @@ import { changePlanUtil } from '../../utils/change_plan';
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
-const EARLY_CANCELLATION_TERM = process.env.EARLY_CANCELLATION_TERM;
-
 const RE_ENROLLMENT_PENALTY = process.env.RE_ENROLLMENT_PENALTY * 100;
-const EARLY_CANCELLATION_PENALTY = process.env.EARLY_CANCELLATION_PENALTY * 100;
 
 /**
  * Subscribes the current user session (or family member) to a dentist
@@ -338,20 +335,6 @@ async function cancelSubscription(req, res) {
       primaryUser = user;
     }
 
-    if ((primaryUser.cancellationFeeWaiver === true) &&
-      // Check if the user cancelled after the free cancellation period (i.e. 3 months from sign up)
-      (Moment().isBefore(Moment(subscription.createdAt).add(EARLY_CANCELLATION_TERM, 'month')))
-    ) {
-      console.log("Cancellation Penality charge Issued successfully for user -> "+primaryUser.firstName+" "+primaryUser.lastName);
-      const issueCharge = await stripe.issueCharge(EARLY_CANCELLATION_PENALTY, paymentProfile.stripeCustomerId, 'Early Cancellation Penalty Charge');
-      await db.Penality.create({
-        clientId: subscription.clientId,
-        dentistId: subscription.dentistId,
-        type: 'cancellation',
-        amount: EARLY_CANCELLATION_PENALTY
-      });
-    }
-
     const stripeSubscription = await stripe.getSubscription(subscription.stripeSubscriptionId);
 
     const membershipPlan = await db.Membership.findOne({
@@ -391,31 +374,6 @@ async function cancelSubscription(req, res) {
 
 }
 
-/**
- * Waives the cancellation fee. Can only be triggered by the dentist
- * who is providing the patient/member with the subscription
- *
- * @param {Object} req - the express request
- * @param {Object} res - the express response
- * @param {Function} next - the next middleware function
- */
-function toggleCancellationFeeWaiver(req, res, next) {
-  if (req.user.get('type') !== 'dentist') throw new Error('Only a dentist can issue a waive cancellation');
-  // Get the requested user's subscription
-  db.Subscription.getCurrentSubscription(req.params.userId)
-    .then((sub) => {
-      if (sub.dentistId !== req.user.get('id')) throw new Error('Current user is not the dentist for this user');
-      if (sub.status === 'canceled') throw new Error('The user does not have a registered subscription');
-      return db.User.find({ where: { id: req.params.userId } });
-    })
-    .then((user) => {
-      user.cancellationFeeWaiver = !user.cancellationFeeWaiver;
-      user.save();
-    })
-    .then(() => res.json({}))
-    .catch(err => next(new BadRequestError(err)));
-}
-
 // ────────────────────────────────────────────────────────────────────────────────
 // ENDPOINTS
 
@@ -453,9 +411,5 @@ router
 
 // ────────────────────────────────────────────────────────────────────────────────
 // WAIVERS
-
-router
-  .route('/patients/:userId/toggle-cancellation-waiver')
-  .put(toggleCancellationFeeWaiver);
 
 export default router;
