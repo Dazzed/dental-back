@@ -39,13 +39,16 @@ async function search(req, res) {
     }
     dentists = await db.DentistInfo.findAll({
       order: sequelizeDistance,
-      where: whereClause,
+      where: {
+        $and: [whereClause, { marketplaceOptIn: true }]
+      },
       include: [{
         model: db.User,
         as: 'user',
         attributes: {
           exclude: userFieldsExcluded,
         },
+        where: { verified: true },
         include: [{
           model: db.User.sequelize.models.DentistSpecialty,
           as: 'dentistSpecialty',
@@ -58,6 +61,7 @@ async function search(req, res) {
         as: 'memberships'
       }]
     }).map(d => d.toJSON());
+    const totalDentistCount = dentists.length;
     // Specialties filter
     if (specialties) {
       dentists = dentists.filter(d => specialties == (d.user.dentistSpecialtyId));
@@ -114,19 +118,25 @@ async function search(req, res) {
     }
 
     let specialtiesList = null;
-    let totalDentistCount = 0;
     if (specialtiesRequired) {
       specialtiesList = await db.DentistSpecialty.findAll().map(s => s.toJSON());
     }
 
-    if (countRequired) {
-      totalDentistCount = await db.User.count({
-        where: {
-          type: 'dentist',
-          verified: true
-        }
-      });
-    }
+    // if (countRequired) {
+    //   totalDentistCount = await db.User.count({
+    //     where: {
+    //       type: 'dentist',
+    //       verified: true
+    //     },
+    //     include: [{
+    //       model: db.DentistInfo,
+    //       as: 'dentistInfo',
+    //       where: {
+    //         marketplaceOptIn: true
+    //       }
+    //     }]
+    //   });
+    // }
     return res.status(200).send({ dentists, specialtiesList, totalDentistCount });
   } catch (e) {
     console.log(e);
