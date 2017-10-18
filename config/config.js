@@ -21,12 +21,12 @@ module.exports = {
     }
   },
   production: {
-    username: process.env.POSTGRESQL_USERNAME,
-    password: process.env.POSTGRESQL_PASSWORD,
-    database: process.env.POSTGRESQL_DATABASE,
-    host: process.env.POSTGRESQL_HOST,
-    port: process.env.POSTGRESQL_PORT,
-    url: process.env.DATABASE_URL,
+    username: process.env.PRODUCTION_POSTGRESQL_USERNAME,
+    password: process.env.PRODUCTION_POSTGRESQL_PASSWORD,
+    database: process.env.PRODUCTION_POSTGRESQL_DATABASE,
+    host: process.env.PRODUCTION_POSTGRESQL_HOST,
+    port: process.env.PRODUCTION_POSTGRESQL_PORT,
+    url: process.env.PRODUCTION_DATABASE_URL,
     dialect: 'postgres',
     logging: false,
     dialectOptions: {
