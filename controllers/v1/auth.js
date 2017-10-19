@@ -48,12 +48,17 @@ import googleMapsClient from '../../services/google_map_api';
  */
 function createDentistInfo(user, body, transaction) {
   let dentistInfo = body.officeInfo;
+  const { marketplace } = body;
   const pricing = body.pricing || {};
   const workingHours = body.workingHours || [];
   const services = body.services || [];
   const officeImages = dentistInfo.officeImages || [];
   const officeSlug = `${dentistInfo.officeName.replace(/ /g, '-')}-${user.id}`;
   dentistInfo = { ...dentistInfo, officeSlug };
+  // marketplaceOptIn
+  if (marketplace.optIn) {
+    dentistInfo = { ...dentistInfo, marketplaceOptIn: true };
+  }
   return user.createDentistInfo(dentistInfo, { transaction })
   .then((info) => {
     const promises = [];
