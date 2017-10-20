@@ -344,9 +344,9 @@ async function cancelSubscription(req, res) {
     });
 
     const quantity = stripeSubscription.items.data.reduce((acc, item) => acc += item.quantity, 0);
-    let query;
     if (quantity == 1) {
-      await stripe.deleteSubscription(stripeSubscription.id);
+      // don't want to refund or prorate when cancelling a subscription..
+      await stripe.deleteSubscription(stripeSubscription.id, { at_period_end: true });
     } else {
       const subscriptionItem = stripeSubscription.items.data.find(s => s.plan.id == membershipPlan.stripePlanId);
       const subItemQuantity = subscriptionItem.quantity;
