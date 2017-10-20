@@ -277,7 +277,7 @@ function updateAuth(req, res, next) {
     return db.User.findOne({ where })
     .then((patient) => {
       if (!patient) return next(new UnauthorizedError());
-      patient.set('email', req.body.newEmail);
+      patient.set('email', req.body.newEmail.toLowerCase());
       
       return new Promise((resolve, reject) => {
         if (!req.body.newPassword) return resolve(patient);
