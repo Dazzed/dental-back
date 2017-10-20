@@ -3,7 +3,7 @@ export default function (sequelize, DataTypes) {
     number: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: false,
     },
   }, {
     tableName: 'phones',
