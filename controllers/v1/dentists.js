@@ -2,7 +2,7 @@
 // ────────────────────────────────────────────────────────────────────────────────
 
 import { Router } from 'express';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import _ from 'lodash';
 
 import {
@@ -57,9 +57,9 @@ const CONTACT_SUPPORT_NO_AUTH = (
 
 // ────────────────────────────────────────────────────────────────────────────────
 
-/** Gets time in pacific standard time */
-function getDateTimeInPST() {
-  const now = moment();
+/** Gets time in eastern standard time */
+function getDateTimeInEST() {
+  const now = moment().tz('America/New_York');
   const time = now.format('h:mm a');
   const date = now.format('M/D/YY');
 
@@ -103,7 +103,7 @@ function contactSupportNoAuth(req, res) {
     site: process.env.SITE,
     name: req.body.name,
     email: req.body.email,
-    time: getDateTimeInPST(),
+    time: getDateTimeInEST(),
     message: req.body.message,
   }, (err, info) => {
     if (err) {
