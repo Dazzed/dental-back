@@ -88,7 +88,8 @@ router.use('/admin/dentists/memberships', memberships);
 router.use('/admin/dentists/reports', reports);
 router.use('/admin/dentists/offices', offices);
 router.use('/admin/managers', managers);
-router.use('/admin/refunds', adminRequired, refunds);
+router.use('/admin/refunds', refunds);
+router.use('/admin/members', members);
 
 router.use('/webhooks', webhooks);
 router.use('/reports', reports);
