@@ -4,7 +4,7 @@ import {
 } from '../controllers/sendgrid_mailer';
 
 // Notify existing plan users about the change..
-async function notifyPlanUpdate(membershipId, planName, newPrice) {
+async function notifyPlanUpdate(membershipId, planName, newPrice, officeName) {
   try {
     const subscriptions = await db.Subscription.findAll({
       where: {
@@ -20,7 +20,7 @@ async function notifyPlanUpdate(membershipId, planName, newPrice) {
         }
       }).map(u => u.toJSON());
       users.forEach((user) => {
-        membershipPriceChangeNotificationAdvance(user, planName, newPrice);
+        membershipPriceChangeNotificationAdvance(user, planName, newPrice, officeName.replace(/ /g, ''));
       });
     }
   } catch (e) {
