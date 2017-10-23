@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import db from '../models';
 import {
   membershipPriceChangeNotificationAdvance
