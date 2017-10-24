@@ -1,45 +1,45 @@
 function transformFieldsToFixed(parentMemberRecords) {
   return parentMemberRecords.map((pmr) => {
     let {
-      fee,
-      penalties,
-      refunds,
-      net,
+      fee: parentFee,
+      penalties: parentPenalities,
+      refunds: parentRefunds,
+      net: parentNet,
       family
     } = pmr;
 
-    fee = fee.toFixed(2);
-    penalties = penalties.toFixed(2);
-    refunds = refunds.toFixed(2);
-    net = net.toFixed(2);
+    parentFee = parentFee.toFixed(2);
+    parentPenalities = parentPenalities.toFixed(2);
+    parentRefunds = parentRefunds.toFixed(2);
+    parentNet = parentNet.toFixed(2);
 
     family = family.map((f) => {
-      const {
+      let {
         fee: ffee,
         penalties: fpenalities,
         refunds: frefunds,
         net: fnet
       } = f;
 
-      fee = ffee.toFixed(2);
-      penalties = fpenalities.toFixed(2);
-      refunds = frefunds.toFixed(2);
-      net = fnet.toFixed(2);
+      ffee = ffee.toFixed(2);
+      fpenalities = fpenalities.toFixed(2);
+      frefunds = frefunds.toFixed(2);
+      fnet = fnet.toFixed(2);
       return {
         ...f,
-        fee,
-        penalties,
-        refunds,
-        net
+        fee: ffee,
+        penalties: fpenalities,
+        refunds: frefunds,
+        net: fnet
       };
     });
 
     return {
       ...pmr,
-      fee,
-      penalties,
-      refunds,
-      net,
+      fee: parentFee,
+      penalties: parentPenalities,
+      refunds: parentRefunds,
+      net: parentNet,
       family
     };
   });
