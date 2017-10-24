@@ -115,7 +115,7 @@ async function performChangePlan(memberId, membershipId) {
             subscription: monthlySubscription.id,
             plan: targetPlan.stripePlanId,
             quantity: 1,
-            prorate: true
+            prorate: false
           });
           createdSubscriptionId = monthlySubscription.id;
           createdSubscriptionItemId = createdSubscriptionItem.id;
@@ -127,7 +127,7 @@ async function performChangePlan(memberId, membershipId) {
       } else {
         const createdSubscriptionItem = await stripe.updateSubscriptionItem(targetSubItem.id, {
           quantity: targetSubItem.quantity + 1,
-          prorate: true
+          prorate: false
         });
         createdSubscriptionId = getSubscriptionWithSubscriptionItem(stripeSubscriptions, targetSubItem).id;
         createdSubscriptionItemId = createdSubscriptionItem.id;
@@ -140,14 +140,14 @@ async function performChangePlan(memberId, membershipId) {
           subscription: monthlySubscription.id,
           plan: targetPlan.stripePlanId,
           quantity: 1,
-          prorate: true
+          prorate: false
         });
         createdSubscriptionId = monthlySubscription.id;
         createdSubscriptionItemId = createdSubscriptionItem.id;
       } else {
         const createdSubscriptionItem = await stripe.updateSubscriptionItem(targetSubItem.id, {
           quantity: targetSubItem.quantity + 1,
-          prorate: true
+          prorate: false
         });
         createdSubscriptionId = getSubscriptionWithSubscriptionItem(stripeSubscriptions, targetSubItem).id;
         createdSubscriptionItemId = createdSubscriptionItem.id;
