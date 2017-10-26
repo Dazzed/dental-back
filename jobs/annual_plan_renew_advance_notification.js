@@ -13,30 +13,34 @@ export default async function annualPlanRenewAdvanceNotification() {
       attributes: ['id']
     }).map(m => m.id);
 
-    const elevenMonthsAfterToday = moment().add(11, 'months');
+    const elevenMonthsBeforeToday = moment().subtract(11, 'months');
+    const elevenMonthsBeforeTodayCopy = moment(elevenMonthsBeforeToday);
     const thirtyDaysLeftSubscriptions = await db.Subscription.findAll({
       where: {
         membershipId: {
           $in: annualMembershipIds
         },
         stripeSubscriptionIdUpdatedAt: {
-          $lt: elevenMonthsAfterToday.subtract(1, 'day').format('YYYY-MM-DD'),
-          $gt: elevenMonthsAfterToday.add(1, 'day').format('YYYY-MM-DD')
+          $between: [
+            elevenMonthsBeforeToday.subtract(1, 'day').format('YYYY-MM-DD'),
+            elevenMonthsBeforeTodayCopy.add(1, 'day').format('YYYY-MM-DD')
+          ]
         },
         status: 'active'
       },
       attributes: ['paymentProfileId']
     }).map(s => s.paymentProfileId);
 
-    const elevenMonthsForteenDaysAfterToday = moment().add(11, 'months').add(14, 'days');
+    const elevenMonthsForteenDaysBeforeToday = moment().subtract(11, 'months').subtract(14, 'days');
+    const elevenMonthsForteenDaysBeforeTodayCopy = moment(elevenMonthsForteenDaysBeforeToday);
     const fourteenDaysLeftSubscriptions = await db.Subscription.findAll({
       where: {
         membershipId: {
           $in: annualMembershipIds
         },
         stripeSubscriptionIdUpdatedAt: {
-          $gt: elevenMonthsForteenDaysAfterToday.subtract(1, 'day').format('YYYY-MM-DD'),
-          $lt: elevenMonthsForteenDaysAfterToday.add(1, 'day').format('YYYY-MM-DD')
+          $gt: elevenMonthsForteenDaysBeforeToday.subtract(1, 'day').format('YYYY-MM-DD'),
+          $lt: elevenMonthsForteenDaysBeforeTodayCopy.add(1, 'day').format('YYYY-MM-DD')
         },
         status: 'active'
       },
