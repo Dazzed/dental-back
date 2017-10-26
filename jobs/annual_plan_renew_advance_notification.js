@@ -35,8 +35,8 @@ export default async function annualPlanRenewAdvanceNotification() {
           $in: annualMembershipIds
         },
         stripeSubscriptionIdUpdatedAt: {
-          $lt: elevenMonthsForteenDaysAfterToday.subtract(1, 'day').format('YYYY-MM-DD'),
-          $gt: elevenMonthsForteenDaysAfterToday.add(1, 'day').format('YYYY-MM-DD')
+          $gt: elevenMonthsForteenDaysAfterToday.subtract(1, 'day').format('YYYY-MM-DD'),
+          $lt: elevenMonthsForteenDaysAfterToday.add(1, 'day').format('YYYY-MM-DD')
         },
         status: 'active'
       },
