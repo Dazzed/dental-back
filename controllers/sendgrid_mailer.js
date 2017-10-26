@@ -91,3 +91,16 @@ export function subscriptionCancellationNotification(user) {
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
 }
+
+export function thirtyDayOldPatientNotification(firstName, email) {
+  var templateString = fs.readFileSync('./views/notifications/thirty_day_old_patient_notification.ejs', 'utf-8');
+  var template = ejs.compile(templateString);
+
+  let to_email = new sendgrid.Email(email);
+  let subject = EMAIL_SUBJECTS.client.thirtyDayOldPatientNotification;
+  let content = new sendgrid.Content(
+    'text/html', template({ firstName, subject })
+  );
+  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  sendMail(mail);
+}
