@@ -22,8 +22,8 @@ export default async function annualPlanRenewAdvanceNotification() {
         },
         stripeSubscriptionIdUpdatedAt: {
           $between: [
-            elevenMonthsBeforeToday.subtract(1, 'day').format('YYYY-MM-DD'),
-            elevenMonthsBeforeTodayCopy.add(1, 'day').format('YYYY-MM-DD')
+            elevenMonthsBeforeToday.set('H', 0).set('m', 0).set('s', 0).format('YYYY-MM-DD HH:mm:ss'),
+            elevenMonthsBeforeTodayCopy.set('H', 0).set('m', 0).set('s', 0).format('YYYY-MM-DD HH:mm:ss')
           ]
         },
         status: 'active'
@@ -39,8 +39,8 @@ export default async function annualPlanRenewAdvanceNotification() {
           $in: annualMembershipIds
         },
         stripeSubscriptionIdUpdatedAt: {
-          $gt: elevenMonthsForteenDaysBeforeToday.subtract(1, 'day').format('YYYY-MM-DD'),
-          $lt: elevenMonthsForteenDaysBeforeTodayCopy.add(1, 'day').format('YYYY-MM-DD')
+          $gt: elevenMonthsForteenDaysBeforeToday.set('H', 0).set('m', 0).set('s', 0).format('YYYY-MM-DD HH:mm:ss'),
+          $lt: elevenMonthsForteenDaysBeforeTodayCopy.set('H', 0).set('m', 0).set('s', 0).format('YYYY-MM-DD HH:mm:ss')
         },
         status: 'active'
       },
