@@ -213,7 +213,7 @@ async function updateDentistInfo(req, res, next) {
               active: true
             })
           );
-          notifyPlanUpdate(cm.id, membership.name, membership.price, officeInfo);
+          notifyPlanUpdate(cm.id, membership.name, membership.price, officeInfo.officeName, officeInfo);
         }
       }
     });
