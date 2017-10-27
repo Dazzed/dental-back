@@ -8,7 +8,8 @@ import {
   EMAIL_SUBJECTS,
 } from '../config/constants';
 
-let from_email = new sendgrid.Email("donotreply@dentalhq.com");
+const site = process.env.SITE;
+var from_email = new sendgrid.Email("donotreply@dentalhq.com");
 
 function sendMail(mail) {
   let request = sg.emptyRequest({
@@ -89,6 +90,19 @@ export function subscriptionCancellationNotification(user, officeName) {
   let subject = EMAIL_SUBJECTS.client.subscriptionCancellation;
   let content = new sendgrid.Content(
     'text/html', template({ user, subject })
+  );
+  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  sendMail(mail);
+}
+
+export function sendTermsAndConditionsUpdatedEmail(firstName, email) {
+  var templateString = fs.readFileSync('./views/notifications/terms_and_conditions_update.ejs', 'utf-8');
+  var template = ejs.compile(templateString);
+
+  let to_email = new sendgrid.Email(email);
+  let subject = EMAIL_SUBJECTS.terms_and_conditions_update;
+  let content = new sendgrid.Content(
+    'text/html', template({ subject, site, firstName })
   );
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
