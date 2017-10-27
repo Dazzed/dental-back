@@ -8,6 +8,7 @@
     "start": "node index.js",
     "test": "JWT_SECRET=test NODE_ENV=test mocha --compilers js:babel-register **/__tests__/*.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
+    "stage": "cross-env NODE_ENV=test nodemon index.js",
     "debug": "cross-env NODE_ENV=development nodemon --debug index.js",
     "prod": "cross-env NODE_ENV=production node index.js",
     "postinstall": "npm run migrate",

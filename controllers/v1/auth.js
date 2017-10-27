@@ -35,7 +35,6 @@ import {
 
 import Mailer from '../mailer';
 import googleMapsClient from '../../services/google_map_api';
-import seed_custom_plans_single_dentist from '../../tasks/seed_custom_plan_single_dentist';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -49,12 +48,17 @@ import seed_custom_plans_single_dentist from '../../tasks/seed_custom_plan_singl
  */
 function createDentistInfo(user, body, transaction) {
   let dentistInfo = body.officeInfo;
+  const { marketplace } = body;
   const pricing = body.pricing || {};
   const workingHours = body.workingHours || [];
   const services = body.services || [];
   const officeImages = dentistInfo.officeImages || [];
   const officeSlug = `${dentistInfo.officeName.replace(/ /g, '-')}-${user.id}`;
   dentistInfo = { ...dentistInfo, officeSlug };
+  // marketplaceOptIn
+  if (marketplace.optIn) {
+    dentistInfo = { ...dentistInfo, marketplaceOptIn: true };
+  }
   return user.createDentistInfo(dentistInfo, { transaction })
   .then((info) => {
     const promises = [];
@@ -167,23 +171,6 @@ async function geocodeOffice(user, body) {
     return false;
   }
   
-}
-
-async function seedCustomPlans (user) {
-  try {
-    const dentistInfo = await db.DentistInfo.findOne({
-      attributes: ['id'],
-      where: {
-        userId: user.id
-      }
-    });
-    console.log(`Custom plans seed success for dentist id ${user.id}`);
-    await seed_custom_plans_single_dentist(user.id, dentistInfo.id);
-    return;
-  } catch (e) {
-    console.log('Error in seeding dentist with Custom membership plans');
-    return false;
-  }
 }
 
 /**
@@ -347,7 +334,7 @@ function dentistUserSignup(req, res, next) {
         return Promise.all([
           userObj.save(),
           createDentistInfo(userObj, req.body, t),
-          Mailer.activationRequestEmail(res, userObj),
+          Mailer.thanksForSignupEmail(res, userObj),
           userObj.createPhoneNumber({ number: req.body.user.phone }, { transaction: t }),
           // This should be created so we can edit values
           userObj.createAddress({ value: '' }, { transaction: t }),
@@ -357,9 +344,6 @@ function dentistUserSignup(req, res, next) {
     .then(() => {
       return geocodeOffice(createdDentist, req.body);
     })
-    // .then(() => {
-    //   return seedCustomPlans(createdDentist);
-    // })
     .then(() => {
       res
       .status(HTTPStatus.CREATED)

@@ -33,7 +33,7 @@ import users from './users';
 import webhooks from './webhooks';
 import managers from './managers';
 import search from './search';
-import jobs from './jobs';
+import marketingMaterials from './marketingMaterials';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
@@ -90,9 +90,7 @@ router.use('/admin/stats', stats);
 router.use('/admin/dentists/patients', patients);
 router.use('/admin/dentists/memberships', memberships);
 router.use('/admin/dentists/reports', reports);
-
 router.use('/admin/dentists/offices', offices);
-
 router.use('/admin/managers', managers);
 router.use('/admin/refunds', adminRequired, refunds);
 
@@ -103,5 +101,6 @@ router.use('/reports', reports);
 router.use('/dentists/:dentistId/patients', userRequired, dentistRequired, patients);
 
 router.use('/search', search);
-// router.use('/jobs', jobs);
+router.use('/marketing_materials', userRequired, marketingMaterials);
+
 export default router;

@@ -18,6 +18,7 @@ import db from '../../models';
 import stripe from '../stripe';
 
 import { mailer } from '../../services/mailer';
+import Mailer from '../mailer';
 
 import {
   dentistMessages
@@ -140,7 +141,6 @@ function updatePatientCard(req, res) {
     .then(() => {
       let patientUpdate = _.pick(req.body, [
         'periodontalDiseaseWaiver',
-        'cancellationFeeWaiver',
         'reEnrollmentFeeWaiver',
         'termsAndConditions'
       ]);
@@ -216,6 +216,14 @@ async function listDentists(req, res, next) {
           officeName: fullDentists.find(f => f.id === d.id).dentistInfo.officeName,
         };
       });
+
+      const { managerId } = dentist.dentistInfo;
+      fullDentists[i].dentistInfo.manager = await db.User.findOne({
+        where: {
+          id: managerId
+        },
+        attributes: ['firstName', 'lastName', 'email']
+      });
     }
     // fullDentists = fullDentists.map(d => _(d).omit(['email', 'priceCodes', 'activeMemberCount']));
     return res.json({ data: fullDentists });
@@ -288,6 +296,10 @@ async function updateDentist(req, res, next) {
           });
     }
 
+    if (data.verified !== dentist.verified && data.verified === true) {
+      Mailer.activationCompleteEmail(res, dentist);
+    }
+
     if (data.phone !== dentist.phoneNumbers[0].number) {
       await db.Phone.update({
         number: data.phone
@@ -298,13 +310,15 @@ async function updateDentist(req, res, next) {
       });
     }
 
+    // marketplaceOptIn is inverted logic in the FE.
     if (
       data.affordabilityScore !== dentist.dentistInfo.affordabilityScore ||
-      data.marketplaceOptIn !== dentist.dentistInfo.marketplaceOptIn ||
+      !data.marketplaceOptIn !== dentist.dentistInfo.marketplaceOptIn ||
       data.managerId !== dentist.dentistInfo.managerId
     ) {
       await db.DentistInfo.update({
-        ...data
+        ...data,
+        marketplaceOptIn: !data.marketplaceOptIn
       }, {
         where: {
           id: dentist.dentistInfo.id

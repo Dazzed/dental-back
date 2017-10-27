@@ -36,6 +36,8 @@ import {
 import {
   subscribeUserAndMembers
 } from '../../utils/subscribe';
+
+import { deleteObjectInS3 } from '../../helpers/dentist-info';
 // ────────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
 
@@ -275,7 +277,7 @@ function updateAuth(req, res, next) {
     return db.User.findOne({ where })
     .then((patient) => {
       if (!patient) return next(new UnauthorizedError());
-      patient.set('email', req.body.newEmail);
+      patient.set('email', req.body.newEmail.toLowerCase());
       
       return new Promise((resolve, reject) => {
         if (!req.body.newPassword) return resolve(patient);
@@ -388,6 +390,24 @@ function deletePaymentSource(req, res, next) {
   .catch(err => next(new BadRequestError(err)));
 }
 
+async function deleteAvatar(req, res) {
+  try {
+    const { user } = req.locals;
+    
+    await deleteObjectInS3(user.avatar);
+    user.avatar = null;
+    await user.save();
+    return res.status(200).json({ message: 'Delete OK' });
+  } catch (e) {
+    if (e.errors) {
+      return res.status(400).send(e);
+    }
+    console.log('Error in deleteAvatar');
+    console.log(e);
+    return res.status(500).json({ errors: 'Internal Server Error' });
+  }
+}
+
 // ────────────────────────────────────────────────────────────────────────────────
 // ENDPOINTS
 
@@ -432,4 +452,9 @@ router
 router
   .route('/payment/subscribe')
   .post(validatePaymentManager(), addPaymentSourceAndSubscribe);
+
+router
+  .route('/delete-avatar')
+  .delete(deleteAvatar);
+
 export default router;

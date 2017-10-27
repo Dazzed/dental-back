@@ -608,9 +608,9 @@ export default {
     });
   },
 
-  deleteSubscription(id) {
+  deleteSubscription(id, options = {}) {
     return new Promise((resolve, reject) => {
-      stripe.subscriptions.del(id, (err, data) => {
+      stripe.subscriptions.del(id, options, (err, data) => {
         if (err) {
           return reject(err);
         }
