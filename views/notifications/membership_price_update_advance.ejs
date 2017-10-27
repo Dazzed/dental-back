@@ -104,8 +104,29 @@
 
                                     <tr>
                                         <td class="content-block content">
-                                        This email is to notify you that your membership fee for plan <strong><%= plan_name %></strong> has been changed to <strong><%= price %>$</strong>.
-                                        Note that this will take effect in the next 90 days. 
+                                            <p>
+                                                Thank you for your participation in the <%= officeName %> dental membership plan. 
+                                                We have made a pricing change to our plan. The new membership fee will be <%= price %>. 
+                                                Because you are currently enrolled this pricing change will not take place for your plan for 30 days. 
+                                                All membership payments made after 30 days will be at the new membership fee. 
+                                                Please contact our office with any questions.
+                                            </p>
+                                            <br />
+                                            <p>Thank you</p>
+                                            <br />
+                                            <hr />
+                                            <br />
+                                            <p>
+                                                <strong>Office Name: </strong><%= dentistInfo.officeName %>
+                                            </p>
+                                            <br />
+                                            <p>
+                                                <strong>Office Email: </strong><%= dentistInfo.email %>
+                                            </p>
+                                            <br />
+                                            <p>
+                                                <strong>Office Address: </strong><%= dentistInfo.address %>, <%= dentistInfo.city %>, <%= dentistInfo.zipCode %>, <%= dentistInfo.state %>.
+                                            </p>
                                         </td>
                                     </tr>
 
