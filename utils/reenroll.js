@@ -262,30 +262,32 @@ export async function performEnrollmentWithoutProration(accountHolderSubscriptio
       }
     });
 
-    // Logic to charge Prorated Charge immediately
+    const paymentProfile = await db.PaymentProfile.findOne({
+      where: {
+        id: userSubscription.paymentProfileId
+      }
+    });
+    // Logic to charge Prorated Charge immediately for monthly plan
     if ((membershipPlan.type === 'month' || membershipPlan.type === 'custom') && stripeSubscriptionId) {
       const stripeSubscription = await stripe.getSubscription(stripeSubscriptionId);
       let difference = moment.unix(stripeSubscription.current_period_end).diff(moment(), 'days');
       if (difference > 1) {
-        let membershipPlan = await db.Membership.findOne({
-          where: {
-            id: userSubscription.membershipId
-          }
-        });
-        let paymentProfile = await db.PaymentProfile.findOne({
-          where: {
-            id: userSubscription.paymentProfileId
-          }
-        });
         let charge = parseFloat(membershipPlan.price * (difference / 30));
         charge = Math.round(charge * 100, 2);
         charge = Math.floor(charge);
-        await stripe.issueCharge(charge, paymentProfile.stripeCustomerId, 'ADDING NEW MEMBER PRORATION CHARGE');
+        await stripe.issueCharge(charge, paymentProfile.stripeCustomerId, 'ADDING NEW MEMBER PRORATION CHARGE(month plan)');
       }
     }
-    // End Logic to charge Prorated Charge immediately
+    // End Logic to charge Prorated Charge immediately for monthly plan
 
     if (stripeSubscriptionItemId) {
+      if (membershipPlan.type === 'year') {
+        // Charge  Prorated Charge immediately for annual plan
+        let charge = membershipPlan.price;
+        charge = Math.round(charge * 100, 2);
+        charge = Math.floor(charge);
+        await stripe.issueCharge(charge, paymentProfile.stripeCustomerId, 'ADDING NEW MEMBER PRORATION CHARGE(annual plan)');
+      }
       const stripeSubscriptionItem = await stripe.getSubscriptionItem(stripeSubscriptionItemId);
       await stripe.updateSubscriptionItem(stripeSubscriptionItemId, {
         quantity: stripeSubscriptionItem.quantity + 1,
@@ -311,11 +313,6 @@ export async function performEnrollmentWithoutProration(accountHolderSubscriptio
       userSubscription.stripeSubscriptionIdUpdatedAt = moment();
       await userSubscription.save();
     } else {
-      let paymentProfile = await db.PaymentProfile.findOne({
-        where: {
-          id: userSubscription.paymentProfileId
-        }
-      });
       const stripeSubsription = await stripe.createSubscription(membershipPlan.stripePlanId, paymentProfile.stripeCustomerId);
       userSubscription.stripeSubscriptionId = stripeSubsription.id;
       userSubscription.stripeSubscriptionItemId = stripeSubsription.items.data[0].id;
