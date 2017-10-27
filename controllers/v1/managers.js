@@ -18,7 +18,9 @@ import {
 } from '../../utils/schema-validators';
 
 import {
-  termsAndConditionsUpdateNotification
+  termsAndConditionsUpdateNotification,
+  isValidChangePasswordObject,
+  isCurrentPasswordValid
 } from '../../helpers/managers';
 
 const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'updatedAt'];
@@ -134,9 +136,28 @@ async function updateTermsAndConditions(req, res) {
     // Send status ok to the client before sending the emails.
     res.status(200).send({});
     termsAndConditionsUpdateNotification();
+    return;
   } catch (e) {
     console.log(e);
-    return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).send({ errors: 'Internal Server Error' });
+    res.status(HTTPStatus.INTERNAL_SERVER_ERROR).send({ errors: 'Internal Server Error' });
+  }
+}
+
+async function changeAdminPassword(req, res) {
+  try {
+    const {
+      newPassword
+    } = req.body;
+    req.user.setPassword(newPassword, (err) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send({ errors: 'Internal Server Error' });
+      }
+      req.user.save().then(() => res.status(200).send({}));
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(HTTPStatus.INTERNAL_SERVER_ERROR).send({ errors: 'Internal Server Error' });
   }
 }
 
@@ -154,4 +175,12 @@ router
 router
   .route('/update_terms_and_conditions')
   .post(updateTermsAndConditions);
+
+router
+  .route('/change_password')
+  .post(
+    isValidChangePasswordObject,
+    isCurrentPasswordValid,
+    changeAdminPassword
+  );
 export default router;
