@@ -103,6 +103,7 @@ export const EMAIL_SUBJECTS = {
     membershipPriceUpdate: 'Membership price update',
     subscriptionChargeFailed: 'Recurring Payment Failure',
     subscriptionCancellation: 'Subscription Cancellation',
+    thirtyDayOldPatientNotification: 'Thanks for your support!',
     annualPlanRenewNotification: 'Annual Plan Renewal'
   },
   dentist: {
