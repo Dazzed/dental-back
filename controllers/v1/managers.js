@@ -17,6 +17,10 @@ import {
   MANAGER_UPDATE
 } from '../../utils/schema-validators';
 
+import {
+  termsAndConditionsUpdateNotification
+} from '../../helpers/managers';
+
 const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'updatedAt'];
 
 async function addManager(req, res) {
@@ -125,6 +129,17 @@ async function getManagersList(req, res) {
   }
 }
 
+async function updateTermsAndConditions(req, res) {
+  try {
+    // Send status ok to the client before sending the emails.
+    res.status(200).send({});
+    termsAndConditionsUpdateNotification();
+  } catch (e) {
+    console.log(e);
+    return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).send({ errors: 'Internal Server Error' });
+  }
+}
+
 const router = new Router({ mergeParams: true });
 
 router
@@ -136,4 +151,7 @@ router
   .route('/list')
   .get(getManagersList);
 
+router
+  .route('/update_terms_and_conditions')
+  .post(updateTermsAndConditions);
 export default router;

@@ -127,13 +127,13 @@ export default {
 };
 
 function constructDentistInfo(dentist) {
-  let { dentistInfo } = dentist;
+  const { dentistInfo } = dentist;
   return `
     Dentist Name: ${dentist.firstName + dentist.lastName},
     Office Name: ${dentistInfo.officeName},
     Dentist Email: ${dentist.email},
     Dentist Office Email: ${dentistInfo.email},
-    Office Address: ${dentistInfo.address || ''}, ${dentistInfo.city || ''}, ${dentistInfo.state || ''}, ${dentistInfo.zipcode || ''}\n
+    Office Address: ${dentistInfo.address || ''}, ${dentistInfo.city || ''}, ${dentistInfo.zipCode || ''}, ${dentistInfo.state || ''}\n
   `.replace(/  /g,'');
 }
 

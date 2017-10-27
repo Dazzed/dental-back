@@ -112,9 +112,10 @@ export const EMAIL_SUBJECTS = {
     new_patient: 'New Patient from DentalHQ',
     new_review: 'You Have a New Review on DentalHQ'
   },
-  activation_complete: 'Welcome to the Dental Marketplace!',
+  activation_complete: 'Welcome to DentalHQ',
   contact_support: 'A New DentalHQ.com Contact Form Message',
   password_reset: 'Password Reset Request',
+  terms_and_conditions_update: 'Terms and Conditions Updated'
 };
 
 
