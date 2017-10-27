@@ -10,8 +10,8 @@ export default async function thirtyDayOldPatientJob() {
       where: {
         createdAt: {
           $between: [
-            oneMonthBeforeToday.subtract(1, 'day').format('YYYY-MM-DD'),
-            oneMonthBeforeTodayCopy.add(1, 'day').format('YYYY-MM-DD')
+            oneMonthBeforeToday.set('H', 0).set('m', 0).set('s', 0).format('YYYY-MM-DD HH:mm:ss'),
+            oneMonthBeforeTodayCopy.set('H', 0).set('m', 0).set('s', 0).format('YYYY-MM-DD HH:mm:ss'),
           ]
         },
         type: 'client',
