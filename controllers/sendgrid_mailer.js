@@ -95,6 +95,19 @@ export function subscriptionCancellationNotification(user, officeName) {
   sendMail(mail);
 }
 
+export function annualPlanRenewAdvanceNotificationEmail(firstName, email, days_left_to_renew) {
+  var templateString = fs.readFileSync('./views/notifications/annual_plan_renew_advance_notification.ejs', 'utf-8');
+  var template = ejs.compile(templateString);
+
+  let to_email = new sendgrid.Email(email);
+  let subject = EMAIL_SUBJECTS.client.annualPlanRenewNotification;
+  let content = new sendgrid.Content(
+    'text/html', template({ subject, firstName, days_left_to_renew })
+  );
+  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  sendMail(mail);
+}
+
 export function sendTermsAndConditionsUpdatedEmail(firstName, email) {
   var templateString = fs.readFileSync('./views/notifications/terms_and_conditions_update.ejs', 'utf-8');
   var template = ejs.compile(templateString);
