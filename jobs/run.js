@@ -1,5 +1,6 @@
 import { subscriptionCancellationJob } from './cancellation_job';
 import thirtyDayOldPatientJob from './thirty_day_old_patient_job';
+import annualPlanRenewAdvanceNotification from './annual_plan_renew_advance_notification';
 
 const schedule = require('node-schedule');
 
@@ -48,8 +49,20 @@ module.exports = () => {
     });
   }
 
+  function annual_plan_renew_advance_notification_job() {
+    let rule = new schedule.RecurrenceRule();
+    rule.minute = 0;
+    rule.hour = [1];
+    schedule.scheduleJob(rule, () => {
+      annualPlanRenewAdvanceNotification().then(() => {
+        console.log('Annual Plan Renew Advance Notification Job Executed Successfully.')
+      }, e => console.log('Error in annual_plan_renew_advance_notification_job', e));
+    });
+  }
+
   // run_stripe_subscription_job();
   // run_membership_price_watcher_job();
   thirty_day_old_patient_job();
+  annual_plan_renew_advance_notification_job();
   cancellation_watcher_job();
 };

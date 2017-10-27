@@ -1,3 +1,4 @@
+// DEPRECATED CODE......
 import db from '../models';
 import stripe from '../controllers/stripe';
 import { createNewAnnualSubscriptionLocal } from './subscribe';

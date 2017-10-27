@@ -97,7 +97,7 @@ async function updateCustomMembership(req, res) {
     }
     const memberships = await getAllMemberships(dentistId, true).map(m => m.toJSON());
     if (parseFloat(oldMembership.price) !== parseFloat(membership.price)) {
-      notifyPlanUpdate(membership.id, oldMembership.name, price);
+      notifyPlanUpdate(membership.id, oldMembership.name, price, dentistInfo.officeName);
     }
     return res.status(200).send({ memberships });
   } catch (e) {
