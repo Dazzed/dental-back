@@ -27,7 +27,7 @@ function sendMail(mail) {
   });
 }
 
-export function membershipPriceChangeNotificationAdvance(user, plan_name, price, officeName) {
+export function membershipPriceChangeNotificationAdvance(user, plan_name, price, officeName, officeInfo) {
   var templateString = fs.readFileSync('./views/notifications/membership_price_update_advance.ejs', 'utf-8');
 
   var template = ejs.compile(templateString);
@@ -36,7 +36,7 @@ export function membershipPriceChangeNotificationAdvance(user, plan_name, price,
   let to_email = new sendgrid.Email(user.email);
   let subject = EMAIL_SUBJECTS.client.membershipPriceUpdate;
   let content = new sendgrid.Content(
-    'text/html', template({ user, plan_name, price: priceS, subject })
+    'text/html', template({ user, plan_name, price: priceS, subject, officeName, dentistInfo: officeInfo })
   );
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
