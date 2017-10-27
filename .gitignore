@@ -12,8 +12,12 @@ playbooks/playbook.retry
 Vagrantfile
 .DS_Store
 
+package-lock.json
 npm-debug.log*
+yarn.lock
 webpack-assets.json
+
+dump.rdb
 
 static/dist/
 
