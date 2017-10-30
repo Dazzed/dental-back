@@ -269,6 +269,7 @@ export const instance = {
         result.push(primaryUser);
       } catch (e) {
         primaryUser.recurring_payment_date = null;
+        promises.push(Promise.resolve({ current_period_end: null }));
         result.push(primaryUser);
       }
     }
