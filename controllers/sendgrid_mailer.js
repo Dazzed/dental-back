@@ -133,3 +133,16 @@ export function sendTermsAndConditionsUpdatedEmail(firstName, email) {
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
 }
+
+export function sendNewPatientNotificationEmail(officeEmail) {
+  var templateString = fs.readFileSync('./views/notifications/new_patient_notification.ejs', 'utf-8');
+  var template = ejs.compile(templateString);
+
+  let to_email = new sendgrid.Email(officeEmail);
+  let subject = EMAIL_SUBJECTS.dentist.new_patient;
+  let content = new sendgrid.Content(
+    'text/html', template({ subject })
+  );
+  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  sendMail(mail);
+}
