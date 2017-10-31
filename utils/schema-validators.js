@@ -138,7 +138,7 @@ export const NORMAL_USER_REGISTRATION = {
       errorMessage: 'This email is in use.'
     }
   },
-  number: {
+  phone: {
     notEmpty: true,
     isDBUnique: {
       options: ['Phone', 'number'],
