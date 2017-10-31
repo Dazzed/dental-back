@@ -37,7 +37,7 @@ async function invoiceCreatedWebhook(body) {
     // 4. Update the subscription's if their respective plans are changed and Its been 3 months.
     const stripeCustomerObject = await stripe.getCustomer(stripeCustomerId);
 
-    for (const subscription of stripeCustomerObject.subscription.data) {
+    for (const subscription of stripeCustomerObject.subscriptions.data) {
       for (const subItem of subscription.items.data) {
         const existingPlan = dentistMembershipPlans.find(p => p.stripePlanId == subItem.plan.id);
         if (existingPlan.active) {
