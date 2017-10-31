@@ -177,7 +177,6 @@ function getDentistNoAuth(req, res, next) {
     return null;
   })
   .then((user) => {
-    delete user.dentistInfo.priceCodes;
     delete user.dentistInfo.activeMemberCount;
     let data = user || {};
     data = {
