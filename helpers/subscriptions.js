@@ -97,8 +97,13 @@ async function performChangePlan(memberId, membershipId) {
         createdSubscriptionId = createdSubscription.id;
         createdSubscriptionItemId = createdSubscription.items.data[0].id;
       } else if (moment.unix(targetSubItem.created).isSame(moment(), 'day')) {
+        let charge = targetPlan.price;
+        charge = Math.round(charge * 100, 2);
+        charge = Math.floor(charge);
+        await stripe.issueCharge(charge, stripeCustomerId, 'SWITCHING PLANS PRORATION CHARGE(annual plan)');
         await stripe.updateSubscriptionItem(targetSubItem.id, {
-          quantity: targetSubItem.quantity + 1
+          quantity: targetSubItem.quantity + 1,
+          prorate: false
         });
         createdSubscriptionId = getSubscriptionWithSubscriptionItem(stripeSubscriptions, targetSubItem).id;
         createdSubscriptionItemId = targetSubItem.id;
@@ -134,8 +139,14 @@ async function performChangePlan(memberId, membershipId) {
       }
     } else {
       // we know it's monthly to monthly here.
+      const monthlySubscription = pluckMonthlySubscription(stripeSubscriptions);
+      // Charge the user the amount of the new plan from now to next billing cycle.
+      const daysToChargeTheNewPlan = moment.unix(monthlySubscription.current_period_end).diff(moment(), 'd');
+      let charge = parseFloat(targetPlan.price * (daysToChargeTheNewPlan / 30));
+      charge = Math.round(charge * 100, 2);
+      charge = Math.floor(charge);
+      await stripe.issueCharge(charge, stripeCustomerId, 'SWITCHING PLANS PRORATION CHARGE(annual plan)');
       if (!targetSubItem) {
-        const monthlySubscription = pluckMonthlySubscription(stripeSubscriptions);
         const createdSubscriptionItem = await stripe.createSubscriptionItem({
           subscription: monthlySubscription.id,
           plan: targetPlan.stripePlanId,
