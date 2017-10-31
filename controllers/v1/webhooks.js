@@ -18,7 +18,7 @@ function stripe_webhook(request, response) {
     chargeSucceededWebhook(body);
   }
 
-  else if (body.type == "charge.failed") {
+  else if (body.type === 'charge.failed') {
     const invoiceId = body.data.object.invoice;
     const customerId = body.data.object.customer;
 
@@ -98,23 +98,22 @@ function stripe_webhook(request, response) {
             return;
           }
         } else if (err) {
-          console.log("__Error in stripe_webhook >> charge_failed event__");
+          console.log('__Error in stripe_webhook >> charge_failed event__');
           return;
         } else {
-          console.log("__stripe_webhook >> charge_failed event executed successfully__");
+          console.log('__stripe_webhook >> charge_failed event executed successfully__');
         }
       });
   }
 
-  else if (body.type == "invoice.created") {
+  else if (body.type === 'invoice.created') {
     invoiceCreatedWebhook(body);
   }
 
-  else if (body.type == "invoice.payment_succeeded") {
+  else if (body.type === 'invoice.payment_succeeded') {
     invoicePaymentSucceeded(body);
   }
-  
-  response.status(200).send({});
+  return response.status(200).send({});
 }
 
 router
