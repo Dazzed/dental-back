@@ -90,6 +90,17 @@ async function search(req, res) {
           };
         }
       });
+    // construct rating for every dentist...
+    dentists = dentists.map((d) => {
+        const ratingScore = d.user.dentistReviews.reduce((acc, r) => acc + r.rating, 0);
+        const totalReviews = d.user.dentistReviews.length;
+        const averageRating = ratingScore / totalReviews;
+        const rating = isNaN(averageRating) ? 0 : averageRating;
+        return {
+          ...d,
+          rating
+        };
+      });
     if (sort === 'price') {
       dentists = dentists.sort((d1, d2) => {
         if (d1.planStartingCost > d2.planStartingCost) {
@@ -98,18 +109,7 @@ async function search(req, res) {
         return -1;
       });
     } else if (sort === 'score') {
-      dentists = dentists
-        .map((d) => {
-          const ratingScore = d.user.dentistReviews.reduce((acc, r) => acc + r.rating, 0);
-          const totalReviews = d.user.dentistReviews.length;
-          const averageRating = ratingScore / totalReviews;
-          const rating = isNaN(averageRating) ? 0 : averageRating;
-          return {
-            ...d,
-            rating
-          };
-        })
-        .sort((d1, d2) => {
+      dentists = dentists.sort((d1, d2) => {
           if (d1.rating < d2.rating) {
             return 1;
           }
