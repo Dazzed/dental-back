@@ -63,23 +63,27 @@ function createDentistInfo(user, body, transaction) {
   .then((info) => {
     const promises = [];
 
-    promises.push(user.createMembership({
-      name: 'default monthly membership',
-      price: !_.isNil(pricing.adultMonthlyFee) && _.isFinite(_.toNumber(pricing.adultMonthlyFee)) ? _.toNumber(pricing.adultMonthlyFee) : 19.99,
-      discount: pricing.treatmentDiscount || 0,
-      type: SUBSCRIPTION_TYPES_LOOKUP.month,
-      subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.adult,
-      dentistInfoId: info.id,
-    }, { transaction }));
+    promises.push(!_.isNil(pricing.adultMonthlyFeeActivated) && pricing.adultMonthlyFeeActivated &&
+        !_.isNil(pricing.adultMonthlyFee) && _.isFinite(_.toNumber(pricing.adultMonthlyFee)) ?
+      user.createMembership({
+        name: 'default monthly membership',
+        price: _.toNumber(pricing.adultMonthlyFee),
+        discount: pricing.treatmentDiscount || 0,
+        type: SUBSCRIPTION_TYPES_LOOKUP.month,
+        subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.adult,
+        dentistInfoId: info.id,
+      }, { transaction }) : Promise.resolve());
 
-    promises.push(user.createMembership({
-      name: 'default monthly child membership',
-      price: !_.isNil(pricing.childMonthlyFee) && _.isFinite(_.toNumber(pricing.childMonthlyFee)) ? _.toNumber(pricing.childMonthlyFee) : 14.99,
-      discount: pricing.treatmentDiscount || 0,
-      type: SUBSCRIPTION_TYPES_LOOKUP.month,
-      subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.child,
-      dentistInfoId: info.id,
-    }, { transaction }));
+    promises.push(!_.isNil(pricing.childMonthlyFeeActivated) && pricing.childMonthlyFeeActivated &&
+        !_.isNil(pricing.childMonthlyFee) && _.isFinite(_.toNumber(pricing.childMonthlyFee)) ?
+      user.createMembership({
+        name: 'default monthly child membership',
+        price: !_.isNil(pricing.childMonthlyFee) && _.isFinite(_.toNumber(pricing.childMonthlyFee)) ? _.toNumber(pricing.childMonthlyFee) : 14.99,
+        discount: pricing.treatmentDiscount || 0,
+        type: SUBSCRIPTION_TYPES_LOOKUP.month,
+        subscription_age_group: SUBSCRIPTION_AGE_GROUPS_LOOKUP.child,
+        dentistInfoId: info.id,
+      }, { transaction }) : Promise.resolve());
 
     promises.push(!_.isNil(pricing.adultYearlyFeeActivated) && pricing.adultYearlyFeeActivated &&
         !_.isNil(pricing.adultYearlyFee) && _.isFinite(_.toNumber(pricing.adultYearlyFee)) ?
