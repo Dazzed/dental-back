@@ -206,7 +206,7 @@ export function subscribeUserAndMembers(req, res) {
       const primaryAccountHolderSubscription = await db.Subscription.create({
         clientId: paymentProfile.primaryAccountHolder,
         dentistId: dentistPlans[0].userId,
-        membershipId: dentistPlans.find(p => p.name === 'default monthly membership').id,
+        membershipId: null,
         status: 'inactive',
         paymentProfileId: paymentProfile.id,
         createdAt: moment()
