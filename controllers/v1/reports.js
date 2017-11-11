@@ -23,6 +23,8 @@ import {
   ForbiddenError
 } from '../errors';
 
+import { transformFieldsToFixed } from '../../helpers/reports';
+
 // ────────────────────────────────────────────────────────────────────────────────
 // TEMPLATES
 
@@ -118,7 +120,7 @@ async function getMasterReport(req, res) {
     const targetYear = req.params.year;
     const targetDate = Moment(`${targetYear}-${targetMonth}-01`, 'YYYY-MM-DD');
     const targetDateCopy = Moment(targetDate);
-    const daysInTargetMonth = Moment(`${targetYear}-${targetMonth}`,'YYYY-MM').daysInMonth();
+    const daysInTargetMonth = Moment(`${targetYear}-${targetMonth}`, 'YYYY-MM').daysInMonth();
 
     let dentists = await db.DentistInfo.findAll({
       include:[{
@@ -139,7 +141,7 @@ async function getMasterReport(req, res) {
 
     dentists = dentists.map(dentist => {
       const filteredPayments = payments.filter(payment => payment.dentistId === dentist.id);
-      const gross = filteredPayments.reduce((acc, p) => acc += p.amount, 0);
+      const gross = filteredPayments.reduce((acc, p) => acc + p.amount, 0);
       const managementFee = gross * (11 / 100);
       const net = gross - managementFee;
       return {
@@ -217,8 +219,8 @@ async function getGeneralReport(req,res) {
     }
     const targetYear = req.params.year;
     const targetDate = Moment(`${targetYear}-${targetMonth}-01`, 'YYYY-MM-DD');
-    const targetDateCopy = Moment(targetDate);
-    const daysInTargetMonth = Moment(`${targetYear}-${targetMonth}`,'YYYY-MM').daysInMonth();
+    const targetDateCopy = Moment(targetDate, 'YYYY-MM-DD');
+    const daysInTargetMonth = Moment(`${targetYear}-${targetMonth}`, 'YYYY-MM').daysInMonth();
     // END Date Ops
 
     const date = `${fullMonthName} ${targetYear}`;
@@ -246,7 +248,8 @@ async function getGeneralReport(req,res) {
         }
       }
     });
-    const grossRevenue = payments.reduce((acc,p) => acc += Math.round(p.amount / 100, 2), 0);
+    let grossRevenue = payments.reduce((acc, p) => acc + (p.amount / 100), 0);
+    grossRevenue = grossRevenue.toFixed(2);
 
     const refundsRecords = await db.Refund.findAll({
       where: {
@@ -256,7 +259,8 @@ async function getGeneralReport(req,res) {
         }
       }
     });
-    const refunds = refundsRecords.reduce((acc,p) => acc += Math.round(p.amount / 100, 2), 0);
+    let refunds = refundsRecords.reduce((acc, p) => acc + (p.amount / 100), 0);
+    refunds = refunds.toFixed(2);
 
     const penaltiesRecords = await db.Penality.findAll({
       where: {
@@ -266,10 +270,10 @@ async function getGeneralReport(req,res) {
         }
       }
     });
-    const penalties = penaltiesRecords.reduce((acc,p) => acc += Math.round(p.amount / 100, 2), 0);
+    const penalties = penaltiesRecords.reduce((acc, p) => acc + (p.amount / 100), 0);
     
-    const managementFee = Math.round(grossRevenue * (11 / 100), 2);
-    const netPayment = grossRevenue - managementFee;
+    const managementFee = (grossRevenue * (11 / 100)).toFixed(2);
+    const netPayment = (grossRevenue - managementFee).toFixed(2);
 
     const filteredPaymentProfileIds = dentistSubscriptions
       .reduce((acc, s) => {
@@ -282,7 +286,7 @@ async function getGeneralReport(req,res) {
       id: filteredPaymentProfileIds
     } });
 
-    const parentMemberRecords = [];
+    let parentMemberRecords = [];
 
     for (let profile of paymentProfileRecords) {
       let parentLocal = {};
@@ -292,43 +296,49 @@ async function getGeneralReport(req,res) {
       parentLocal.firstName = parent.firstName;
       parentLocal.lastName = parent.lastName;
       parentLocal.maturity = 'Adult';
-      const parentFee = payments.find(p => p.clientId == parent.id);
-      parentLocal.fee = parentFee ? Math.round(parentFee.amount / 100, 2) : 0;
-      
-      parentLocal.penalties = penaltiesRecords.filter(p => p.clientId == parent.id)
-        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
-      parentLocal.refunds = refundsRecords.filter(p => p.clientId == parent.id)
-        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
-      parentLocal.net = Math.round(parentLocal.fee - parentLocal.fee * (11/100), 2);
+      const parentFee = payments.find(p => p.clientId === parent.id);
+      parentLocal.fee = parentFee ? parentFee.amount / 100 : 0;
+
+      parentLocal.penalties = penaltiesRecords.filter(p => p.clientId === parent.id)
+        .reduce((acc, p) => acc + p.amount / 100, 0);
+      parentLocal.refunds = refundsRecords.filter(p => p.clientId === parent.id)
+        .reduce((acc, p) => acc + p.amount / 100, 0);
+      let feeMinusRefunds = parentLocal.fee - parentLocal.refunds;
+      parentLocal.net = feeMinusRefunds - (feeMinusRefunds * (11 / 100));
 
       parentLocal.family = [];
       childMembers.forEach(child => {
         const childLocal = {};
         childLocal.firstName = child.firstName;
         childLocal.lastName = child.lastName;
-        childLocal.maturity = Moment('YYYY-MM-DD').subtract(Moment(child.birthDate, 'YYYY-MM-DD'), 'years') >= 18 ? 'Adult' : 'Child';
-        const childLocalFee = payments.find(p => p.clientId == child.id);
-        childLocal.fee = childLocalFee ? Math.round(childLocalFee.amount / 100, 2) : 0;
-        childLocal.penalties = penaltiesRecords.filter(p => p.clientId == child.id)
-          .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
-        childLocal.refunds = refundsRecords.filter(p => p.clientId == child.id)
-          .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
-        childLocal.net = Math.round(childLocal.fee - (childLocal.fee * (11 / 100)), 2);
+        childLocal.maturity = Moment().diff(Moment(child.birthDate, 'YYYY-MM-DD'), 'years') >= 18 ? 'Adult' : 'Child';
+
+        const childLocalFee = payments.find(p => p.clientId === child.id);
+        childLocal.fee = childLocalFee ? childLocalFee.amount / 100 : 0;
+        childLocal.penalties = penaltiesRecords.filter(p => p.clientId === child.id)
+          .reduce((acc, p) => acc + p.amount / 100, 0);
+        childLocal.refunds = refundsRecords.filter(p => p.clientId === child.id)
+          .reduce((acc, p) => acc + p.amount / 100, 0);
+        feeMinusRefunds = childLocal.fee - childLocal.refunds;
+        childLocal.net = feeMinusRefunds - (feeMinusRefunds * (11 / 100));
         parentLocal.family.push(childLocal);
       });
       parentLocal.membershipFeeTotal = payments
-        .filter(p => p.clientId == parent.id || childMembers.map(c => c.id).includes(p.clientId))
-        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
+        .filter(p => p.clientId === parent.id || childMembers.map(c => c.id).includes(p.clientId))
+        .reduce((acc, p) => acc + p.amount / 100, 0);
       parentLocal.penaltiesTotal = penaltiesRecords
-        .filter(p => p.clientId == parent.id || childMembers.map(c => c.id).includes(p.clientId))
-        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
+        .filter(p => p.clientId === parent.id || childMembers.map(c => c.id).includes(p.clientId))
+        .reduce((acc, p) => acc + p.amount / 100, 0);
       parentLocal.refundsTotal = refundsRecords
-        .filter(p => p.clientId == parent.id || childMembers.map(c => c.id).includes(p.clientId))
-        .reduce((acc, p) => acc += Math.round(p.amount / 100, 2) ,0);
-      parentLocal.netTotal = Math.round(parentLocal.membershipFeeTotal - (parentLocal.membershipFeeTotal * (11 / 100)), 2);
+        .filter(p => p.clientId === parent.id || childMembers.map(c => c.id).includes(p.clientId))
+        .reduce((acc, p) => acc + p.amount / 100, 0);
+      feeMinusRefunds = parentLocal.membershipFeeTotal - parentLocal.refundsTotal;
+      parentLocal.netTotal = feeMinusRefunds - (feeMinusRefunds * (11 / 100));
       parentMemberRecords.push(parentLocal);
     }
 
+    // transform some parentMemberRecords properties to toFixed(2)
+    parentMemberRecords = transformFieldsToFixed(parentMemberRecords);
     const reportData = {
       title: `${dentistInfo.officeName} -- General Report`,
       dentistSpecialityName,

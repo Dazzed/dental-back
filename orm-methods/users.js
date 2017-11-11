@@ -326,7 +326,7 @@ export const instance = {
       const userParsed = user.toJSON();
       const localSubscription = userParsed.clientSubscription;
       userParsed.subscription = subscription;
-      userParsed.membershipId = userParsed.clientSubscription.membership.id;
+      userParsed.membershipId = userParsed.clientSubscription.membership ? userParsed.clientSubscription.membership.id : null;
       userParsed.phone = userParsed.phoneNumbers[0] ? userParsed.phoneNumbers[0].number : undefined;
       // get the recurring date from stripe.
       if (!stripeSubscription) {
@@ -657,7 +657,7 @@ export const instance = {
     })
     // 2. Get the payment profile
     .then((sub) => {
-      if (!sub) throw new Error('User has no active subscription');
+      if (!sub) return db.PaymentProfile.find({ where: { primaryAccountHolder: userId } });
       return db.PaymentProfile.find({ where: { id: sub.paymentProfileId } });
     })
     .then((profile) => {

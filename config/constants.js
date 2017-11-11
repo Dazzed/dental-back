@@ -102,18 +102,21 @@ export const EMAIL_SUBJECTS = {
     welcome: 'Dental Membership',
     membershipPriceUpdate: 'Membership price update',
     subscriptionChargeFailed: 'Recurring Payment Failure',
-    subscriptionCancellation: 'Subscription Cancellation'
+    subscriptionCancellation: 'Subscription Cancellation',
+    thirtyDayOldPatientNotification: 'Thanks for your support!',
+    annualPlanRenewNotification: 'Annual Plan Renewal'
   },
   dentist: {
     welcome: 'Welcome to the Dental Marketplace!',
     activation_required: 'Activate Your Account',
     invite_patient: 'Invitation to join',
     new_patient: 'New Patient from DentalHQ',
-    new_review: 'You Have a New Review on DentalHQ'
+    new_review: 'You have a new review'
   },
-  activation_complete: 'Welcome to the Dental Marketplace!',
+  activation_complete: 'Welcome to DentalHQ',
   contact_support: 'A New DentalHQ.com Contact Form Message',
   password_reset: 'Password Reset Request',
+  terms_and_conditions_update: 'Terms and Conditions Updated'
 };
 
 

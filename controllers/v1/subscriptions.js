@@ -10,7 +10,8 @@ import db from '../../models';
 import stripe from '../stripe';
 import { BadRequestError } from '../errors';
 import { reenrollMember, performEnrollmentWithoutProration } from '../../utils/reenroll';
-import { changePlanUtil } from '../../utils/change_plan';
+// import { changePlanUtil } from '../../utils/change_plan';
+import { performChangePlan } from '../../helpers/subscriptions';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
@@ -228,15 +229,18 @@ async function reEnroll(req, res) {
  * @param {Object} res - the express response
  * @param {Function} next - the next middleware function
  */
-function changePlan(req, res, next) {
+async function changePlan (req, res) {
+  try {
+    const memberId = req.params.userId;
+    const { membershipId } = req.params;
+    const { subscriptionId } = req.query;
+    const currentUserId = req.user.get('id');
 
-  const memberId = req.params.userId;
-  const { membershipId } = req.params;
-  const { subscriptionId } = req.query;
-  const currentUserId = req.user.get('id');
-
-  changePlanUtil(memberId, currentUserId, membershipId, subscriptionId)
-    .then(subscription => res.status(200).send({ data: subscription }), err => res.status(500).send(err));
+    const updatedSubscription = await performChangePlan(memberId, membershipId);
+    return res.status(200).send({ data: updatedSubscription });
+  } catch (e) {
+    return res.status(500).send(e);
+  }
 }
 
 /**

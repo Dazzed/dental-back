@@ -1,3 +1,6 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable operator-assignment */
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
@@ -28,6 +31,15 @@ import {
 import {
   subscribeNewMember,
 } from '../../utils/subscribe';
+
+import {
+  getTransferringMember,
+  getDeletedEmailFormat
+} from '../../helpers/members';
+
+import stripe from '../stripe';
+
+const RE_ENROLLMENT_PENALTY = process.env.RE_ENROLLMENT_PENALTY * 100;
 // ────────────────────────────────────────────────────────────────────────────────
 // ROUTER
 
@@ -198,6 +210,46 @@ function deleteMember(req, res, next) {
   .catch(err => next(new BadRequestError(err)));
 }
 
+async function transferMember(req, res) {
+  try {
+    const { transferringMember } = req;
+    const { shouldChargeReEnrollmentFree } = req.body;
+
+    // Cancel user's active stripe subscriptions
+    const paymentProfile = await db.PaymentProfile.findOne({
+      where: {
+        primaryAccountHolder: transferringMember.id
+      }
+    });
+
+    const { stripeCustomerId } = paymentProfile;
+    const stripeCustomer = await stripe.getCustomer(stripeCustomerId);
+    const { subscriptions } = stripeCustomer;
+    if (shouldChargeReEnrollmentFree) {
+      await stripe.issueCharge(RE_ENROLLMENT_PENALTY, stripeCustomerId, 'Re-Enrollment Penalty Charge(Transfer)');
+    }
+    for (const subscription of subscriptions.data) {
+      if (!subscription.canceled_at) {
+        await stripe.deleteSubscription(subscription.id, { at_period_end: true });
+      }
+    }
+
+    await db.Subscription.destroy({
+      where: {
+        paymentProfileId: paymentProfile.id
+      }
+    });
+
+    transferringMember.email = getDeletedEmailFormat(transferringMember.email);
+    transferringMember.isDeleted = true;
+    await transferringMember.save();
+    return res.status(200).send({ memberId: transferringMember.id });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ errors: 'Internal Server Error' });
+  }
+}
+
 // ────────────────────────────────────────────────────────────────────────────────
 // ENDPOINTS
 
@@ -208,12 +260,14 @@ router
   .get(
     userRequired,
     checkUserDentistPermission,
-    getMembers)
+    getMembers
+  )
   .post(
     userRequired,
     validateBody(ADD_MEMBER),
     checkUserDentistPermission,
-    addMember);
+    addMember
+  );
 
 
 router
@@ -221,14 +275,24 @@ router
   .get(
     userRequired,
     injectMemberFromUser(),
-    getMember)
+    getMember
+  )
   .put(
     userRequired,
     injectMemberFromUser(),
-    updateMember)
+    updateMember
+  )
   .delete(
     userRequired,
     injectMemberFromUser(),
-    deleteMember);
+    deleteMember
+  );
+
+router
+  .route('/transfer')
+  .post(
+    getTransferringMember,
+    transferMember
+  );
 
 export default router;

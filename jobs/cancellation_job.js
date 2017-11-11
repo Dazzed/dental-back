@@ -18,28 +18,26 @@ export async function subscriptionCancellationJob() {
     if (!targetedRecords.length) {
       return;
     }
-
-    const cancellationOperation = () => {
-      return new Promise((resolve, reject) => {
-        asynchronous.each(targetedRecords, (subscription, callback) => {
-          subscription.status = 'canceled';
-          subscription.stripeSubscriptionId = null;
-          subscription.stripeSubscriptionItemId = null;
-          subscription.cancelsAt = null;
-          subscription.save().then(() => {
-            callback();
-          });
-        }, (err) => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(true);
-        });
+    const dentistInfo = await db.DentistInfo.findOne({
+      where: {
+        userId: targetedRecords[0].dentistId
+      }
+    });
+    const { officeName } = dentistInfo;
+    for (const subscription of targetedRecords) {
+      subscription.status = 'canceled';
+      subscription.stripeSubscriptionId = null;
+      subscription.stripeSubscriptionItemId = null;
+      subscription.cancelsAt = null;
+      await subscription.save();
+      const user = await db.User.findOne({
+        where: {
+          id: subscription.paymentProfileId
+        }
       });
-    };
-
-    const operationStatus = await cancellationOperation();
-    return operationStatus;
+      subscriptionCancellationNotification(user, officeName.replace(/ /g, ''));
+    }
+    return true;
   } catch (e) {
     console.log(e);
     throw e;

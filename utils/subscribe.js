@@ -5,6 +5,7 @@ import {
   performEnrollmentWithoutProration,
 } from './reenroll';
 import Mailer from '../controllers/mailer';
+import { sendNewPatientNotificationEmail } from '../controllers/sendgrid_mailer';
 
 var async = require('async');
 var moment = require('moment');
@@ -184,14 +185,28 @@ export function subscribeUserAndMembers(req, res) {
         clientId: paymentProfile.primaryAccountHolder
       }
     });
-
+    const primaryAccountHolder = await db.User.findOne({
+      where: {
+        id: paymentProfile.primaryAccountHolder
+      }
+    });
+    // Send notification to dental office about new patient signup.
+    // Only If the patient prefer's to be contacted via email or phone.
+    if (primaryAccountHolder.contactMethod === 'email' || primaryAccountHolder.contactMethod === 'phone') {
+      const dentistInfo = await db.DentistInfo.findOne({
+        where: {
+          userId: dentistPlans[0].userId
+        }
+      });
+      sendNewPatientNotificationEmail(dentistInfo.email);
+    }
     if (isPrimaryAccountHolderSubbed) {
       return callback(null);
     } else {
       const primaryAccountHolderSubscription = await db.Subscription.create({
         clientId: paymentProfile.primaryAccountHolder,
         dentistId: dentistPlans[0].userId,
-        membershipId: dentistPlans.find(p => p.name === 'default monthly membership').id,
+        membershipId: null,
         status: 'inactive',
         paymentProfileId: paymentProfile.id,
         createdAt: moment()

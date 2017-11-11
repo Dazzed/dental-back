@@ -17,6 +17,12 @@ import {
   MANAGER_UPDATE
 } from '../../utils/schema-validators';
 
+import {
+  termsAndConditionsUpdateNotification,
+  isValidChangePasswordObject,
+  isCurrentPasswordValid
+} from '../../helpers/managers';
+
 const userFieldsExcluded = ['hash', 'salt', 'activationKey', 'resetPasswordKey', 'verified', 'updatedAt'];
 
 async function addManager(req, res) {
@@ -125,6 +131,36 @@ async function getManagersList(req, res) {
   }
 }
 
+async function updateTermsAndConditions(req, res) {
+  try {
+    // Send status ok to the client before sending the emails.
+    res.status(200).send({});
+    termsAndConditionsUpdateNotification();
+    return;
+  } catch (e) {
+    console.log(e);
+    res.status(HTTPStatus.INTERNAL_SERVER_ERROR).send({ errors: 'Internal Server Error' });
+  }
+}
+
+async function changeAdminPassword(req, res) {
+  try {
+    const {
+      newPassword
+    } = req.body;
+    req.user.setPassword(newPassword, (err) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send({ errors: 'Internal Server Error' });
+      }
+      req.user.save().then(() => res.status(200).send({}));
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(HTTPStatus.INTERNAL_SERVER_ERROR).send({ errors: 'Internal Server Error' });
+  }
+}
+
 const router = new Router({ mergeParams: true });
 
 router
@@ -136,4 +172,15 @@ router
   .route('/list')
   .get(getManagersList);
 
+router
+  .route('/update_terms_and_conditions')
+  .post(updateTermsAndConditions);
+
+router
+  .route('/change_password')
+  .post(
+    isValidChangePasswordObject,
+    isCurrentPasswordValid,
+    changeAdminPassword
+  );
 export default router;

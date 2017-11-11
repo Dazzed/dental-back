@@ -25,31 +25,32 @@ function verboseError(err) {
   switch (err.type) {
     case 'StripeCardError':
       // A declined card error
-      err.message = 'The provided card was invalid';
+      // Leave Stripe's existing message, since it provides helpful information
+      // for users to correct the error on the checkout form.
       break;
     case 'RateLimitError':
       // Too many requests made to the API too quickly
-      err.message = 'Too many requests have been made to our payments platform';
+      err.message = 'Too many requests have been made to our payments platform.';
       break;
     case 'StripeInvalidRequestError':
       // Invalid parameters were supplied to Stripe's API
-      err.message = 'The server has sent invalid parameters through the payment portal';
+      err.message = 'The server has sent invalid parameters through the payment portal.';
       break;
     case 'StripeAPIError':
       // An error occurred internally with Stripe's API
-      err.message = 'The payment platform experienced an internal error';
+      err.message = 'The payment platform experienced an internal error.';
       break;
     case 'StripeConnectionError':
       // Some kind of error occurred during the HTTPS communication
-      err.message = 'There was an issue connecting to the payment portal';
+      err.message = 'There was an issue connecting to the payment portal.';
       break;
     case 'StripeAuthenticationError':
       // You probably used an incorrect API key
-      err.message = 'There was an issue authorizing the connection to the payment portal';
+      err.message = 'There was an issue authorizing the connection to the payment portal.';
       break;
     default:
       // Handle any other types of unexpected errors
-      err.message = 'There was an unknown error';
+      err.message = 'There was an unknown error.';
       break;
   }
 
