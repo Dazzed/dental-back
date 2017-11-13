@@ -14,7 +14,11 @@ const site = process.env.SITE;
 
 function mail(mailer, template, locals) {
   return new Promise((resolve, reject) => {
-    mailer.send(template, locals, (err, info) => err ? reject(err) : resolve(info));
+    mailer.send(template, locals, (err, info) => {
+      console.log("Error", err);
+      console.log("Info", info);
+      return err ? reject(err) : resolve(info);
+    });
   });
 }
 
@@ -86,31 +90,6 @@ export default {
       subject: EMAIL_SUBJECTS.dentist.welcome,
       site,
       user
-    });
-  },
-  async clientWelcomeEmail(res, user, usersSubscription, dentistPlans) {
-
-    const dentistContactInfoQuery = await db.User.findOne({
-      where: {
-        id: usersSubscription[0].dentistId
-      },
-      include: [{
-        model: db.DentistInfo,
-        as: 'dentistInfo'
-      }]
-    });
-
-    const dentistContactInfo = constructDentistInfo(dentistContactInfoQuery);
-    const paymentDetails = constructPaymentDetails(usersSubscription, dentistPlans);
-
-    return mail(res.mailer, 'auth/client/welcome', {
-      to: user.email,
-      subject: EMAIL_SUBJECTS.client.welcome,
-      site,
-      user,
-      officeName: dentistContactInfoQuery.dentistInfo.officeName,
-      dentistContactInfo,
-      paymentDetails
     });
   },
   dentistReviewNotification(res, user, patient, review) {

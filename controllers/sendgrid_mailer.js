@@ -7,6 +7,7 @@ var fs = require('fs')
 import {
   EMAIL_SUBJECTS,
 } from '../config/constants';
+import db from '../models';
 
 const site = process.env.SITE;
 var from_email = new sendgrid.Email("donotreply@dentalhq.com");
@@ -134,6 +135,7 @@ export function sendTermsAndConditionsUpdatedEmail(firstName, email) {
   sendMail(mail);
 }
 
+// Send this email to dentist office if the patient set's preferred contact method as email or phone
 export function sendNewPatientNotificationEmail(officeEmail) {
   var templateString = fs.readFileSync('./views/notifications/new_patient_notification.ejs', 'utf-8');
   var template = ejs.compile(templateString);
@@ -145,4 +147,83 @@ export function sendNewPatientNotificationEmail(officeEmail) {
   );
   let mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
+}
+
+// Send this email to dentist office regardless of the patient's contact preference
+export function sendNewPatientNotificationEmailDefault(officeEmail) {
+  var templateString = fs.readFileSync('./views/notifications/new_patient_notification_default.ejs', 'utf-8');
+  var template = ejs.compile(templateString);
+
+  let to_email = new sendgrid.Email(officeEmail);
+  let subject = EMAIL_SUBJECTS.dentist.new_member;
+  let content = new sendgrid.Content(
+    'text/html', template({ subject })
+  );
+  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  sendMail(mail);
+}
+
+export async function clientWelcomeEmail(res, user, usersSubscription, dentistPlans) {
+  try {
+    const dentistContactInfoQuery = await db.User.findOne({
+      where: {
+        id: usersSubscription[0].dentistId
+      },
+      include: [{
+        model: db.DentistInfo,
+        as: 'dentistInfo'
+      }]
+    });
+
+    const dentistContactInfo = constructDentistInfo(dentistContactInfoQuery);
+    const paymentDetails = constructPaymentDetails(usersSubscription, dentistPlans);
+
+    var templateString = fs.readFileSync('./views/auth/client/welcome.ejs', 'utf-8');
+    var template = ejs.compile(templateString);
+
+    let to_email = new sendgrid.Email(user.email);
+    let subject = EMAIL_SUBJECTS.client.welcome;
+    let content = new sendgrid.Content(
+      'text/html', template({
+        site,
+        subject,
+        user,
+        officeName: dentistContactInfoQuery.dentistInfo.officeName,
+        dentistContactInfo,
+        paymentDetails,
+      })
+    );
+    from_email = new sendgrid.Email(dentistContactInfoQuery.dentistInfo.email);
+    let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+    sendMail(mail);
+  } catch (e) {
+    console.log(e, 'Error in clientWelcomeEmail');
+  }
+}
+
+function constructDentistInfo(dentist) {
+  const { dentistInfo } = dentist;
+  return `
+    Dentist Name: ${dentist.firstName + dentist.lastName},
+    Office Name: ${dentistInfo.officeName},
+    Dentist Email: ${dentist.email},
+    Dentist Office Email: ${dentistInfo.email},
+    Office Address: ${dentistInfo.address || ''}, ${dentistInfo.city || ''}, ${dentistInfo.zipCode || ''}, ${dentistInfo.state || ''}\n
+  `.replace(/  /g, '');
+}
+
+function constructPaymentDetails(subs, plans) {
+  const total = plans.reduce((acc, p) => {
+    subs.forEach(s => {
+      if (s.membershipId === p.id) {
+        acc += parseFloat(p.price);
+      }
+    });
+    return acc;
+  }, 0);
+
+  return `
+    Total Family Members Subscribed: ${subs.length},
+    Subtotal: ${String(total)}.00 $
+  `.replace(/  /g, '');
 }
