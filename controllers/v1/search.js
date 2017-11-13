@@ -30,7 +30,7 @@ async function search(req, res) {
         } = point;
         const location = sequelize.literal(`ST_GeomFromText('POINT(${lat} ${lng})')`);
         sequelizeDistance = sequelize.fn('ST_Distance_Sphere', sequelize.col('location'), location);
-        whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance || 25) * 1000 * 1609.344 });
+        whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance || 25) * 1609.34 });
       } else {
         return res.status(400).send({ errors: 'Please Enter a valid search query' });
       }
@@ -121,22 +121,6 @@ async function search(req, res) {
     if (specialtiesRequired) {
       specialtiesList = await db.DentistSpecialty.findAll().map(s => s.toJSON());
     }
-
-    // if (countRequired) {
-    //   totalDentistCount = await db.User.count({
-    //     where: {
-    //       type: 'dentist',
-    //       verified: true
-    //     },
-    //     include: [{
-    //       model: db.DentistInfo,
-    //       as: 'dentistInfo',
-    //       where: {
-    //         marketplaceOptIn: true
-    //       }
-    //     }]
-    //   });
-    // }
     return res.status(200).send({ dentists, specialtiesList, totalDentistCount });
   } catch (e) {
     console.log(e);
