@@ -30,7 +30,7 @@ async function search(req, res) {
         } = point;
         const location = sequelize.literal(`ST_GeomFromText('POINT(${lat} ${lng})')`);
         sequelizeDistance = sequelize.fn('ST_Distance_Sphere', sequelize.col('location'), location);
-        whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance || 25) * 1000 });
+        whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance || 25) * 1000 * 1609.344 });
       } else {
         return res.status(400).send({ errors: 'Please Enter a valid search query' });
       }

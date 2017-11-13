@@ -15,14 +15,19 @@ import { BadRequestError } from '../errors';
  *
  * @returns {Promise<Object>}
  */
-function getDentistsCount() {
-  return new Promise((resolve, reject) => {
-    db.DentistInfo.count({
-      where: { id: { gt: 0 } }
-    }).then((count) => {
-      resolve({ dentistOfficeCount: count });
-    }).catch(err => reject(err));
-  });
+async function getDentistsCount() {
+  try {
+    const dentistsCount = await db.User.count({
+      where: {
+        type: 'dentist',
+        isDeleted: false
+      }
+    });
+    return { dentistOfficeCount: dentistsCount };
+  } catch (e) {
+    console.log(e, 'Error in getDentistsCount');
+    throw e;
+  }
 }
 
 /**
@@ -30,14 +35,20 @@ function getDentistsCount() {
  *
  * @returns {Promise<Object>}
  */
-function getActiveUserCount() {
-  return new Promise((resolve, reject) => {
-    db.User.count({
-      where: { verified: true }
-    }).then((count) => {
-      resolve({ activeUserCount: count });
-    }).catch(err => reject(err));
-  });
+async function getActiveUserCount() {
+  try {
+    const activeUserCount = await db.Subscription.count({
+      where: {
+        status: {
+          $notIn: ['inactive', 'canceled', 'expired', 'unpaid']
+        }
+      }
+    });
+    return { activeUserCount };
+  } catch (e) {
+    console.log(e, 'Error in getActiveUserCount');
+    throw e;
+  }
 }
 
 /**

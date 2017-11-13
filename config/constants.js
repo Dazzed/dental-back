@@ -111,6 +111,7 @@ export const EMAIL_SUBJECTS = {
     activation_required: 'Activate Your Account',
     invite_patient: 'Invitation to join',
     new_patient: 'New Patient from DentalHQ',
+    new_member: 'New Member',
     new_review: 'You have a new review'
   },
   activation_complete: 'Welcome to DentalHQ',

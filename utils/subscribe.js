@@ -4,8 +4,11 @@ import {
   performEnrollment,
   performEnrollmentWithoutProration,
 } from './reenroll';
-import Mailer from '../controllers/mailer';
-import { sendNewPatientNotificationEmail } from '../controllers/sendgrid_mailer';
+import {
+  sendNewPatientNotificationEmail,
+  clientWelcomeEmail,
+  sendNewPatientNotificationEmailDefault
+} from '../controllers/sendgrid_mailer';
 
 var async = require('async');
 var moment = require('moment');
@@ -155,7 +158,7 @@ export function subscribeUserAndMembers(req, res) {
       promises.push(stripe.createSubscriptionWithItems(annualSubscriptionObject));
     }
     Promise.all(promises).then(data => {
-      Mailer.clientWelcomeEmail(res, req.locals.user, usersSubscription, dentistPlans);
+      clientWelcomeEmail(res, req.locals.user, usersSubscription, dentistPlans);
       callback(null, data, usersSubscription, dentistPlans);
     }, err => {
       rollbackNewUser(usersSubscription, req.locals.paymentProfile).then(d => {
@@ -190,16 +193,19 @@ export function subscribeUserAndMembers(req, res) {
         id: paymentProfile.primaryAccountHolder
       }
     });
+
+    const dentistInfo = await db.DentistInfo.findOne({
+      where: {
+        userId: dentistPlans[0].userId
+      }
+    });
     // Send notification to dental office about new patient signup.
     // Only If the patient prefer's to be contacted via email or phone.
     if (primaryAccountHolder.contactMethod === 'email' || primaryAccountHolder.contactMethod === 'phone') {
-      const dentistInfo = await db.DentistInfo.findOne({
-        where: {
-          userId: dentistPlans[0].userId
-        }
-      });
       sendNewPatientNotificationEmail(dentistInfo.email);
     }
+    // Send default notification to dental office about new patient signup..
+    sendNewPatientNotificationEmailDefault(dentistInfo.email);
     if (isPrimaryAccountHolderSubbed) {
       return callback(null);
     } else {
