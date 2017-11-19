@@ -576,14 +576,36 @@ export const instance = {
     .then((dentist) => {
       if (dentist == null) throw new Error('No dentist found');
       d = dentist.toJSON();
-      const initialPrice = d.memberships.length > 0 ? d.memberships[0].price : 0;
-      const planStartingCost = d.memberships.reduce((acc, m) => {
-        if (parseFloat(m.price) < acc) {
-          acc = parseFloat(m.price);
-        }
-        return acc;
-      }, parseFloat(initialPrice));
-      d.planStartingCost = `$${Number(planStartingCost)}`;
+      // try to find the lowest active adult monthly membership cost
+      let planStartingCost = d.memberships
+        .filter(m => m.active && m.subscription_age_group === 'adult' && m.type === 'month')
+        .reduce((acc, m) => {
+          if (parseFloat(m.price) < parseFloat(acc)) {
+            acc = parseFloat(m.price);
+          }
+          return acc;
+        }, Number.MAX_SAFE_INTEGER);
+
+      // if the dentist only caters towards children, or only has yearly plans,
+      // get the smallest cost active membership instead
+      if (planStartingCost === Number.MAX_SAFE_INTEGER) {
+        planStartingCost = d.memberships
+          .filter(m => m.active)
+          .reduce((acc, m) => {
+            if (parseFloat(m.price) < parseFloat(acc)) {
+              acc = parseFloat(m.price);
+            }
+            return acc;
+          }, Number.MAX_SAFE_INTEGER);
+      }
+
+      // if there are no memberships, set the value as `null` and let the
+      // frontend handle it
+      if (planStartingCost === Number.MAX_SAFE_INTEGER) {
+        planStartingCost = null;
+      }
+      d.planStartingCost = planStartingCost;
+
       const dentistInfoId = d.dentistInfo ? d.dentistInfo.id : 0;
       // Retrieve Price Codes
       return db.MembershipItem.findAll({
