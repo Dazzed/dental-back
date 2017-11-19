@@ -107,8 +107,32 @@
                                           You have a new member who has enrolled and asked you to call/email him to schedule an appointment.
                                           Please login to your account to get his contact information and contact him within 3 days.
                                           <br />
+                                          <p>
+                                              <strong>Name: </strong> <%= patient.fistName %> <%= patient.lastName %>
+                                          </p>
                                           <br />
-                                          Dental HQ
+                                          <p>
+                                              <strong>Email: </strong> <%= patient.email %>
+                                          </p>
+                                          <br />
+                                          <p>
+                                              <strong>Phone: </strong> <%= patient.phone %>
+                                          </p>
+                                          <br />
+                                          <p>
+                                              <strong>Preferred Contact Method: </strong> <%= patient.contactMehtod %>
+                                          </p>
+                                          <br />
+                                          <p>
+                                              <strong>Signed Up On: </strong> <%= signupDateTime %>
+                                          </p>
+                                          <br />
+                                          <p>
+                                              <a href="https://dentalhq.com/accounts/login">Login</a>
+                                          </p>
+                                          <br />
+                                          <p>Sincerely,</p>
+                                          <strong>Dental HQ</strong>
                                         </td>
                                     </tr>
 
