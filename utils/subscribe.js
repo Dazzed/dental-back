@@ -203,14 +203,16 @@ export function subscribeUserAndMembers(req, res) {
         userId: dentistPlans[0].userId
       }
     });
-    // Send notification to dental office about new patient signup.
-    // Only If the patient prefer's to be contacted via email or phone.
+
+    // Send an email alerting the dentist about the signup.  If the user has
+    // requested the dentist contact them, let the dentist know to do that.
     const signupDateTime = moment().tz('America/New_York').format('MMMM Do, YYYY @ h:mma z');
     if (primaryAccountHolder.contactMethod === 'email' || primaryAccountHolder.contactMethod === 'phone') {
       sendNewPatientNotificationEmail(dentistInfo.email, primaryAccountHolder, signupDateTime);
+    } else {
+      sendNewPatientNotificationEmailDefault(dentistInfo.email, primaryAccountHolder, signupDateTime);
     }
-    // Send default notification to dental office about new patient signup..
-    sendNewPatientNotificationEmailDefault(dentistInfo.email);
+
     if (isPrimaryAccountHolderSubbed) {
       return callback(null);
     } else {

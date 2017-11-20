@@ -10,7 +10,7 @@ import {
 import db from '../models';
 
 const site = process.env.SITE;
-var from_email = new sendgrid.Email("donotreply@dentalhq.com");
+const dentalhq_from_email = new sendgrid.Email("donotreply@dentalhq.com");
 
 function sendMail(mail) {
   let request = sg.emptyRequest({
@@ -34,7 +34,7 @@ export function membershipPriceChangeNotificationAdvance(user, plan_name, price,
 
   var template = ejs.compile(templateString);
   var priceS = price.toString();
-  from_email = new sendgrid.Email(`donotreply@${officeName}.com`);
+  const from_email = new sendgrid.Email(`donotreply@${officeName}.com`);
   let to_email = new sendgrid.Email(user.email);
   let subject = EMAIL_SUBJECTS.client.membershipPriceUpdate;
   let content = new sendgrid.Content(
@@ -55,7 +55,7 @@ export function membershipPriceChangeNotification(user, plan_name, price) {
   let content = new sendgrid.Content(
     'text/html', template({ user, plan_name, price: priceS, subject })
   );
-  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  let mail = new sendgrid.Mail(dentalhq_from_email, subject, to_email, content);
   sendMail(mail);
 }
 
@@ -79,14 +79,14 @@ export function subscriptionChargeFailedNotification(user, attempt_count) {
   let content = new sendgrid.Content(
     'text/html', template({ user, days_late, subject })
   );
-  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  let mail = new sendgrid.Mail(dentalhq_from_email, subject, to_email, content);
   sendMail(mail);
 }
 
 export function subscriptionCancellationNotification(user, officeName) {
   var templateString = fs.readFileSync('./views/notifications/subscription_cancellation.ejs', 'utf-8');
   var template = ejs.compile(templateString);
-  from_email = new sendgrid.Email(`donotreply@${officeName}.com`);
+  const from_email = new sendgrid.Email(`donotreply@${officeName}.com`);
   let to_email = new sendgrid.Email(user.email);
   let subject = EMAIL_SUBJECTS.client.subscriptionCancellation;
   let content = new sendgrid.Content(
@@ -105,7 +105,7 @@ export function annualPlanRenewAdvanceNotificationEmail(firstName, email, days_l
   let content = new sendgrid.Content(
     'text/html', template({ subject, firstName, days_left_to_renew })
   );
-  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  let mail = new sendgrid.Mail(dentalhq_from_email, subject, to_email, content);
   sendMail(mail);
 }
 
@@ -118,7 +118,7 @@ export function thirtyDayOldPatientNotification(firstName, email) {
   let content = new sendgrid.Content(
     'text/html', template({ firstName, subject })
   );
-  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  let mail = new sendgrid.Mail(dentalhq_from_email, subject, to_email, content);
   sendMail(mail);
 }
 
@@ -131,12 +131,17 @@ export function sendTermsAndConditionsUpdatedEmail(firstName, email) {
   let content = new sendgrid.Content(
     'text/html', template({ subject, site, firstName })
   );
-  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  let mail = new sendgrid.Mail(dentalhq_from_email, subject, to_email, content);
   sendMail(mail);
 }
 
 // Send this email to dentist office if the patient set's preferred contact method as email or phone
 export function sendNewPatientNotificationEmail(officeEmail, patient, signupDateTime) {
+  console.log(patient.firstName + ' ' + patient.lastName);
+  console.log(patient.email);
+  console.log(patient.phoneNumbers[0].number);
+  console.log(patient.contactMethod);
+
   var templateString = fs.readFileSync('./views/notifications/new_patient_notification.ejs', 'utf-8');
   var template = ejs.compile(templateString);
 
@@ -145,21 +150,21 @@ export function sendNewPatientNotificationEmail(officeEmail, patient, signupDate
   let content = new sendgrid.Content(
     'text/html', template({ subject, patient, signupDateTime })
   );
-  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  let mail = new sendgrid.Mail(dentalhq_from_email, subject, to_email, content);
   sendMail(mail);
 }
 
 // Send this email to dentist office regardless of the patient's contact preference
-export function sendNewPatientNotificationEmailDefault(officeEmail) {
+export function sendNewPatientNotificationEmailDefault(officeEmail, patient, signupDateTime) {
   var templateString = fs.readFileSync('./views/notifications/new_patient_notification_default.ejs', 'utf-8');
   var template = ejs.compile(templateString);
 
   let to_email = new sendgrid.Email(officeEmail);
   let subject = EMAIL_SUBJECTS.dentist.new_member;
   let content = new sendgrid.Content(
-    'text/html', template({ subject })
+    'text/html', template({ subject, patient, signupDateTime })
   );
-  let mail = new sendgrid.Mail(from_email, subject, to_email, content);
+  let mail = new sendgrid.Mail(dentalhq_from_email, subject, to_email, content);
   sendMail(mail);
 }
 
@@ -193,7 +198,7 @@ export async function clientWelcomeEmail(res, user, usersSubscription, dentistPl
         paymentDetails,
       })
     );
-    from_email = new sendgrid.Email(dentistContactInfoQuery.dentistInfo.email);
+    const from_email = new sendgrid.Email(dentistContactInfoQuery.dentistInfo.email);
     let mail = new sendgrid.Mail(from_email, subject, to_email, content);
     sendMail(mail);
   } catch (e) {

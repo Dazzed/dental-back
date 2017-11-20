@@ -98,14 +98,13 @@
 
                                     <tr>
                                         <td class="content-block title">
-                                            <h2>Great News!!</h2>
+                                            <h2>Great News!</h2>
                                         </td>
                                     </tr>
 
                                     <tr>
                                         <td class="content-block content">
-                                          You have a new member who has enrolled and asked you to call/email him to schedule an appointment.
-                                          Please login to your account to get his contact information and contact him within 3 days.
+                                          You have a new member(s). Please login to your dashboard and review the account. They have asked you to call/email to schedule an appointment. Please contact them within 3 days.
                                           <br />
                                           <p>
                                               <strong>Name: </strong> <%= patient.fistName %> <%= patient.lastName %>
@@ -116,7 +115,7 @@
                                           </p>
                                           <br />
                                           <p>
-                                              <strong>Phone: </strong> <%= patient.phone %>
+                                              <strong>Phone: </strong> <%= patient.phoneNumbers[0].number %>
                                           </p>
                                           <br />
                                           <p>

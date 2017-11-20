@@ -97,10 +97,30 @@
                                     </tr>
 
                                     <tr>
+                                        <td class="content-block title">
+                                            <h2>Great News!</h2>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
                                         <td class="content-block content">
-                                          Congratulations! You have a new member(s). Please login to your dashboard and review the account.
-                                          If they have requested that you contact them by Phone/email then please do this within 3 business days.
-                                          The new member can be found under the New Members tab of your dashboard, use the link below to login.
+                                          You have a new member(s). Please login to your dashboard and review the account. They have elected to contact you to setup their first appointment.
+                                          <br />
+                                          <p>
+                                              <strong>Name: </strong> <%= patient.fistName %> <%= patient.lastName %>
+                                          </p>
+                                          <p>
+                                              <strong>Email: </strong> <%= patient.email %>
+                                          </p>
+                                          <p>
+                                              <strong>Phone: </strong> <%= patient.phoneNumbers[0].number %>
+                                          </p>
+                                          <p>
+                                              <strong>Preferred Contact Method: </strong> <%= patient.contactMehtod %>
+                                          </p>
+                                          <p>
+                                              <strong>Signed Up On: </strong> <%= signupDateTime %>
+                                          </p>
                                           <br />
                                           <p>
                                               <a href="https://dentalhq.com/accounts/login">Login</a>
