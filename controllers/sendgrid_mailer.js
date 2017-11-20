@@ -137,11 +137,6 @@ export function sendTermsAndConditionsUpdatedEmail(firstName, email) {
 
 // Send this email to dentist office if the patient set's preferred contact method as email or phone
 export function sendNewPatientNotificationEmail(officeEmail, patient, signupDateTime) {
-  console.log(patient.firstName + ' ' + patient.lastName);
-  console.log(patient.email);
-  console.log(patient.phoneNumbers[0].number);
-  console.log(patient.contactMethod);
-
   var templateString = fs.readFileSync('./views/notifications/new_patient_notification.ejs', 'utf-8');
   var template = ejs.compile(templateString);
 
