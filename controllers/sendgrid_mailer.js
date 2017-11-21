@@ -205,10 +205,9 @@ function constructDentistInfo(dentist) {
   const { dentistInfo } = dentist;
 
   let dentistContactInfo = {
-    dentistName: dentist.firstName + ' ' + dentist.lastName,
-    dentistEmail: dentist.email,
     officeName: dentistInfo.officeName,
     officeEmail: dentistInfo.email,
+    officePhone: dentistInfo.phone,
     officeAddress: dentistInfo.address,
     officeCity: dentistInfo.city,
     officeState: dentistInfo.state,
