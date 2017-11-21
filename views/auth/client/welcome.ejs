@@ -89,14 +89,6 @@
                             <td class="content-wrap" valign="top">
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
-                                        <td class="content-block">
-                                            <div>
-                                                <img style="width: 25%;" src="http://s3.amazonaws.com/dentalman_uploads/hq-email-sig-logo.png" />
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
                                         <td class="content-block title">
                                             <h2>Hi <%= user.firstName %>,</h2>
                                         </td>
@@ -104,20 +96,35 @@
 
                                     <tr>
                                         <td class="content-block content" style="padding-bottom:0;">
-                                          Welcome to the <%= officeName %> Membership plan.
-                                          Your enrollment is now complete and you are an active member.
-                                          Please feel free to login to your dashboard to add/edit family members,
-                                          update your payment information, communicate with your dentist and
-                                          leave reviews on your experiences at the office.
-                                          Below you will find your dentist's contact information.
-                                          If you have indicated that you would like them to contact you then you will receive a 
-                                          call or email within 3 business days.
+                                            <p>
+                                              Welcome to the <%= officeName %> Membership plan. Your enrollment is now complete and you are an active member.
+                                            </p>
+                                            <p>
+                                                Please feel free to login to your dashboard to add/edit family members, update your payment information, communicate with your dentist and leave reviews on your experiences at the office.
+                                            </p>
+                                            <p>
+                                              Below you will find your dentist's contact information. If you have indicated that you would like them to contact you then you will receive a call or email within 3 business days.
+                                            </p>
                                         </td>
                                     </tr>
 
                                     <tr>
                                         <td class="content-block content" style="padding-bottom:0;">
-                                          <%= dentistContactInfo %>
+                                            <p>
+                                                <strong>Dentist Name:</strong> dentistName
+                                            </p>
+                                            <p>
+                                                <strong>Office Name:</strong> officeName
+                                            </p>
+                                            <p>
+                                                <strong>Dentist Email:</strong> dentistEmail
+                                            </p>
+                                            <p>
+                                                <strong>Office Email:</strong> officeEmail
+                                            </p>
+                                            <p>
+                                                <strong>Office Address:</strong> officeAddress
+                                            </p>
                                         </td>
                                     </tr>
 

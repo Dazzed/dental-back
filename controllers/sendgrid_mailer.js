@@ -185,15 +185,15 @@ export async function clientWelcomeEmail(res, user, usersSubscription, dentistPl
     let subject = EMAIL_SUBJECTS.client.welcome;
     let content = new sendgrid.Content(
       'text/html', template({
+        ...dentistContactInfo,
+
         site,
         subject,
         user,
-        officeName: dentistContactInfoQuery.dentistInfo.officeName,
-        dentistContactInfo,
         paymentDetails,
       })
     );
-    const from_email = new sendgrid.Email(dentistContactInfoQuery.dentistInfo.email);
+    const from_email = new sendgrid.Email(dentistContactInfo.officeEmail);
     let mail = new sendgrid.Mail(from_email, subject, to_email, content);
     sendMail(mail);
   } catch (e) {
@@ -203,6 +203,27 @@ export async function clientWelcomeEmail(res, user, usersSubscription, dentistPl
 
 function constructDentistInfo(dentist) {
   const { dentistInfo } = dentist;
+
+  let dentistContactInfo = {
+    dentistName: dentist.firstName + ' ' + dentist.lastName,
+    dentistEmail: dentist.email,
+    officeName: dentistInfo.officeName,
+    officeEmail: dentistInfo.email,
+    officeAddress: dentistInfo.address,
+    officeCity: dentistInfo.city,
+    officeState: dentistInfo.state,
+    officeZip: dentistInfo.zipCode,
+  };
+
+  for (const key in dentistContactInfo) {
+    if (dentistContactInfo.hasOwnProperty(key)) {
+      dentistContactInfo[key] = dentistContactInfo[key].replace(/  /g, '');
+    }
+  }
+
+  return dentistContactInfo;
+
+/*
   return `
     Dentist Name: ${dentist.firstName + dentist.lastName},
     Office Name: ${dentistInfo.officeName},
@@ -210,6 +231,7 @@ function constructDentistInfo(dentist) {
     Dentist Office Email: ${dentistInfo.email},
     Office Address: ${dentistInfo.address || ''}, ${dentistInfo.city || ''}, ${dentistInfo.zipCode || ''}, ${dentistInfo.state || ''}\n
   `.replace(/  /g, '');
+*/
 }
 
 function constructPaymentDetails(subs, plans) {
