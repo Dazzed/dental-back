@@ -108,23 +108,25 @@
                                           You have a new member(s). Please login to your dashboard and review the account. They have elected to contact you to setup their first appointment.
                                           </p>
                                           <br />
-                                          <br />
                                           <p>
                                               <strong>Name: </strong> <%= patient.fistName %> <%= patient.lastName %>
                                           </p>
+                                          <br />
                                           <p>
                                               <strong>Email: </strong> <%= patient.email %>
                                           </p>
+                                          <br />
                                           <p>
                                               <strong>Phone: </strong> <%= patient.phoneNumbers[0].number %>
                                           </p>
+                                          <br />
                                           <p>
                                               <strong>Preferred Contact Method: </strong> <%= patient.contactMethod %>
                                           </p>
+                                          <br />
                                           <p>
                                               <strong>Signed Up On: </strong> <%= signupDateTime %>
                                           </p>
-                                          <br />
                                           <br />
                                           <p>
                                               <a href="https://dentalhq.com/accounts/login">Login</a>
