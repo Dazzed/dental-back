@@ -170,7 +170,8 @@ async function updateDentistInfo(req, res, next) {
           price: item.price,
         }, {
           where: {
-            id: item.id,
+            pricingCodeId: item.id,
+            dentistInfoId: dentistInfo.id,
           }
         }))
     });
