@@ -267,6 +267,8 @@ async function updateDentistInfo(req, res, next) {
   }
 
   // Logic to Add / Delete Services offered by the Dentist.
+// TODO: enable services
+/*
   if (officeInfo.services) {
     const originalServices = dentistInfo.get('services').map(s => s.service.id);
     const alteredServices = officeInfo.services.map(s => s.id);
@@ -300,7 +302,10 @@ async function updateDentistInfo(req, res, next) {
       }
     }
   }
+*/
 
+// TODO: enable images
+/*
   if (officeInfo.officeImages) {
     
     // update office images.
@@ -322,6 +327,7 @@ async function updateDentistInfo(req, res, next) {
       }
     });
   }
+*/
 
   Promise.all(queries).then(data => {
     return res.status(200).send({ shouldRefresh });
