@@ -30,7 +30,7 @@ async function search(req, res) {
         } = point;
         const location = sequelize.literal(`ST_GeomFromText('POINT(${lat} ${lng})')`);
         sequelizeDistance = sequelize.fn('ST_Distance_Sphere', sequelize.col('location'), location);
-        whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance || 25) * 1000 });
+        whereClause = sequelize.where(sequelizeDistance, { $lte: Number(distance || 25) * 1609.34 });
       } else {
         return res.status(400).send({ errors: 'Please Enter a valid search query' });
       }
@@ -71,12 +71,35 @@ async function search(req, res) {
       .filter(d => d.user.verified)
       .map(d => {
         if (d.memberships.length) {
-          const planStartingCost = d.memberships.reduce((acc, m) => {
-            if (parseFloat(m.price) < parseFloat(acc)) {
-              acc = parseFloat(m.price);
-            }
-            return acc;
-          }, parseFloat(d.memberships[0].price));
+          // try to find the lowest active adult monthly membership cost
+          let planStartingCost = d.memberships
+            .filter(m => m.active && m.subscription_age_group === 'adult' && m.type === 'month')
+            .reduce((acc, m) => {
+              if (parseFloat(m.price) < parseFloat(acc)) {
+                acc = parseFloat(m.price);
+              }
+              return acc;
+            }, Number.MAX_SAFE_INTEGER);
+
+          // if the dentist only caters towards children, or only has yearly plans,
+          // get the smallest cost active membership instead
+          if (planStartingCost === Number.MAX_SAFE_INTEGER) {
+            planStartingCost = d.memberships
+              .filter(m => m.active)
+              .reduce((acc, m) => {
+                if (parseFloat(m.price) < parseFloat(acc)) {
+                  acc = parseFloat(m.price);
+                }
+                return acc;
+              }, Number.MAX_SAFE_INTEGER);
+          }
+
+          // if there are no memberships, set the value as `null` and let the
+          // frontend handle it
+          if (planStartingCost === Number.MAX_SAFE_INTEGER) {
+            planStartingCost = null;
+          }
+
           delete d.memberships;
           return {
             ...d,
@@ -86,7 +109,7 @@ async function search(req, res) {
           delete d.memberships;
           return {
             ...d,
-            planStartingCost: 0
+            planStartingCost: null
           };
         }
       });
@@ -121,22 +144,6 @@ async function search(req, res) {
     if (specialtiesRequired) {
       specialtiesList = await db.DentistSpecialty.findAll().map(s => s.toJSON());
     }
-
-    // if (countRequired) {
-    //   totalDentistCount = await db.User.count({
-    //     where: {
-    //       type: 'dentist',
-    //       verified: true
-    //     },
-    //     include: [{
-    //       model: db.DentistInfo,
-    //       as: 'dentistInfo',
-    //       where: {
-    //         marketplaceOptIn: true
-    //       }
-    //     }]
-    //   });
-    // }
     return res.status(200).send({ dentists, specialtiesList, totalDentistCount });
   } catch (e) {
     console.log(e);

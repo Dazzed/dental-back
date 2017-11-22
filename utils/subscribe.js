@@ -4,11 +4,14 @@ import {
   performEnrollment,
   performEnrollmentWithoutProration,
 } from './reenroll';
-import Mailer from '../controllers/mailer';
-import { sendNewPatientNotificationEmail } from '../controllers/sendgrid_mailer';
+import {
+  sendNewPatientNotificationEmail,
+  clientWelcomeEmail,
+  sendNewPatientNotificationEmailDefault
+} from '../controllers/sendgrid_mailer';
 
+import moment from 'moment-timezone';
 var async = require('async');
-var moment = require('moment');
 var log = (arg) => console.log(arg);
 
 function waterfaller(functions) {
@@ -155,7 +158,7 @@ export function subscribeUserAndMembers(req, res) {
       promises.push(stripe.createSubscriptionWithItems(annualSubscriptionObject));
     }
     Promise.all(promises).then(data => {
-      Mailer.clientWelcomeEmail(res, req.locals.user, usersSubscription, dentistPlans);
+      clientWelcomeEmail(res, req.locals.user, usersSubscription, dentistPlans);
       callback(null, data, usersSubscription, dentistPlans);
     }, err => {
       rollbackNewUser(usersSubscription, req.locals.paymentProfile).then(d => {
@@ -188,18 +191,28 @@ export function subscribeUserAndMembers(req, res) {
     const primaryAccountHolder = await db.User.findOne({
       where: {
         id: paymentProfile.primaryAccountHolder
+      },
+      include: [{
+        model: db.Phone,
+        as: 'phoneNumbers',
+      }]
+    });
+
+    const dentistInfo = await db.DentistInfo.findOne({
+      where: {
+        userId: dentistPlans[0].userId
       }
     });
-    // Send notification to dental office about new patient signup.
-    // Only If the patient prefer's to be contacted via email or phone.
+
+    // Send an email alerting the dentist about the signup.  If the user has
+    // requested the dentist contact them, let the dentist know to do that.
+    const signupDateTime = moment().tz('America/New_York').format('MMMM Do, YYYY @ h:mma z');
     if (primaryAccountHolder.contactMethod === 'email' || primaryAccountHolder.contactMethod === 'phone') {
-      const dentistInfo = await db.DentistInfo.findOne({
-        where: {
-          userId: dentistPlans[0].userId
-        }
-      });
-      sendNewPatientNotificationEmail(dentistInfo.email);
+      sendNewPatientNotificationEmail(dentistInfo.email, primaryAccountHolder, signupDateTime);
+    } else {
+      sendNewPatientNotificationEmailDefault(dentistInfo.email, primaryAccountHolder, signupDateTime);
     }
+
     if (isPrimaryAccountHolderSubbed) {
       return callback(null);
     } else {
