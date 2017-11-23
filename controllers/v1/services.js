@@ -57,6 +57,12 @@ async function deleteService(req, res) {
   if (!isExistingService) {
     return res.status(400).send({ errors: 'Service does not exist' });
   }
+  // Let's delete the dependent records in DentistInfoService that has service.id as the foreign key.
+  await db.DentistInfoService.destroy({
+    where: {
+      serviceId: service.id,
+    }
+  });
   await db.Service.destroy({
     where: {
       id: service.id,
