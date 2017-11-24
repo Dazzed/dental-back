@@ -9,7 +9,12 @@ import _ from 'lodash';
 
 import {notifyMembershipPriceUpdateAdvance} from '../jobs/member_ship_fee_notification';
 
-const stripe = Stripe(process.env.STRIPE_API_KEY);
+let stripe;
+if (process.env.NODE_ENV === 'test') {
+  stripe = Stripe(process.env.STRIPE_API_KEY_STAGING);
+} else {
+  stripe = Stripe(process.env.STRIPE_API_KEY);
+}
 
 // ────────────────────────────────────────────────────────────────────────────────
 // METHOD
@@ -58,7 +63,7 @@ function verboseError(err) {
 }
 
 export default {
-
+  stripeApi: stripe,
   /**
    * Creates a unique id
    *
