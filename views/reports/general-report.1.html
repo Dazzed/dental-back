@@ -73,7 +73,7 @@
 		<h2 class="table-heading">MEMBERS</h2>
 	</div>
 	<div class="block table-group table-headings">
-		<div class="column first">Type</div>
+		<!--<div class="column first">Type</div>-->
 		<div class="column second">Membership Fee</div>
 		<div class="column third">Penalties</div>
 		<div class="column fourth">Refunds</div>
@@ -84,7 +84,7 @@
 		{% for m in parentMemberRecords %}
 			<div class="table-group table-row">
 				<div>{{ loop.index }}) {{ m.firstName }} {{ m.lastName }}</div>
-				<div class="column first">{{ m.maturity }}</div>
+				<!--<div class="column first">{{ m.maturity }}</div>-->
 				<div class="column second">${{ m.fee }}</div>
 				<div class="column third">${{ m.penalties }}</div>
 				<div class="column fourth">${{ m.refunds }}</div>
