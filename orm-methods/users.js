@@ -1,4 +1,6 @@
 /* eslint max-len:0 */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-await-in-loop */
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
@@ -228,13 +230,13 @@ export const instance = {
       }]
     }).map(m => m.toJSON());
 
-    primaryUsers = primaryUsers.map(user => {
+    primaryUsers = primaryUsers.map((user) => {
       let { members } = user;
       if (members.length > 0) {
-        members = members.map(m => {
+        members = members.map((m) => {
           return {
             ...m,
-            subscription: subscriptions.find(s => s.clientId == m.id)
+            subscription: subscriptions.find(s => s.clientId === m.id)
           };
         });
 
@@ -245,21 +247,23 @@ export const instance = {
       }  
       return {
         ...user,
-        subscription: subscriptions.find(s => s.clientId == user.id)
+        subscription: subscriptions.find(s => s.clientId === user.id)
       };
     });
 
-    let result = [];
-    let promises = [];
-    for(let [index, primaryUser] of primaryUsers.entries()) {
+    const result = [];
+    const promises = [];
+    for (const [index, primaryUser] of primaryUsers.entries()) {
       try {
-        const monthlyMembership = primaryUser.subscription.membership.type === 'month';
-        let isCancelled = primaryUser.subscription.status === 'canceled';
-        let isInactive = primaryUser.subscription.status === 'inactive';
+        const primaryUserMembershipType = primaryUser.subscription.membership.type;
+        const monthlyMembership = primaryUserMembershipType === 'month' || primaryUserMembershipType === 'custom';
+        const isCancelled = primaryUser.subscription.status === 'canceled';
+        const isInactive = primaryUser.subscription.status === 'inactive';
         if (monthlyMembership && !isCancelled && !isInactive) {
           promises.push(stripe.getSubscription(primaryUser.subscription.stripeSubscriptionId));
         } else {
-          const anyMonthlySubscription = primaryUser.members.find(m => m.subscription.membership.type === 'month' && m.subscription.status !== 'canceled' && m.subscription.status !== 'inactive');
+          const anyMonthlySubscription = primaryUser.members
+            .find(m => (m.subscription.membership.type === 'month' || m.subscription.membership.type === 'custom') && m.subscription.status !== 'canceled' && m.subscription.status !== 'inactive');
           if (anyMonthlySubscription) {
             promises.push(stripe.getSubscription(anyMonthlySubscription.subscription.stripeSubscriptionId));
           } else {
@@ -331,7 +335,8 @@ export const instance = {
       // get the recurring date from stripe.
       if (!stripeSubscription) {
         try {
-          const monthlyMembership = localSubscription.membership.type === 'month';
+          const membershipType = localSubscription.membership.type;
+          const monthlyMembership = membershipType === 'month' || membershipType === 'custom';
           const isCancelled = localSubscription.status === 'canceled';
           const isInactive = localSubscription.status === 'inactive';
           if (monthlyMembership && !isCancelled && !isInactive) {
