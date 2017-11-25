@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-await-in-loop */
 /* eslint consistent-return:0, no-else-return: 0, max-len:0 */
 // ────────────────────────────────────────────────────────────────────────────────
 
