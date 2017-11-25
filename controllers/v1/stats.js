@@ -39,9 +39,7 @@ async function getActiveUserCount() {
   try {
     const activeUserCount = await db.Subscription.count({
       where: {
-        status: {
-          $notIn: ['inactive', 'canceled', 'expired', 'unpaid']
-        }
+        status: 'active'
       }
     });
     return { activeUserCount };
@@ -76,6 +74,7 @@ router.route('/')
   .get(
     userRequired,
     adminRequired,
-    getStats);
+    getStats
+  );
 
 export default router;
