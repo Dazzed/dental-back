@@ -233,16 +233,16 @@ async function getGeneralReport(req, res) {
     const dentistSubscriptions = await db.Subscription.findAll({
       where: {
         dentistId,
-        createdAt: {
-          $between: [
-            targetDate
-              .set('H', 0).set('m', 0).set('s', 0)
-              .format('YYYY-MM-DD'),
-            targetDateCopy
-              .set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59)
-              .format('YYYY-MM-DD')
-          ]
-        }
+        // createdAt: {
+        //   $between: [
+        //     targetDate
+        //       .set('H', 0).set('m', 0).set('s', 0)
+        //       .format('YYYY-MM-DD'),
+        //     targetDateCopy
+        //       .set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59)
+        //       .format('YYYY-MM-DD')
+        //   ]
+        // }
       }
     });
 
@@ -254,8 +254,8 @@ async function getGeneralReport(req, res) {
     // const totalNewInternal = totalMembers;
 
     // BEGIN Get all charges recursively
-    const chargesGte = targetDate.unix();
-    const chargesLte = targetDateCopy.unix();
+    const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
+    const chargesLte = targetDateCopy.set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59).unix();
     const allStripeCharges = await recursiveCharges([], null, { gte: chargesGte, lte: chargesLte });
     const allStripeInvoices = await recursiveInvoices([], null, { gte: chargesGte, lte: chargesLte });
     // END Get all charges recursively
