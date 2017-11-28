@@ -2,8 +2,8 @@ import db from '../models';
 
 async function getTransferringMember(req, res, next) {
   try {
-    const { memberId, shouldChargeReEnrollmentFree } = req.body;
-    if (!memberId || !shouldChargeReEnrollmentFree) {
+    const { memberId } = req.body;
+    if (!memberId) {
       return res.status(400).send({ errors: 'Missing Parameters' });
     }
     const transferringMember = await db.User.findOne({
