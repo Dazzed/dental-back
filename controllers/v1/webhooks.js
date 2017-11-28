@@ -1,3 +1,4 @@
+/* eslint-disable no-inner-declarations */
 import { Router } from 'express';
 
 import { subscriptionChargeFailedNotification } from '../sendgrid_mailer';
@@ -23,11 +24,11 @@ function stripe_webhook(request, response) {
     const customerId = body.data.object.customer;
 
     function pluckIntervaltype(callback) {
-      stripe.getInvoice(invoiceId).then(invoice => {
+      stripe.getInvoice(invoiceId).then((invoice) => {
         const isMonthlyPlan = invoice.lines.data.some(line => line.plan.interval === 'month');
         const isAnnualPlan = invoice.lines.data.some(line => line.plan.interval === 'year');
         const stripeSubscriptionId = invoice.subscription;
-        const attempt_count = invoice.attempt_count;
+        const { attempt_count } = invoice;
         // if (isAnnualPlan) {
         //   return callback('ok', isAnnualPlan, { stripeSubscriptionId });
         // }
@@ -70,19 +71,18 @@ function stripe_webhook(request, response) {
 
     function sendMailToCustomer(attempt_count, callback) {
       db.PaymentProfile.findOne({
-        where: stripeCustomerId
+        where: customerId
       })
-        .then(profile => {
+        .then((profile) => {
           db.User.findOne({
             where: {
               id: profile.primaryAccountHolder
             }
-          }).then(user => {
+          }).then((user) => {
             subscriptionChargeFailedNotification(user, attempt_count);
             callback(null, true);
           }, err => callback(err));
         }, err => callback(err));
-
     }
 
     async.waterfall(
