@@ -246,6 +246,20 @@ async function getGeneralReport(req, res) {
       }
     });
 
+    const filteredPaymentProfileIds = dentistSubscriptions
+      .reduce((acc, s) => {
+        if (!acc.includes(s.paymentProfileId)) {
+          acc.push(s.paymentProfileId);
+        }
+        return acc;
+      }, []);
+    const paymentProfileRecords = await db.PaymentProfile.findAll({ where: {
+      id: filteredPaymentProfileIds
+    } });
+
+    const stripeCustomerIds = paymentProfileRecords
+      .map(profile => profile.stripeCustomerId);
+
     // const totalMembers = dentistSubscriptions.length;
     const totalExternal = 0;
     // const totalInternal = totalMembers;
@@ -256,11 +270,12 @@ async function getGeneralReport(req, res) {
     // BEGIN Get all charges recursively
     const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
     const chargesLte = targetDateCopy.set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59).unix();
-    const allStripeCharges = await recursiveCharges([], null, { gte: chargesGte, lte: chargesLte });
+    let allStripeCharges = await recursiveCharges([], null, { gte: chargesGte, lte: chargesLte });
     const allStripeInvoices = await recursiveInvoices([], null, { gte: chargesGte, lte: chargesLte });
     // END Get all charges recursively
     // BEGIN get payments
     const payments = allStripeInvoices
+      .filter(invoice => stripeCustomerIds.includes(invoice.customer))
       .filter((invoice) => {
         const { lines } = invoice;
         if (lines.data.every(lineData => lineData.description)) {
@@ -280,6 +295,8 @@ async function getGeneralReport(req, res) {
           }
         };
       });
+    allStripeCharges = allStripeCharges
+      .filter(charge => stripeCustomerIds.includes(charge.customer));
     
     // END get payments
     // BEGIN get refunds
@@ -343,20 +360,10 @@ async function getGeneralReport(req, res) {
     const managementFee = (grossRevenue * (11 / 100)).toFixed(2);
     const netPayment = (grossRevenue - managementFee).toFixed(2);
 
-    const filteredPaymentProfileIds = dentistSubscriptions
-      .reduce((acc, s) => {
-        if (!acc.includes(s.paymentProfileId)) {
-          acc.push(s.paymentProfileId);
-        }
-        return acc;
-      }, []);
-    const paymentProfileRecords = await db.PaymentProfile.findAll({ where: {
-      id: filteredPaymentProfileIds
-    } });
-
     let parentMemberRecords = [];
 
     for (const profile of paymentProfileRecords) {
+      let customerPayments = [];
       const { stripeCustomerId } = profile;
       const parentLocal = {};
       const parent = await db.User.findOne({ where: { id: profile.primaryAccountHolder } });
@@ -365,14 +372,19 @@ async function getGeneralReport(req, res) {
       parentLocal.firstName = parent.firstName;
       parentLocal.lastName = parent.lastName;
       parentLocal.maturity = 'Adult';
-      const parentFee = Array
+      customerPayments = payments
+        .filter(payment => payment.customer === stripeCustomerId)
+        .map(payment => ([...payment.lines.data]));
+      let parentFee = 0;
+      if (customerPayments.length) {
+        parentFee = Array
         .concat.apply(
           [],
-          payments
-            .filter(payment => payment.customer === stripeCustomerId)
-            .map(payment => ([...payment.lines.data]))
+          customerPayments
         )
         .reduce((acc, lineItem) => acc + (lineItem.amount / 100), 0);
+      }
+
       parentLocal.fee = parentFee;
 
       parentLocal.penalties = penaltiesRecords
