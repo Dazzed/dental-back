@@ -270,8 +270,10 @@ async function getGeneralReport(req, res) {
     // BEGIN Get all charges recursively
     const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
     const chargesLte = targetDateCopy.set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59).unix();
-    let allStripeCharges = await recursiveCharges([], null, { gte: chargesGte, lte: chargesLte });
-    const allStripeInvoices = await recursiveInvoices([], null, { gte: chargesGte, lte: chargesLte });
+    let [allStripeCharges, allStripeInvoices] = await Promise.all([
+      recursiveCharges([], null, { gte: chargesGte, lte: chargesLte }),
+      recursiveInvoices([], null, { gte: chargesGte, lte: chargesLte })
+    ]);
     // END Get all charges recursively
     // BEGIN get payments
     const payments = allStripeInvoices
