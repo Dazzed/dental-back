@@ -144,6 +144,7 @@ if (process.env.NODE_ENV === 'development') {
   server.listen(port, () => {
     console.log('Server listening on: ', port);
   });
+  server.timeout = 300000;
 }
 
 module.exports = app;
