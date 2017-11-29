@@ -133,10 +133,9 @@ if (process.env.NODE_ENV === 'development') {
     app.use(middleware.swaggerUi());
 
     // Start the server
-    const server = http.createServer(app).listen(port, () => {
+    http.createServer(app).listen(port, () => {
       console.log('Server listening on: ', port);
     });
-    server.timeout = 300000;
   });
 } else {
   // Server Setup
@@ -145,7 +144,6 @@ if (process.env.NODE_ENV === 'development') {
   server.listen(port, () => {
     console.log('Server listening on: ', port);
   });
-  server.timeout = 300000;
 }
 
 module.exports = app;
