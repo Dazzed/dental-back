@@ -59,14 +59,14 @@ async function recursiveCharges(charges = [], after = null, created) {
     const result = await stripeApi.charges.list({ limit: 100, created });
     charges.push(...result.data);
     if (result.data.length && result.data[99]) {
-      return recursiveCharges(charges, result.data[99].id);
+      return recursiveCharges(charges, result.data[99].id, created);
     }
     return charges;
   } else if (after) {
     const result = await stripeApi.charges.list({ limit: 100, starting_after: after, created });
     charges.push(...result.data);
     if (result.data.length && result.data[99]) {
-      return recursiveCharges(charges, result.data[99].id);
+      return recursiveCharges(charges, result.data[99].id, created);
     }
     return charges;
   }
@@ -78,7 +78,7 @@ async function recursiveInvoices(invoices = [], after = null, created) {
     const result = await stripeApi.invoices.list({ limit: 100, date: created });
     invoices.push(...result.data);
     if (result.data.length && result.data[99]) {
-      return recursiveInvoices(invoices, result.data[99].id);
+      return recursiveInvoices(invoices, result.data[99].id, created);
     } else {
       return invoices;
     }
@@ -86,7 +86,7 @@ async function recursiveInvoices(invoices = [], after = null, created) {
     const result = await stripeApi.invoices.list({ limit: 100, starting_after: after, date: created });
     invoices.push(...result.data);
     if (result.data.length && result.data[99]) {
-      return recursiveInvoices(invoices, result.data[99].id);
+      return recursiveInvoices(invoices, result.data[99].id, created);
     } else {
       return invoices;
     }
