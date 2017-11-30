@@ -1,4 +1,7 @@
 /* eslint max-len: 0 */
+/* eslint-disable camelcase */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 // ────────────────────────────────────────────────────────────────────────────────
 // MODULES
 
@@ -23,7 +26,11 @@ import {
   ForbiddenError
 } from '../errors';
 
-import { transformFieldsToFixed } from '../../helpers/reports';
+import {
+  transformFieldsToFixed,
+  recursiveCharges,
+  recursiveInvoices,
+} from '../../helpers/reports';
 
 // ────────────────────────────────────────────────────────────────────────────────
 // TEMPLATES
@@ -199,7 +206,7 @@ async function getMasterReport(req, res) {
  * @param {Object} req - the express request
  * @param {Object} res - the express response
  */
-async function getGeneralReport(req,res) {
+async function getGeneralReport(req, res) {
   try {
     const { dentistId } = req.params;
     const dentist = await db.User.findOne({ where: { id: dentistId } });
@@ -211,7 +218,6 @@ async function getGeneralReport(req,res) {
     if (targetMonth === -1) {
       throw { errors: 'Invalid Month given' };
     }
-
     const fullMonthName = Moment.months()[targetMonth];
     targetMonth += 1;
     if (targetMonth < 10) {
@@ -227,53 +233,18 @@ async function getGeneralReport(req,res) {
     const dentistSubscriptions = await db.Subscription.findAll({
       where: {
         dentistId,
-        createdAt: {
-          $between: [targetDate.format('YYYY-MM-DD'), targetDateCopy.set('date', daysInTargetMonth).format('YYYY-MM-DD')]
-        }
+        // createdAt: {
+        //   $between: [
+        //     targetDate
+        //       .set('H', 0).set('m', 0).set('s', 0)
+        //       .format('YYYY-MM-DD'),
+        //     targetDateCopy
+        //       .set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59)
+        //       .format('YYYY-MM-DD')
+        //   ]
+        // }
       }
     });
-
-    const totalMembers = dentistSubscriptions.length;
-    const totalExternal = 0;
-    const totalInternal = totalMembers;
-    const totalNewMembers = totalMembers;
-    const totalNewExternal = 0;
-    const totalNewInternal = totalMembers;
-
-    const payments = await db.Payment.findAll({ 
-      where: {
-        dentistId,
-        createdAt: {
-          $between: [targetDate.format('YYYY-MM-DD'), targetDateCopy.set('date', daysInTargetMonth).format('YYYY-MM-DD')]
-        }
-      }
-    });
-    let grossRevenue = payments.reduce((acc, p) => acc + (p.amount / 100), 0);
-    grossRevenue = grossRevenue.toFixed(2);
-
-    const refundsRecords = await db.Refund.findAll({
-      where: {
-        dentistId,
-        createdAt: {
-          $between: [targetDate.format('YYYY-MM-DD'), targetDateCopy.set('date', daysInTargetMonth).format('YYYY-MM-DD')]
-        }
-      }
-    });
-    let refunds = refundsRecords.reduce((acc, p) => acc + (p.amount / 100), 0);
-    refunds = refunds.toFixed(2);
-
-    const penaltiesRecords = await db.Penality.findAll({
-      where: {
-        dentistId,
-        createdAt: {
-          $between: [targetDate.format('YYYY-MM-DD'), targetDateCopy.set('date', daysInTargetMonth).format('YYYY-MM-DD')]
-        }
-      }
-    });
-    const penalties = penaltiesRecords.reduce((acc, p) => acc + (p.amount / 100), 0);
-    
-    const managementFee = (grossRevenue * (11 / 100)).toFixed(2);
-    const netPayment = (grossRevenue - managementFee).toFixed(2);
 
     const filteredPaymentProfileIds = dentistSubscriptions
       .reduce((acc, s) => {
@@ -286,70 +257,178 @@ async function getGeneralReport(req,res) {
       id: filteredPaymentProfileIds
     } });
 
+    const stripeCustomerIds = paymentProfileRecords
+      .map(profile => profile.stripeCustomerId);
+
+    // const totalMembers = dentistSubscriptions.length;
+    const totalExternal = 0;
+    // const totalInternal = totalMembers;
+    // const totalNewMembers = totalMembers;
+    const totalNewExternal = 0;
+    // const totalNewInternal = totalMembers;
+
+    // BEGIN Get all charges recursively
+    const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
+    const chargesLte = targetDateCopy.set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59).unix();
+    let [allStripeCharges, allStripeInvoices] = await Promise.all([
+      recursiveCharges([], null, { gte: chargesGte, lte: chargesLte }),
+      recursiveInvoices([], null, { gte: chargesGte, lte: chargesLte })
+    ]);
+    // END Get all charges recursively
+    // BEGIN get payments
+    const payments = allStripeInvoices
+      .filter(invoice => stripeCustomerIds.includes(invoice.customer))
+      .filter((invoice) => {
+        const { lines } = invoice;
+        if (lines.data.every(lineData => lineData.description)) {
+          return false;
+        } // else
+        return true;
+      })
+      .filter(invoice => invoice.paid)
+      .map((invoice) => {
+        const { lines } = invoice;
+        return {
+          ...invoice,
+          lines: {
+            ...lines,
+            data: lines.data
+              .filter(lineData => !lineData.description)
+          }
+        };
+      });
+    allStripeCharges = allStripeCharges
+      .filter(charge => stripeCustomerIds.includes(charge.customer));
+    
+    // END get payments
+    // BEGIN get refunds
+    const refundsRecords = allStripeCharges
+      .filter(charge => charge.refunded);
+    const refunds = refundsRecords
+      .reduce((acc, { amount_refunded }) => acc + (amount_refunded / 100), 0)
+      .toFixed(2);
+    // END get refunds
+    // BEGIN get penalties
+    const penaltiesRecords = [...allStripeCharges, ...allStripeInvoices]
+      .filter((mixedRecord) => {
+        const { object, description } = mixedRecord;
+        if (object === 'charge') {
+          if (description && !description.toLowerCase().includes('proration')) {
+            return true;
+          }
+          return false;
+        } // else it's invoice
+        const { lines } = mixedRecord;
+        if (lines.data.some(lineData => lineData.description)) {
+          return true;
+        }
+        return false;
+      })
+      .map((mixedRecord) => {
+        const { object } = mixedRecord;
+        if (object === 'charge') {
+          return mixedRecord;
+        } // else it's invoice
+        const { lines } = mixedRecord;
+        if (lines.data.some(lineData => !lineData.description)) {
+          return {
+            ...mixedRecord,
+            lines: {
+              ...lines,
+              data: lines.data
+                .filter(lineData => lineData.description)
+            }
+          };
+        }
+        return mixedRecord;
+      });
+    // const penalties = penaltiesRecords
+    //   .reduce((acc, mixedRecord) => {
+    //     const { object, amount } = mixedRecord;
+    //     if (object === 'charge') {
+    //       return acc + amount;
+    //     } // else it's invoice
+    //     const { lines } = mixedRecord;
+    //     return acc + lines.data.reduce(
+    //       (lacc, lineData) => lacc + (lineData.amount / 100),
+    //       0
+    //     );
+    //   }, 0);
+    // END get penalties
+    const grossRevenue = payments
+      .reduce((acc, { total }) => acc + (total / 100), 0)
+        - Number(refunds)
+      .toFixed(2);
+    const managementFee = (grossRevenue * (11 / 100)).toFixed(2);
+    const netPayment = (grossRevenue - managementFee).toFixed(2);
+
     let parentMemberRecords = [];
 
-    for (let profile of paymentProfileRecords) {
-      let parentLocal = {};
-      let parent = await db.User.findOne({ where: { id: profile.primaryAccountHolder } });
+    for (const profile of paymentProfileRecords) {
+      let customerPayments = [];
+      const { stripeCustomerId } = profile;
+      const parentLocal = {};
+      const parent = await db.User.findOne({ where: { id: profile.primaryAccountHolder } });
       parentLocal.parentId = parent.id;
-      let childMembers = await db.User.findAll({ where: { addedBy: parent.id } });
+      // const childMembers = await db.User.findAll({ where: { addedBy: parent.id } });
       parentLocal.firstName = parent.firstName;
       parentLocal.lastName = parent.lastName;
       parentLocal.maturity = 'Adult';
-      const parentFee = payments.find(p => p.clientId === parent.id);
-      parentLocal.fee = parentFee ? parentFee.amount / 100 : 0;
+      customerPayments = payments
+        .filter(payment => payment.customer === stripeCustomerId)
+        .map(payment => ([...payment.lines.data]));
+      let parentFee = 0;
+      if (customerPayments.length) {
+        parentFee = Array
+        .concat.apply(
+          [],
+          customerPayments
+        )
+        .reduce((acc, lineItem) => acc + (lineItem.amount / 100), 0);
+      }
 
-      parentLocal.penalties = penaltiesRecords.filter(p => p.clientId === parent.id)
-        .reduce((acc, p) => acc + p.amount / 100, 0);
-      parentLocal.refunds = refundsRecords.filter(p => p.clientId === parent.id)
-        .reduce((acc, p) => acc + p.amount / 100, 0);
+      parentLocal.fee = parentFee;
+
+      parentLocal.penalties = penaltiesRecords
+        .filter(penaltyRecord => penaltyRecord.customer === stripeCustomerId)
+        .reduce((acc, penaltyRecord) => {
+          const { object } = penaltyRecord;
+          if (object === 'charge') {
+            return acc + (penaltyRecord.amount / 100);
+          } // else it's invoice
+          return acc + penaltyRecord.lines.data
+            .reduce((lacc, lineData) => lacc + (lineData.amount / 100), 0);
+        }, 0);
+      
+      parentLocal.refunds = refundsRecords
+        .filter(refundsRecord => refundsRecord.customer === stripeCustomerId)
+        .reduce((acc, refundsRecord) => acc + (refundsRecord.amount_refunded / 100), 0);
+      
       let feeMinusRefunds = parentLocal.fee - parentLocal.refunds;
       parentLocal.net = feeMinusRefunds - (feeMinusRefunds * (11 / 100));
-
+      
       parentLocal.family = [];
-      childMembers.forEach(child => {
-        const childLocal = {};
-        childLocal.firstName = child.firstName;
-        childLocal.lastName = child.lastName;
-        childLocal.maturity = Moment().diff(Moment(child.birthDate, 'YYYY-MM-DD'), 'years') >= 18 ? 'Adult' : 'Child';
 
-        const childLocalFee = payments.find(p => p.clientId === child.id);
-        childLocal.fee = childLocalFee ? childLocalFee.amount / 100 : 0;
-        childLocal.penalties = penaltiesRecords.filter(p => p.clientId === child.id)
-          .reduce((acc, p) => acc + p.amount / 100, 0);
-        childLocal.refunds = refundsRecords.filter(p => p.clientId === child.id)
-          .reduce((acc, p) => acc + p.amount / 100, 0);
-        feeMinusRefunds = childLocal.fee - childLocal.refunds;
-        childLocal.net = feeMinusRefunds - (feeMinusRefunds * (11 / 100));
-        parentLocal.family.push(childLocal);
-      });
-      parentLocal.membershipFeeTotal = payments
-        .filter(p => p.clientId === parent.id || childMembers.map(c => c.id).includes(p.clientId))
-        .reduce((acc, p) => acc + p.amount / 100, 0);
-      parentLocal.penaltiesTotal = penaltiesRecords
-        .filter(p => p.clientId === parent.id || childMembers.map(c => c.id).includes(p.clientId))
-        .reduce((acc, p) => acc + p.amount / 100, 0);
-      parentLocal.refundsTotal = refundsRecords
-        .filter(p => p.clientId === parent.id || childMembers.map(c => c.id).includes(p.clientId))
-        .reduce((acc, p) => acc + p.amount / 100, 0);
+      parentLocal.membershipFeeTotal = parentFee.toFixed(2);
+      parentLocal.penaltiesTotal = parentLocal.penalties.toFixed(2);
+      parentLocal.refundsTotal = parentLocal.refunds.toFixed(2);
       feeMinusRefunds = parentLocal.membershipFeeTotal - parentLocal.refundsTotal;
-      parentLocal.netTotal = feeMinusRefunds - (feeMinusRefunds * (11 / 100));
+      parentLocal.netTotal = (feeMinusRefunds - (feeMinusRefunds * (11 / 100))).toFixed(2);
       parentMemberRecords.push(parentLocal);
     }
-
-    // transform some parentMemberRecords properties to toFixed(2)
     parentMemberRecords = transformFieldsToFixed(parentMemberRecords);
+
     const reportData = {
       title: `${dentistInfo.officeName} -- General Report`,
       dentistSpecialityName,
       date,
       totalMembers: parentMemberRecords.length,
       parentMemberRecords,
-      totalNewMembers,
+      totalNewMembers: parentMemberRecords.length,
       totalExternal,
       totalNewExternal,
-      totalInternal,
-      totalNewInternal,
+      totalInternal: parentMemberRecords.length,
+      totalNewInternal: parentMemberRecords.length,
       grossRevenue,
       refunds,
       managementFee,
@@ -372,7 +451,7 @@ async function getGeneralReport(req,res) {
     });
   } catch (e) {
     console.log(e);
-    return res.status(500).send({ errors: "Internal Server error" });
+    return res.status(500).send({ message: 'Internal Server Error' });
   }
 }
 

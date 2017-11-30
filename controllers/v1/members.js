@@ -61,7 +61,7 @@ function getMembers(req, res, next) {
   }
 
   query
-  .then(data => {
+  .then((data) => {
     const stripe_public_key = process.env.STRIPE_PUBLIC_KEY;
     return res.json({
       data: data.users,

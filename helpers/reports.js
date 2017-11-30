@@ -1,3 +1,5 @@
+import { stripeApi } from '../controllers/stripe';
+
 function transformFieldsToFixed(parentMemberRecords) {
   return parentMemberRecords.map((pmr) => {
     let {
@@ -45,6 +47,56 @@ function transformFieldsToFixed(parentMemberRecords) {
   });
 }
 
+/**
+ * Description: Get the charges occured between two timestamps recursively
+ * @param {[]} charges (always pass Empty array from caller. This argument is used internally by the function!)
+ * @param {null} after (always pass null for after. This argument is used internally by the function!)
+ * @param {object} created ({gte: number, lte: number})
+ *   The range between which the charges should be retrived.
+ */
+async function recursiveCharges(charges = [], after = null, created) {
+  if (!after && !charges.length) {
+    const result = await stripeApi.charges.list({ limit: 100, created });
+    charges.push(...result.data);
+    if (result.data.length && result.data[99]) {
+      return recursiveCharges(charges, result.data[99].id, created);
+    }
+    return charges;
+  } else if (after) {
+    const result = await stripeApi.charges.list({ limit: 100, starting_after: after, created });
+    charges.push(...result.data);
+    if (result.data.length && result.data[99]) {
+      return recursiveCharges(charges, result.data[99].id, created);
+    }
+    return charges;
+  }
+  return charges;
+}
+
+async function recursiveInvoices(invoices = [], after = null, created) {
+  if (!after && !invoices.length) {
+    const result = await stripeApi.invoices.list({ limit: 100, date: created });
+    invoices.push(...result.data);
+    if (result.data.length && result.data[99]) {
+      return recursiveInvoices(invoices, result.data[99].id, created);
+    } else {
+      return invoices;
+    }
+  } else if (after) {
+    const result = await stripeApi.invoices.list({ limit: 100, starting_after: after, date: created });
+    invoices.push(...result.data);
+    if (result.data.length && result.data[99]) {
+      return recursiveInvoices(invoices, result.data[99].id, created);
+    } else {
+      return invoices;
+    }
+  } else {
+    return invoices;
+  }
+}
+
 export {
-  transformFieldsToFixed
+  transformFieldsToFixed,
+  recursiveCharges,
+  recursiveInvoices,
 };
