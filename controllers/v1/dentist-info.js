@@ -305,8 +305,6 @@ async function updateDentistInfo(req, res, next) {
   }
 */
 
-// TODO: enable images
-/*
   if (officeInfo.officeImages) {
     
     // update office images.
@@ -328,7 +326,6 @@ async function updateDentistInfo(req, res, next) {
       }
     });
   }
-*/
 
   Promise.all(queries).then(data => {
     return res.status(200).send({ shouldRefresh });
