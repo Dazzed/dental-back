@@ -11,6 +11,7 @@
     "stage": "cross-env NODE_ENV=test nodemon index.js",
     "debug": "cross-env NODE_ENV=development nodemon --debug index.js",
     "prod": "cross-env NODE_ENV=production node index.js",
+    "test_prod": "cross-env NODE_ENV=test_production nodemon index.js",
     "postinstall": "npm run migrate",
     "migrate": "sequelize db:migrate",
     "migrate:undo": "sequelize db:migrate:undo",

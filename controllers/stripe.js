@@ -12,6 +12,8 @@ import {notifyMembershipPriceUpdateAdvance} from '../jobs/member_ship_fee_notifi
 let stripe;
 if (process.env.NODE_ENV === 'test') {
   stripe = Stripe(process.env.STRIPE_API_KEY_STAGING);
+} else if (process.env.NODE_ENV === 'test_production') {
+  stripe = Stripe(process.env.STRIPE_API_KEY_TEST_PROD);
 } else {
   stripe = Stripe(process.env.STRIPE_API_KEY);
 }
