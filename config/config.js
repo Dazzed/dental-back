@@ -32,5 +32,18 @@ module.exports = {
     dialectOptions: {
       ssl: true
     }
+  },
+  test_production: {
+    username: process.env.TEST_PRODUCTION_POSTGRESQL_USERNAME,
+    password: process.env.TEST_PRODUCTION_POSTGRESQL_PASSWORD,
+    database: process.env.TEST_PRODUCTION_POSTGRESQL_DATABASE,
+    host: process.env.TEST_PRODUCTION_POSTGRESQL_HOST,
+    port: process.env.TEST_PRODUCTION_POSTGRESQL_PORT,
+    url: process.env.TEST_PRODUCTION_DATABASE_URL,
+    dialect: 'postgres',
+    logging: false,
+    dialectOptions: {
+      ssl: true
+    }
   }
 };
