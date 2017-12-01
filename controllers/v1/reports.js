@@ -114,6 +114,7 @@ function getMasterDates(req, res) {
  */
 async function getMasterReport(req, res) {
   try {
+    // BEGIN Date Ops
     let targetMonth = Moment.monthsShort().indexOf(req.params.month);
     if (targetMonth === -1) {
       throw { errors: 'Invalid Month given' };
@@ -128,46 +129,81 @@ async function getMasterReport(req, res) {
     const targetDate = Moment(`${targetYear}-${targetMonth}-01`, 'YYYY-MM-DD');
     const targetDateCopy = Moment(targetDate);
     const daysInTargetMonth = Moment(`${targetYear}-${targetMonth}`, 'YYYY-MM').daysInMonth();
+    // END Date Ops
 
     let dentists = await db.DentistInfo.findAll({
-      include:[{
+      include: [{
         model: db.User,
         as: 'user'
+      },
+      {
+        model: db.Membership,
+        as: 'memberships'
       }]
     }).map(t => t.toJSON());
-    
-    const payments = await db.Payment.findAll({
-      where: {
-        createdAt: {
-          $between: [targetDate.format('YYYY-MM-DD'), targetDateCopy.set('date', daysInTargetMonth).format('YYYY-MM-DD')]
-        }
-      }
-    }).map(t => t.toJSON());
+
+    // BEGIN Get all invoices recursively
+    const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
+    const chargesLte = targetDateCopy.set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59)
+      .unix();
+    const allStripeInvoices = await recursiveInvoices([], null, { gte: chargesGte, lte: chargesLte });
+    // END Get all invoices recursively
+
+    const payments = allStripeInvoices
+      .filter((invoice) => {
+        const { lines } = invoice;
+        if (lines.data.every(lineData => lineData.description)) {
+          return false;
+        } // else
+        return true;
+      })
+      .filter(invoice => invoice.paid)
+      .map((invoice) => {
+        const { lines } = invoice;
+        return {
+          ...invoice,
+          lines: {
+            ...lines,
+            data: lines.data
+              .filter(lineData => !lineData.description)
+          }
+        };
+      });
 
     const datePeriod = `${fullMonthName} ${targetYear}`;
 
-    dentists = dentists.map(dentist => {
-      const filteredPayments = payments.filter(payment => payment.dentistId === dentist.id);
-      const gross = filteredPayments.reduce((acc, p) => acc + p.amount, 0);
+    dentists = dentists.map((dentist) => {
+      const { memberships } = dentist;
+      const dentistPlans = memberships
+        .map(m => m.stripePlanId);
+      // Only construct the payments related to this dentist
+      const filteredPayments = payments.filter((payment) => {
+        if (payment.lines.data.some(line => dentistPlans.includes(line.plan.id))) {
+          return true;
+        }
+        return false;
+      });
+      const gross = filteredPayments.reduce((acc, p) => acc + p.total, 0) / 100;
       const managementFee = gross * (11 / 100);
       const net = gross - managementFee;
       return {
         ...dentist,
-        gross: Math.round(gross / 100, 2),
-        managementFee: Math.round(managementFee / 100, 2),
-        net: Math.round(net / 100, 2)
+        gross: gross.toFixed(2),
+        managementFee: managementFee.toFixed(2),
+        net: net.toFixed(2)
       };
     });
 
-    const totals = dentists.reduce((acc, dentist) => {
-      const { gross, managementFee, net } = acc;
-      const { gross: dentistGross, managementFee: dentistManagementFee, net: dentistNet } = dentist;
-      return {
-        gross: gross + dentistGross,
-        managementFee: managementFee + dentistManagementFee,
-        net: net + dentistNet
-      };
-    }, { gross: 0, managementFee: 0, net: 0 });
+    const totals = dentists
+      .reduce((acc, dentist) => {
+        const { gross, managementFee, net } = acc;
+        const { gross: dentistGross, managementFee: dentistManagementFee, net: dentistNet } = dentist;
+        return {
+          gross: gross + Number(dentistGross),
+          managementFee: managementFee + Number(dentistManagementFee),
+          net: net + Number(dentistNet)
+        };
+      }, { gross: 0, managementFee: 0, net: 0 });
 
     // Fetch the master template file
     const masterTemplate = fs.readFileSync(
@@ -189,7 +225,6 @@ async function getMasterReport(req, res) {
       res.write(resp);
       res.end();
     });
-
   } catch (e) {
     console.log('Error in getMasterReportCleaned');
     console.log(e);
@@ -232,17 +267,7 @@ async function getGeneralReport(req, res) {
     const date = `${fullMonthName} ${targetYear}`;
     const dentistSubscriptions = await db.Subscription.findAll({
       where: {
-        dentistId,
-        // createdAt: {
-        //   $between: [
-        //     targetDate
-        //       .set('H', 0).set('m', 0).set('s', 0)
-        //       .format('YYYY-MM-DD'),
-        //     targetDateCopy
-        //       .set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59)
-        //       .format('YYYY-MM-DD')
-        //   ]
-        // }
+        dentistId
       }
     });
 
@@ -267,14 +292,28 @@ async function getGeneralReport(req, res) {
     const totalNewExternal = 0;
     // const totalNewInternal = totalMembers;
 
-    // BEGIN Get all charges recursively
+    // BEGIN Get all charges and invoices recursively
     const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
     const chargesLte = targetDateCopy.set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59).unix();
     let [allStripeCharges, allStripeInvoices] = await Promise.all([
       recursiveCharges([], null, { gte: chargesGte, lte: chargesLte }),
       recursiveInvoices([], null, { gte: chargesGte, lte: chargesLte })
     ]);
-    // END Get all charges recursively
+    // END Get all charges and invoices recursively
+    /*
+      (IMPORTANT!)
+      Parsing logic:
+      Both charges and invoices.
+        -> charges.filter <>
+          -> .description !== null (can be 'Early Cancellation Penalty Charge')
+        -> invoices.filter <>
+          -> .lines.data.description !== null (can be 're-enrollment Fee' || 'Re-Enrollment Penalty Charge')
+      Refunds:
+        charges
+        -> filter <> .refunded === true (get amount_refunded property)
+      Fee:
+        -> invoices.filter <> lines.data.description === null (null because it's present for re-enrollment penalties)
+     */
     // BEGIN get payments
     const payments = allStripeInvoices
       .filter(invoice => stripeCustomerIds.includes(invoice.customer))
@@ -380,11 +419,11 @@ async function getGeneralReport(req, res) {
       let parentFee = 0;
       if (customerPayments.length) {
         parentFee = Array
-        .concat.apply(
-          [],
-          customerPayments
-        )
-        .reduce((acc, lineItem) => acc + (lineItem.amount / 100), 0);
+          .concat.apply(
+            [],
+            customerPayments
+          )
+          .reduce((acc, lineItem) => acc + (lineItem.amount / 100), 0);
       }
 
       parentLocal.fee = parentFee;

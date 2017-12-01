@@ -69,9 +69,9 @@
 	</div>
 	<div class="megablock table-group summary">
 		<div>Totals:</div>
-		<div class="column first">${{ totals.gross }}</div>
-		<div class="column second">${{ totals.managementFee }}</div>
-		<div class="column third">${{ totals.net }}</div>
+		<div class="column first">${{ totals.gross.toFixed(2) }}</div>
+		<div class="column second">${{ totals.managementFee.toFixed(2) }}</div>
+		<div class="column third">${{ totals.net.toFixed(2) }}</div>
 	</div>
 	{# ENDREGION #}
   </body>
