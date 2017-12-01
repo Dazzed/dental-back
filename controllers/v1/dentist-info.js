@@ -268,11 +268,14 @@ async function updateDentistInfo(req, res, next) {
   }
 
   // Logic to Add / Delete Services offered by the Dentist.
-// TODO: enable services
-/*
-  if (officeInfo.services) {
-    const originalServices = dentistInfo.get('services').map(s => s.service.id);
-    const alteredServices = officeInfo.services.map(s => s.id);
+  if (services) {
+    const originalServices = dentistInfo.get('services').map((s) => {
+      if (s.service === null) {
+        return null;
+      }
+      return s.service.id;
+    });
+    const alteredServices = services;
 
     const servicesDiff = processDiff(originalServices, alteredServices);
     if (!servicesDiff.isSame) {
@@ -303,15 +306,12 @@ async function updateDentistInfo(req, res, next) {
       }
     }
   }
-*/
 
   if (officeInfo.officeImages) {
     
     // update office images.
     const previousImages = dentistInfo.get('officeImages');
-    console.log(officeInfo.officeImages);
-    console.log("------------------")
-    console.log(previousImages);
+
     // Go through the images to add.
     officeInfo.officeImages.forEach((imageUrl) => {
       const imageAlreadyExists =
