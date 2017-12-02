@@ -79,20 +79,17 @@ async function recursiveInvoices(invoices = [], after = null, created) {
     invoices.push(...result.data);
     if (result.data.length && result.data[99]) {
       return recursiveInvoices(invoices, result.data[99].id, created);
-    } else {
-      return invoices;
     }
+    return invoices;
   } else if (after) {
     const result = await stripeApi.invoices.list({ limit: 100, starting_after: after, date: created });
     invoices.push(...result.data);
     if (result.data.length && result.data[99]) {
       return recursiveInvoices(invoices, result.data[99].id, created);
-    } else {
-      return invoices;
     }
-  } else {
     return invoices;
   }
+  return invoices;
 }
 
 export {

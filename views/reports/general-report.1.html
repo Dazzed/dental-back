@@ -82,6 +82,11 @@
 	{# REGION MEMBER #}
 	<div class="member table-group">
 		{% for m in parentMemberRecords %}
+			{% if loop.index %}
+				<br />
+				<br />
+				<br />
+			{% endif %}
 			<div class="table-group table-row">
 				<div>{{ loop.index }}) {{ m.firstName }} {{ m.lastName }}</div>
 				<!--<div class="column first">{{ m.maturity }}</div>-->
