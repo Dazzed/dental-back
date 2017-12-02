@@ -11,6 +11,7 @@ import { Router } from 'express';
 import Moment from 'moment';
 import pdf from 'html-pdf';
 import nunjucks from 'nunjucks';
+import _ from 'lodash';
 
 import {
   userRequired,
@@ -126,19 +127,15 @@ async function getMasterReport(req, res) {
       targetMonth = String(`0${targetMonth}`);
     }
     const targetYear = req.params.year;
-    const targetDate = Moment(`${targetYear}-${targetMonth}-01`, 'YYYY-MM-DD');
+    const targetDate = Moment.utc(`${targetYear}-${targetMonth}-01`, 'YYYY-MM-DD');
     const targetDateCopy = Moment(targetDate);
     const daysInTargetMonth = Moment(`${targetYear}-${targetMonth}`, 'YYYY-MM').daysInMonth();
     // END Date Ops
 
-    let dentists = await db.DentistInfo.findAll({
+    let localDentistInfos = await db.DentistInfo.findAll({
       include: [{
         model: db.User,
         as: 'user'
-      },
-      {
-        model: db.Membership,
-        as: 'memberships'
       }]
     }).map(t => t.toJSON());
 
@@ -146,55 +143,74 @@ async function getMasterReport(req, res) {
     const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
     const chargesLte = targetDateCopy.set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59)
       .unix();
-    const allStripeInvoices = await recursiveInvoices([], null, { gte: chargesGte, lte: chargesLte });
+    const allStripeCharges = await recursiveCharges([], null, { gte: chargesGte, lte: chargesLte });
     // END Get all invoices recursively
 
-    const payments = allStripeInvoices
-      .filter((invoice) => {
-        const { lines } = invoice;
-        if (lines.data.every(lineData => lineData.description)) {
-          return false;
-        } // else
-        return true;
-      })
-      .filter(invoice => invoice.paid)
-      .map((invoice) => {
-        const { lines } = invoice;
-        return {
-          ...invoice,
-          lines: {
-            ...lines,
-            data: lines.data
-              .filter(lineData => !lineData.description)
-          }
-        };
+    const payments = allStripeCharges
+      .filter(charge => charge.status === 'succeeded')
+      .map((charge) => {
+        const { amount_refunded } = charge;
+        if (amount_refunded) {
+          const amount = charge.amount - amount_refunded;
+          return {
+            ...charge,
+            amount
+          };
+        }
+        return { ...charge };
       });
+
+    const localSubscriptions = await db.Subscription.findAll({
+      attributes: ['dentistId', 'paymentProfileId']
+    })
+      .map(s => s.toJSON());
+
+    const localPaymentProfiles = await db.PaymentProfile.findAll()
+      .map(p => p.toJSON());
+    const uniqLocalSubscriptions = _.uniqBy(localSubscriptions, 'paymentProfileId');
+
+    const dentistStripeCustomerIdMapping = uniqLocalSubscriptions
+      .reduce((acc, sub) => {
+        const { dentistId, paymentProfileId } = sub;
+        if (!paymentProfileId || !dentistId) {
+          return acc;
+        }
+        const { stripeCustomerId } = localPaymentProfiles.find(profile => Number(profile.id) === Number(paymentProfileId));
+        if (acc[dentistId]) {
+          acc[dentistId].push(stripeCustomerId);
+        } else {
+          acc[dentistId] = [stripeCustomerId];
+        }
+        return acc;
+      }, {});
 
     const datePeriod = `${fullMonthName} ${targetYear}`;
 
-    dentists = dentists.map((dentist) => {
-      const { memberships } = dentist;
-      const dentistPlans = memberships
-        .map(m => m.stripePlanId);
+    localDentistInfos = localDentistInfos.map((dentistInfo) => {
       // Only construct the payments related to this dentist
-      const filteredPayments = payments.filter((payment) => {
-        if (payment.lines.data.some(line => dentistPlans.includes(line.plan.id))) {
-          return true;
-        }
-        return false;
-      });
-      const gross = filteredPayments.reduce((acc, p) => acc + p.total, 0) / 100;
+      let filteredPayments = [];
+      if (dentistStripeCustomerIdMapping[dentistInfo.userId]) {
+        filteredPayments = payments.filter((payment) => {
+          const isMyPatient = dentistStripeCustomerIdMapping[dentistInfo.userId]
+            .includes(payment.customer);
+          if (isMyPatient) {
+            return true;
+          }
+          return false;
+        });
+      }
+      const gross = filteredPayments.reduce((acc, p) => acc + p.amount, 0) / 100;
       const managementFee = gross * (11 / 100);
       const net = gross - managementFee;
       return {
-        ...dentist,
+        ...dentistInfo,
         gross: gross.toFixed(2),
         managementFee: managementFee.toFixed(2),
         net: net.toFixed(2)
       };
     });
 
-    const totals = dentists
+    const totals = localDentistInfos
       .reduce((acc, dentist) => {
         const { gross, managementFee, net } = acc;
         const { gross: dentistGross, managementFee: dentistManagementFee, net: dentistNet } = dentist;
@@ -214,7 +230,7 @@ async function getMasterReport(req, res) {
     // Compose the master report
     const report = nunjucks.renderString(masterTemplate, {
       datePeriod,
-      records: dentists,
+      records: localDentistInfos,
       totals,
     });
 
@@ -226,7 +242,7 @@ async function getMasterReport(req, res) {
       res.end();
     });
   } catch (e) {
-    console.log('Error in getMasterReportCleaned');
+    console.log('Error in getMasterReports');
     console.log(e);
     return res.status(500).send({ errors: 'Internal Server Error' });
   }
@@ -259,7 +275,7 @@ async function getGeneralReport(req, res) {
       targetMonth = String(`0${targetMonth}`);
     }
     const targetYear = req.params.year;
-    const targetDate = Moment(`${targetYear}-${targetMonth}-01`, 'YYYY-MM-DD');
+    const targetDate = Moment.utc(`${targetYear}-${targetMonth}-01`, 'YYYY-MM-DD');
     const targetDateCopy = Moment(targetDate, 'YYYY-MM-DD');
     const daysInTargetMonth = Moment(`${targetYear}-${targetMonth}`, 'YYYY-MM').daysInMonth();
     // END Date Ops
@@ -278,9 +294,11 @@ async function getGeneralReport(req, res) {
         }
         return acc;
       }, []);
-    const paymentProfileRecords = await db.PaymentProfile.findAll({ where: {
-      id: filteredPaymentProfileIds
-    } });
+    const paymentProfileRecords = await db.PaymentProfile.findAll({
+      where: {
+        id: filteredPaymentProfileIds
+      }
+    });
 
     const stripeCustomerIds = paymentProfileRecords
       .map(profile => profile.stripeCustomerId);
@@ -292,170 +310,87 @@ async function getGeneralReport(req, res) {
     const totalNewExternal = 0;
     // const totalNewInternal = totalMembers;
 
-    // BEGIN Get all charges and invoices recursively
+    // BEGIN Get all charges recursively
     const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
-    const chargesLte = targetDateCopy.set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59).unix();
-    let [allStripeCharges, allStripeInvoices] = await Promise.all([
-      recursiveCharges([], null, { gte: chargesGte, lte: chargesLte }),
-      recursiveInvoices([], null, { gte: chargesGte, lte: chargesLte })
-    ]);
-    // END Get all charges and invoices recursively
-    /*
-      (IMPORTANT!)
-      Parsing logic:
-      Both charges and invoices.
-        -> charges.filter <>
-          -> .description !== null (can be 'Early Cancellation Penalty Charge')
-        -> invoices.filter <>
-          -> .lines.data.description !== null (can be 're-enrollment Fee' || 'Re-Enrollment Penalty Charge')
-      Refunds:
-        charges
-        -> filter <> .refunded === true (get amount_refunded property)
-      Fee:
-        -> invoices.filter <> lines.data.description === null (null because it's present for re-enrollment penalties)
-     */
+    const chargesLte = targetDateCopy
+      .set('date', daysInTargetMonth).set('H', 23).set('m', 59).set('s', 59)
+      .unix();
+
+    const allStripeCharges = await recursiveCharges([], null, { gte: chargesGte, lte: chargesLte });
+    // END Get all charges recursively
+
     // BEGIN get payments
-    const payments = allStripeInvoices
-      .filter(invoice => stripeCustomerIds.includes(invoice.customer))
-      .filter((invoice) => {
-        const { lines } = invoice;
-        if (lines.data.every(lineData => lineData.description)) {
-          return false;
-        } // else
-        return true;
-      })
-      .filter(invoice => invoice.paid)
-      .map((invoice) => {
-        const { lines } = invoice;
-        return {
-          ...invoice,
-          lines: {
-            ...lines,
-            data: lines.data
-              .filter(lineData => !lineData.description)
-          }
-        };
+    const payments = allStripeCharges
+      .filter(charge => stripeCustomerIds.includes(charge.customer) && charge.status === 'succeeded')
+      .map((charge) => {
+        const { amount_refunded } = charge;
+        if (amount_refunded) {
+          const amount = charge.amount - amount_refunded;
+          return {
+            ...charge,
+            amount
+          };
+        }
+        return { ...charge };
       });
-    allStripeCharges = allStripeCharges
-      .filter(charge => stripeCustomerIds.includes(charge.customer));
-    
+
     // END get payments
     // BEGIN get refunds
     const refundsRecords = allStripeCharges
-      .filter(charge => charge.refunded);
+      .filter(charge => charge.amount_refunded);
     const refunds = refundsRecords
       .reduce((acc, { amount_refunded }) => acc + (amount_refunded / 100), 0)
       .toFixed(2);
     // END get refunds
     // BEGIN get penalties
-    const penaltiesRecords = [...allStripeCharges, ...allStripeInvoices]
-      .filter((mixedRecord) => {
-        const { object, description } = mixedRecord;
-        if (object === 'charge') {
-          if (description && !description.toLowerCase().includes('proration')) {
-            return true;
-          }
-          return false;
-        } // else it's invoice
-        const { lines } = mixedRecord;
-        if (lines.data.some(lineData => lineData.description)) {
-          return true;
-        }
-        return false;
-      })
-      .map((mixedRecord) => {
-        const { object } = mixedRecord;
-        if (object === 'charge') {
-          return mixedRecord;
-        } // else it's invoice
-        const { lines } = mixedRecord;
-        if (lines.data.some(lineData => !lineData.description)) {
-          return {
-            ...mixedRecord,
-            lines: {
-              ...lines,
-              data: lines.data
-                .filter(lineData => lineData.description)
-            }
-          };
-        }
-        return mixedRecord;
-      });
-    // const penalties = penaltiesRecords
-    //   .reduce((acc, mixedRecord) => {
-    //     const { object, amount } = mixedRecord;
-    //     if (object === 'charge') {
-    //       return acc + amount;
-    //     } // else it's invoice
-    //     const { lines } = mixedRecord;
-    //     return acc + lines.data.reduce(
-    //       (lacc, lineData) => lacc + (lineData.amount / 100),
-    //       0
-    //     );
-    //   }, 0);
+    const penaltiesRecords = allStripeCharges
+      .filter(charge => charge.description);
     // END get penalties
     const grossRevenue = payments
-      .reduce((acc, { total }) => acc + (total / 100), 0)
-        - Number(refunds)
-      .toFixed(2);
+      .reduce((acc, { amount }) => acc + (amount / 100), 0)
+      - Number(refunds);
     const managementFee = (grossRevenue * (11 / 100)).toFixed(2);
     const netPayment = (grossRevenue - managementFee).toFixed(2);
 
-    let parentMemberRecords = [];
+    const parentMemberRecords = [];
 
     for (const profile of paymentProfileRecords) {
-      let customerPayments = [];
       const { stripeCustomerId } = profile;
       const parentLocal = {};
       const parent = await db.User.findOne({ where: { id: profile.primaryAccountHolder } });
       parentLocal.parentId = parent.id;
-      // const childMembers = await db.User.findAll({ where: { addedBy: parent.id } });
       parentLocal.firstName = parent.firstName;
       parentLocal.lastName = parent.lastName;
       parentLocal.maturity = 'Adult';
-      customerPayments = payments
-        .filter(payment => payment.customer === stripeCustomerId)
-        .map(payment => ([...payment.lines.data]));
-      let parentFee = 0;
-      if (customerPayments.length) {
-        parentFee = Array
-          .concat.apply(
-            [],
-            customerPayments
-          )
-          .reduce((acc, lineItem) => acc + (lineItem.amount / 100), 0);
-      }
 
-      parentLocal.fee = parentFee;
+      parentLocal.fee = payments
+        .filter(payment => payment.customer === stripeCustomerId)
+        .reduce((acc, payment) => acc + (payment.amount / 100), 0)
+        .toFixed(2);
 
       parentLocal.penalties = penaltiesRecords
         .filter(penaltyRecord => penaltyRecord.customer === stripeCustomerId)
-        .reduce((acc, penaltyRecord) => {
-          const { object } = penaltyRecord;
-          if (object === 'charge') {
-            return acc + (penaltyRecord.amount / 100);
-          } // else it's invoice
-          return acc + penaltyRecord.lines.data
-            .reduce((lacc, lineData) => lacc + (lineData.amount / 100), 0);
-        }, 0);
-      
+        .reduce((acc, penalty) => acc + (penalty.amount / 100), 0)
+        .toFixed(2);
+
       parentLocal.refunds = refundsRecords
         .filter(refundsRecord => refundsRecord.customer === stripeCustomerId)
-        .reduce((acc, refundsRecord) => acc + (refundsRecord.amount_refunded / 100), 0);
-      
-      let feeMinusRefunds = parentLocal.fee - parentLocal.refunds;
-      parentLocal.net = feeMinusRefunds - (feeMinusRefunds * (11 / 100));
-      
+        .reduce((acc, refund) => acc + (refund.amount_refunded / 100), 0)
+        .toFixed(2);
+
+      let feeMinusRefunds = Number(parentLocal.fee) - Number(parentLocal.refunds);
+      parentLocal.net = (feeMinusRefunds - (feeMinusRefunds * (11 / 100))).toFixed(2);
+
       parentLocal.family = [];
 
-      parentLocal.membershipFeeTotal = parentFee.toFixed(2);
-      parentLocal.penaltiesTotal = parentLocal.penalties.toFixed(2);
-      parentLocal.refundsTotal = parentLocal.refunds.toFixed(2);
-      feeMinusRefunds = parentLocal.membershipFeeTotal - parentLocal.refundsTotal;
+      parentLocal.membershipFeeTotal = parentLocal.fee;
+      parentLocal.penaltiesTotal = parentLocal.penalties;
+      parentLocal.refundsTotal = parentLocal.refunds;
+      feeMinusRefunds = Number(parentLocal.membershipFeeTotal) - Number(parentLocal.refundsTotal);
       parentLocal.netTotal = (feeMinusRefunds - (feeMinusRefunds * (11 / 100))).toFixed(2);
       parentMemberRecords.push(parentLocal);
     }
-    parentMemberRecords = transformFieldsToFixed(parentMemberRecords);
+    // parentMemberRecords = transformFieldsToFixed(parentMemberRecords);
 
     const reportData = {
       title: `${dentistInfo.officeName} -- General Report`,
@@ -468,7 +403,7 @@ async function getGeneralReport(req, res) {
       totalNewExternal,
       totalInternal: parentMemberRecords.length,
       totalNewInternal: parentMemberRecords.length,
-      grossRevenue,
+      grossRevenue: grossRevenue.toFixed(2),
       refunds,
       managementFee,
       netPayment,
