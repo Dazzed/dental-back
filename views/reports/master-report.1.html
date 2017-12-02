@@ -60,11 +60,17 @@
 	<div class="member table-group">
 		{% for dentist in records %}
 			<div class="table-group table-row">
+				{% if dentist.officeName.length > 25 %}
+				<div style="font-size: 8px;">{{ loop.index }}) {{ dentist.officeName }}</div>
+				{% else %}
 				<div>{{ loop.index }}) {{ dentist.officeName }}</div>
+				{% endif %}
+				
 				<div class="column first">${{ dentist.gross }}</div>
 				<div class="column second">${{ dentist.managementFee }}</div>
 				<div class="column third">${{ dentist.net }}</div>
 			</div>
+			<br />
 		{% endfor %}
 	</div>
 	<div class="megablock table-group summary">
