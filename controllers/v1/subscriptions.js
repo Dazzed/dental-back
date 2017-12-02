@@ -173,7 +173,26 @@ async function reEnroll(req, res) {
 
     // throw an error if the subscription is active
     if (stripeSubscriptionId || stripeSubscriptionItemId || status === 'active') {
-      return res.status(400).send({ errors: "User already has an active subscription" });
+      return res.status(400).send({ errors: 'User already has an active subscription' });
+    }
+
+    // Do not fire penality if user is enrolling for the first time.
+    // We identify this if the stripeSubscriptionIdUpdatedAt is null.
+    const hasEnrolledAlready = userSubscription.stripeSubscriptionIdUpdatedAt ? true : false;
+    if (user.reEnrollmentFeeWaiver == true && hasEnrolledAlready) {
+      const invoiceItem = await stripe.createInvoiceItem({
+        customer: paymentProfile.stripeCustomerId,
+        amount: RE_ENROLLMENT_PENALTY,
+        currency: 'usd',
+        description: 're-enrollment Fee'
+      });
+      console.log(`Invoice item for reenrollOperation success for user Id -> ${paymentProfile.primaryAccountHolder}`);
+      await db.Penality.create({
+        clientId: userSubscription.clientId,
+        dentistId: userSubscription.dentistId,
+        type: 'reenrollment',
+        amount: 9900
+      });
     }
 
     const perform = () => {
@@ -188,24 +207,7 @@ async function reEnroll(req, res) {
     };
 
     await perform();
-    // Do not fire penality if user is enrolling for the first time.
-    // We identify this if the stripeSubscriptionIdUpdatedAt is null.
-    const isEnrollingFirstTime = userSubscription.stripeSubscriptionIdUpdatedAt ? false : true;
-    if (user.reEnrollmentFeeWaiver == true && !isEnrollingFirstTime) {
-      const invoiceItem = await stripe.createInvoiceItem({
-        customer: paymentProfile.stripeCustomerId,
-        amount: RE_ENROLLMENT_PENALTY,
-        currency: 'usd',
-        description: 're-enrollment Fee'
-      });
-      console.log("Invoice item for reenrollOperation success for user Id -> " + paymentProfile.primaryAccountHolder);
-      await db.Penality.create({
-        clientId: userSubscription.clientId,
-        dentistId: userSubscription.dentistId,
-        type: 'reenrollment',
-        amount: 9900
-      });
-    }
+
     const subscription = await db.Subscription.findOne({
       where: {
         id: userSubscription.id
