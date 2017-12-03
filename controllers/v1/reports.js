@@ -202,11 +202,13 @@ async function getMasterReport(req, res) {
       const gross = filteredPayments.reduce((acc, p) => acc + p.amount, 0) / 100;
       const managementFee = gross * (11 / 100);
       const net = gross - managementFee;
+      const refunds = filteredPayments
+        .reduce((acc, p) => acc + (p.amount_refunded / 100), 0);
       return {
         ...dentistInfo,
         gross: gross.toFixed(2),
         managementFee: managementFee.toFixed(2),
-        net: net.toFixed(2)
+        net: (net - refunds).toFixed(2)
       };
     });
 
@@ -302,8 +304,6 @@ async function getGeneralReport(req, res) {
 
     const stripeCustomerIds = paymentProfileRecords
       .map(profile => profile.stripeCustomerId);
-
-    console.info(stripeCustomerIds);
 
     // BEGIN Get all charges recursively
     const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
