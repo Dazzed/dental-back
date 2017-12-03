@@ -303,13 +303,6 @@ async function getGeneralReport(req, res) {
     const stripeCustomerIds = paymentProfileRecords
       .map(profile => profile.stripeCustomerId);
 
-    // const totalMembers = dentistSubscriptions.length;
-    const totalExternal = 0;
-    // const totalInternal = totalMembers;
-    // const totalNewMembers = totalMembers;
-    const totalNewExternal = 0;
-    // const totalNewInternal = totalMembers;
-
     // BEGIN Get all charges recursively
     const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
     const chargesLte = targetDateCopy
@@ -369,6 +362,7 @@ async function getGeneralReport(req, res) {
       parentLocal.firstName = parent.firstName;
       parentLocal.lastName = parent.lastName;
       parentLocal.maturity = 'Adult';
+      parentLocal.origin = parent.origin;
 
       parentLocal.fee = payments
         .filter(payment => payment.customer === stripeCustomerId)
@@ -385,31 +379,40 @@ async function getGeneralReport(req, res) {
         .reduce((acc, refund) => acc + (refund.amount_refunded / 100), 0)
         .toFixed(2);
 
-      let feeMinusRefunds = (Number(parentLocal.fee) + Number(parentLocal.penalties)) - Number(parentLocal.refunds);
-      parentLocal.net = (feeMinusRefunds - (feeMinusRefunds * (11 / 100))).toFixed(2);
+      const localTotal = Number(parentLocal.fee) + Number(parentLocal.penalties);
+      const localManagementFees = localTotal * (11 / 100);
+      parentLocal.net = localTotal - localManagementFees - Number(parentLocal.refunds);
+      parentLocal.net = parentLocal.net.toFixed(2);
 
       parentLocal.family = [];
 
       parentLocal.membershipFeeTotal = parentLocal.fee;
       parentLocal.penaltiesTotal = parentLocal.penalties;
       parentLocal.refundsTotal = parentLocal.refunds;
-      feeMinusRefunds = Number(parentLocal.membershipFeeTotal) - Number(parentLocal.refundsTotal);
-      parentLocal.netTotal = (feeMinusRefunds - (feeMinusRefunds * (11 / 100))).toFixed(2);
+      parentLocal.netTotal = parentLocal.net;
       parentMemberRecords.push(parentLocal);
     }
-    // parentMemberRecords = transformFieldsToFixed(parentMemberRecords);
+
+    const totalMembers = parentMemberRecords.length;
+    const totalExternal = parentMemberRecords
+      .filter(r => r.origin === 'external').length;
+    const totalInternal = parentMemberRecords
+      .filter(r => r.origin === 'internal').length;
+    const totalNewMembers = totalMembers;
+    const totalNewExternal = totalExternal;
+    const totalNewInternal = totalInternal;
 
     const reportData = {
       title: `${dentistInfo.officeName} -- General Report`,
       dentistSpecialityName,
       date,
-      totalMembers: parentMemberRecords.length,
+      totalMembers,
       parentMemberRecords,
-      totalNewMembers: parentMemberRecords.length,
+      totalNewMembers,
       totalExternal,
       totalNewExternal,
-      totalInternal: parentMemberRecords.length,
-      totalNewInternal: parentMemberRecords.length,
+      totalInternal,
+      totalNewInternal,
       grossRevenue: grossRevenue.toFixed(2),
       refunds,
       managementFee,
