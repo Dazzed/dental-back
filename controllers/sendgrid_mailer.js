@@ -59,19 +59,19 @@ export function membershipPriceChangeNotification(user, plan_name, price) {
   sendMail(mail);
 }
 
-export function subscriptionChargeFailedNotification(user, attempt_count) {
+export function subscriptionChargeFailedNotification(user, attempt_count, officeName) {
   const templateString = fs.readFileSync('./views/notifications/subscription_charge_failed.ejs', 'utf-8');
   const template = ejs.compile(templateString);
-
+  const from_email = new sendgrid.Email(`donotreply@${officeName}.com`);
   const to_email = new sendgrid.Email(user.email);
   const subject = EMAIL_SUBJECTS.client.subscriptionChargeFailed;
   let days_late;
-  attempt_count = parseInt(attempt_count);
-  if (attempt_count == 1) {
+  attempt_count = Number(attempt_count);
+  if (attempt_count === 1) {
     days_late = 1;
-  } else if (attempt_count == 2) {
+  } else if (attempt_count === 2) {
     days_late = 7;
-  } else if (attempt_count == 3) {
+  } else if (attempt_count === 3) {
     days_late = 14;
   } else {
     days_late = 21;
@@ -79,7 +79,7 @@ export function subscriptionChargeFailedNotification(user, attempt_count) {
   const content = new sendgrid.Content(
     'text/html', template({ user, days_late, subject })
   );
-  const mail = new sendgrid.Mail(dentalhq_from_email, subject, to_email, content);
+  const mail = new sendgrid.Mail(from_email, subject, to_email, content);
   sendMail(mail);
 }
 
