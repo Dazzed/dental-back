@@ -322,6 +322,12 @@ async function getGeneralReport(req, res) {
     // BEGIN get payments
     const payments = allStripeCharges
       .filter(charge => stripeCustomerIds.includes(charge.customer) && charge.status === 'succeeded')
+      .filter((charge) => {
+        if (charge.description) {
+          return !charge.description.toLowerCase().includes('penalty');
+        }
+        return true;
+      })
       .map((charge) => {
         const { amount_refunded } = charge;
         if (amount_refunded) {
@@ -344,7 +350,8 @@ async function getGeneralReport(req, res) {
     // END get refunds
     // BEGIN get penalties
     const penaltiesRecords = allStripeCharges
-      .filter(charge => charge.description);
+      .filter(charge => charge.description)
+      .filter(charge => charge.description.toLowerCase().includes('penalty'));
     // END get penalties
     const grossRevenue = payments
       .reduce((acc, { amount }) => acc + (amount / 100), 0)
@@ -378,7 +385,7 @@ async function getGeneralReport(req, res) {
         .reduce((acc, refund) => acc + (refund.amount_refunded / 100), 0)
         .toFixed(2);
 
-      let feeMinusRefunds = Number(parentLocal.fee) - Number(parentLocal.refunds);
+      let feeMinusRefunds = (Number(parentLocal.fee) + Number(parentLocal.penalties)) - Number(parentLocal.refunds);
       parentLocal.net = (feeMinusRefunds - (feeMinusRefunds * (11 / 100))).toFixed(2);
 
       parentLocal.family = [];
