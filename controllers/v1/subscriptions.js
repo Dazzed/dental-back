@@ -180,13 +180,12 @@ async function reEnroll(req, res) {
     // We identify this if the stripeSubscriptionIdUpdatedAt is null.
     const hasEnrolledAlready = userSubscription.stripeSubscriptionIdUpdatedAt ? true : false;
     if (user.reEnrollmentFeeWaiver == true && hasEnrolledAlready) {
-      const invoiceItem = await stripe.createInvoiceItem({
-        customer: paymentProfile.stripeCustomerId,
-        amount: RE_ENROLLMENT_PENALTY,
-        currency: 'usd',
-        description: 're-enrollment Fee'
-      });
-      console.log(`Invoice item for reenrollOperation success for user Id -> ${paymentProfile.primaryAccountHolder}`);
+      await stripe.issueCharge(
+        RE_ENROLLMENT_PENALTY,
+        paymentProfile.stripeCustomerId,
+        'Re-Enrollment Penalty Charge(Transfer)'
+      );
+      console.log(`Charge for reenrollOperation success for user Id -> ${paymentProfile.primaryAccountHolder}`);
       await db.Penality.create({
         clientId: userSubscription.clientId,
         dentistId: userSubscription.dentistId,
