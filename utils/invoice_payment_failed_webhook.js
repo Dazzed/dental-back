@@ -76,11 +76,25 @@ export default async function invoicePaymentFailedWebhook(body) {
       }
     });
 
+    const patientSubscription = await db.Subscription.findOne({
+      where: {
+        stripeSubscriptionId
+      }
+    });
+
+    const dentistInfo = await db.DentistInfo.findOne({
+      where: {
+        userId: patientSubscription.dentistId
+      }
+    });
+
+    const officeName = dentistInfo.officeName.replace(/ /g, '');
+
     if (!patient) {
       throw 'Patient not found';
     }
 
-    subscriptionChargeFailedNotification(patient, attempt_count);
+    subscriptionChargeFailedNotification(patient, attempt_count, officeName);
   } catch (e) {
     console.log('**************************************');
     console.info('Error in invoicePaymentFailedWebhook');
