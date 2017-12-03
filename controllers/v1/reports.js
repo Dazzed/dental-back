@@ -303,6 +303,8 @@ async function getGeneralReport(req, res) {
     const stripeCustomerIds = paymentProfileRecords
       .map(profile => profile.stripeCustomerId);
 
+    console.info(stripeCustomerIds);
+
     // BEGIN Get all charges recursively
     const chargesGte = targetDate.set('H', 0).set('m', 0).set('s', 0).unix();
     const chargesLte = targetDateCopy
@@ -312,9 +314,11 @@ async function getGeneralReport(req, res) {
     const allStripeCharges = await recursiveCharges([], null, { gte: chargesGte, lte: chargesLte });
     // END Get all charges recursively
 
+    const myPatientsStripeCharges = allStripeCharges
+      .filter(charge => stripeCustomerIds.includes(charge.customer) && charge.status === 'succeeded');
+
     // BEGIN get payments
-    const payments = allStripeCharges
-      .filter(charge => stripeCustomerIds.includes(charge.customer) && charge.status === 'succeeded')
+    const payments = myPatientsStripeCharges
       .filter((charge) => {
         if (charge.description) {
           return !charge.description.toLowerCase().includes('penalty');
@@ -335,14 +339,14 @@ async function getGeneralReport(req, res) {
 
     // END get payments
     // BEGIN get refunds
-    const refundsRecords = allStripeCharges
+    const refundsRecords = myPatientsStripeCharges
       .filter(charge => charge.amount_refunded);
     const refunds = refundsRecords
       .reduce((acc, { amount_refunded }) => acc + (amount_refunded / 100), 0)
       .toFixed(2);
     // END get refunds
     // BEGIN get penalties
-    const penaltiesRecords = allStripeCharges
+    const penaltiesRecords = myPatientsStripeCharges
       .filter(charge => charge.description)
       .filter(charge => charge.description.toLowerCase().includes('penalty'));
     // END get penalties
