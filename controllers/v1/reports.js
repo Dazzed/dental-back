@@ -347,10 +347,9 @@ async function getGeneralReport(req, res) {
       .filter(charge => charge.description.toLowerCase().includes('penalty'));
     // END get penalties
     const grossRevenue = payments
-      .reduce((acc, { amount }) => acc + (amount / 100), 0)
-      - Number(refunds);
+      .reduce((acc, { amount }) => acc + (amount / 100), 0);
     const managementFee = (grossRevenue * (11 / 100)).toFixed(2);
-    const netPayment = (grossRevenue - managementFee).toFixed(2);
+    const netPayment = (grossRevenue - managementFee - Number(refunds)).toFixed(2);
 
     const parentMemberRecords = [];
 
