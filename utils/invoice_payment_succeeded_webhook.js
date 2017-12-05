@@ -14,14 +14,6 @@ export default async function (body) {
           stripeSubscriptionItemId: item.subscription_item,
         }
       });
-      for (const sub of subscriptions) {
-        await db.Payment.create({
-          clientId: sub.clientId,
-          dentistId: sub.dentistId,
-          stripeSubscriptionId: sub.stripeSubscriptionId,
-          amount: item.amount / item.quantity
-        });
-      }
       const isLateSubscription = subscriptions
         .some(sub => sub.status === 'past_due');
       if (isLateSubscription) {
